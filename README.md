@@ -137,6 +137,19 @@ Pak už stačí v Claudovi napsat třeba:
 - „Jaký byl můj spánek a Body Battery včera?“
 - „Jak se vyvíjela moje váha za poslední měsíc?“
 
+## Testy
+
+Testy běží kompletně na mockovaném Garmin API – nepotřebují žádné
+přihlašovací údaje ani síť:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+Pokrývají helpery, formátovače, validaci vstupů, agregaci týdenního souhrnu,
+ošetření chyb (výpadek API / selhání přihlášení) i registraci všech nástrojů.
+
 ## Bezpečnost a omezení
 
 - **Neoficiální API.** Server používá privátní Garmin Connect API přes
@@ -155,7 +168,9 @@ claudecode/
 │   ├── __init__.py
 │   ├── client.py      # přihlášení + cache tokenů (garth/garminconnect)
 │   └── server.py      # definice MCP nástrojů (FastMCP)
+├── tests/             # pytest testy na mockovaném API
 ├── requirements.txt
+├── requirements-dev.txt
 ├── pyproject.toml
 ├── .env.example
 └── README.md

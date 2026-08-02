@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# MediaMTX — binárka a auto-generovaný konfig (přepisuje ho server přes set_rtsp)
+mediamtx.exe
+mediamtx.yml
+
+# Claude Code — lokální nastavení (per-machine)
+.claude/settings.local.json
+
+# Windows / OneDrive
+desktop.ini
+Thumbs.db
+ehthumbs.db

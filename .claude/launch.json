@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ptz-server",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["ptz_server.py"],
+      "port": 8765,
+      "url": "file:///C:/Users/thome/OneDrive/Documents/PTZ%20Camera%20Controller/Ovl%C3%A1d%C3%A1n%C3%AD_kamer_1_2_IP.html"
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+"""
+PTZ Camera WebSocket Server — IP/LAN verzia
+Preposiela príkazy z HTML aplikácie na IP kamery cez HTTP CGI.
+"""
+
+import asyncio
+import json
+import threading
+import urllib.request
+import urllib.error
+import base64
+import websockets
+import os
+import sys
+import webbrowser
+import subprocess
+
+WS_PORT  = 8765
+
+# Priečinok kde sa hľadá HTML súbor — rovnaký ako ptz_server.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MEDIAMTX_EXE  = os.path.join(BASE_DIR, 'mediamtx.exe')
+MEDIAMTX_CONF = os.path.join(BASE_DIR, 'mediamtx.yml')
+
+# Globálny proces MediaMTX
+_mediamtx_proc = None
+_mediamtx_lock = threading.Lock()
+
+def _write_mediamtx_conf(rtsp_url: str, stream_name: str = 'cam2'):
+    """Zapíše mediamtx.yml s danou RTSP URL."""
+    conf = f"""# Auto-generovaný konfig — upravený cez PTZ appku
+logLevel: error
+logDestinations: [stdout]
+
+rtspAddress: :8554
+webrtcAddress: :8889
+
+webrtcAllowOrigin: '*'
+
+paths:
+  {stream_name}:
+    source: {rtsp_url}
+"""
+    with open(MEDIAMTX_CONF, 'w', encoding='utf-8') as f:
+        f.write(conf)
+
+def _start_mediamtx():
+    """Spustí MediaMTX proces."""
+    global _mediamtx_proc
+    if not os.path.exists(MEDIAMTX_EXE):
+        return False, 'mediamtx.exe nenájdený v ' + BASE_DIR
+    try:
+        _mediamtx_proc = subprocess.Popen(
+            [MEDIAMTX_EXE, MEDIAMTX_CONF],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0,
+        )
+        return True, 'OK'
+    except Exception as e:
+        return False, str(e)
+
+def _stop_mediamtx():
+    """Zastaví MediaMTX proces."""
+    global _mediamtx_proc
+    if _mediamtx_proc and _mediamtx_proc.poll() is None:
+        _mediamtx_proc.terminate()
+        try: _mediamtx_proc.wait(timeout=3)
+        except: _mediamtx_proc.kill()
+    _mediamtx_proc = None
+
+def _restart_mediamtx(rtsp_url: str, stream_name: str = 'cam2'):
+    """Prepíše konfig a reštartuje MediaMTX."""
+    with _mediamtx_lock:
+        _stop_mediamtx()
+        _write_mediamtx_conf(rtsp_url, stream_name)
+        ok, msg = _start_mediamtx()
+        return ok, msg
+
+cameras = {
+    1: { 'ip': '', 'user': 'admin', 'password': 'admin', 'speed': 5 },
+    2: { 'ip': '', 'user': 'admin', 'password': 'admin', 'speed': 5 },
+}
+
+connected_clients = set()
+
+# Každá kamera musí dostávať PTZ príkazy striktne v poradí, v akom boli odoslané —
+# inak sa napr. "stop" poslaný krátko po "move" môže na sieti predbehnúť a kamera
+# potom pokračuje v pohybe, kým nepríde ďalší príkaz (nekonečný pohyb po pustení šípky).
+cam_locks = {1: asyncio.Lock(), 2: asyncio.Lock()}
+
+def cgi_request(ip, user, password, path):
+    url = f'http://{ip}{path}'
+    req = urllib.request.Request(url)
+    credentials = base64.b64encode(f'{user}:{password}'.encode()).decode()
+    req.add_header('Authorization', f'Basic {credentials}')
+    try:
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            return True, resp.read().decode('utf-8', errors='ignore')
+    except urllib.error.HTTPError as e:
+        return False, f'HTTP {e.code}: {e.reason}'
+    except urllib.error.URLError as e:
+        return False, f'URL chyba: {e.reason}'
+    except Exception as e:
+        return False, str(e)
+
+def build_cgi_path(cmd, speed=5, preset=None):
+    base = '/cgi-bin/ptzctrl.cgi'
+    s = speed
+    # Pohyb — /cgi-bin/ptzctrl.cgi?ptzcmd&<smer>&<rychlost>
+    move_map = {
+        'up':        'up',
+        'down':      'down',
+        'left':      'left',
+        'right':     'right',
+        'ul':        'leftup',
+        'ur':        'rightup',
+        'dl':        'leftdown',
+        'dr':        'rightdown',
+        'stop':      'stop',
+        'zoomin':    'zoomin',
+        'zoomout':   'zoomout',
+        'zoomstop':  'zoomstop',
+        'focusfar':  'focusfar',
+        'focusnear': 'focusnear',
+        'focusstop': 'focusstop',
+        'autofocus': 'focusauto',
+        'focuslock': 'focuslock',
+    }
+    if cmd in move_map:
+        if cmd in ('stop', 'zoomstop', 'focusstop', 'focusauto', 'focuslock'):
+            return f'{base}?ptzcmd&{move_map[cmd]}'  # stop bez rýchlosti
+        return f'{base}?ptzcmd&{move_map[cmd]}&{s}'
+    if cmd == 'gotopreset' and preset is not None:
+        return f'{base}?ptzcmd&poscall&{preset}'
+    if cmd == 'setpreset' and preset is not None:
+        return f'{base}?ptzcmd&posset&{preset}'
+    if cmd == 'clearpreset' and preset is not None:
+        return f'{base}?ptzcmd&posdel&{preset}'
+    if cmd == 'home':
+        return f'{base}?ptzcmd&poscall&0'
+    return None
+
+async def handler(websocket):
+    connected_clients.add(websocket)
+    ip = websocket.remote_address[0] if websocket.remote_address else '?'
+    print(f'[WS] Klient připojen: {ip}')
+    try:
+        async for message in websocket:
+            try:
+                msg = json.loads(message)
+                cmd_type = msg.get('cmd')
+
+                if cmd_type == 'config':
+                    cam = msg.get('cam', 1)
+                    if 'ip' in msg:       cameras[cam]['ip']       = msg['ip']
+                    if 'user' in msg:     cameras[cam]['user']     = msg['user']
+                    if 'password' in msg: cameras[cam]['password'] = msg['password']
+                    if 'speed' in msg:    cameras[cam]['speed']    = int(msg['speed'])
+                    await websocket.send(json.dumps({'type': 'ok', 'cmd': 'config', 'cam': cam}))
+
+                elif cmd_type == 'ptz':
+                    cam    = msg.get('cam', 1)
+                    action = msg.get('action', 'stop')
+                    preset = msg.get('preset')
+                    speed  = msg.get('speed', cameras[cam]['speed'])
+                    cfg    = cameras[cam]
+                    if not cfg['ip']:
+                        await websocket.send(json.dumps({'type': 'error', 'msg': f'CAM{cam}: IP adresa není nastavena'}))
+                        continue
+                    path = build_cgi_path(action, speed, preset)
+                    if path is None:
+                        await websocket.send(json.dumps({'type': 'error', 'msg': f'CAM{cam}: Neznámý příkaz: {action}'}))
+                        continue
+
+                    # Každý PTZ príkaz spustíme ako samostatný asyncio task, aby stop
+                    # nečakal vo fronte za pomalým HTTP requestom od klienta/websocketu.
+                    # Voči kamere ale musí byť poradie príkazov (napr. move → stop)
+                    # garantované, preto sa každý request pre danú kameru serializuje
+                    # cez cam_locks — ďalší príkaz sa odošle až keď predchádzajúci
+                    # dostal HTTP odpoveď (alebo timeoutol).
+                    is_stop = action in ('stop', 'zoomstop', 'focusstop')
+                    timeout = 1.5 if is_stop else 4.0
+
+                    async def _send_ptz(cfg=cfg, path=path, action=action, cam=cam, timeout=timeout, ws=websocket):
+                        loop = asyncio.get_event_loop()
+                        async with cam_locks[cam]:
+                            try:
+                                ok, resp = await asyncio.wait_for(
+                                    loop.run_in_executor(None, cgi_request, cfg['ip'], cfg['user'], cfg['password'], path),
+                                    timeout=timeout
+                                )
+                            except asyncio.TimeoutError:
+                                ok, resp = False, 'timeout'
+                        try:
+                            await ws.send(json.dumps({
+                                'type': 'ptz_result', 'cam': cam, 'ok': ok,
+                                'action': action, 'response': resp[:200] if resp else ''
+                            }))
+                        except Exception:
+                            pass
+
+                    asyncio.ensure_future(_send_ptz())
+
+                elif cmd_type == 'test':
+                    cam = msg.get('cam', 1)
+                    cfg = cameras[cam]
+                    if not cfg['ip']:
+                        await websocket.send(json.dumps({'type': 'test_result', 'cam': cam, 'ok': False, 'msg': 'IP adresa není nastavena'}))
+                        continue
+                    loop = asyncio.get_event_loop()
+                    ok, resp = await loop.run_in_executor(None, cgi_request, cfg['ip'], cfg['user'], cfg['password'], '/')
+                    await websocket.send(json.dumps({
+                        'type': 'test_result', 'cam': cam, 'ok': ok,
+                        'msg': 'Kamera dostupná' if ok else resp
+                    }))
+
+                elif cmd_type == 'set_rtsp':
+                    rtsp_url    = msg.get('rtsp_url', '')
+                    stream_name = msg.get('stream_name', 'cam2')
+                    if not rtsp_url:
+                        await websocket.send(json.dumps({'type': 'rtsp_result', 'ok': False, 'msg': 'RTSP URL je prázdna'}))
+                        continue
+                    loop = asyncio.get_event_loop()
+                    ok, err = await loop.run_in_executor(None, _restart_mediamtx, rtsp_url, stream_name)
+                    await websocket.send(json.dumps({'type': 'rtsp_result', 'ok': ok, 'msg': err}))
+
+                elif cmd_type == 'status':
+                    await websocket.send(json.dumps({
+                        'type': 'status',
+                        'cam1_ip': cameras[1]['ip'],
+                        'cam2_ip': cameras[2]['ip'],
+                    }))
+
+            except json.JSONDecodeError:
+                pass
+            except Exception as e:
+                print(f'[ERR] Handler: {e}')
+                try:
+                    await websocket.send(json.dumps({'type': 'error', 'msg': str(e)}))
+                except:
+                    pass
+    except websockets.exceptions.ConnectionClosed:
+        pass
+    finally:
+        connected_clients.discard(websocket)
+        print(f'[WS] Klient odpojen: {ip}')
+
+def run_server():
+    """Spustí asyncio WebSocket server v samostatnom vlákne."""
+    async def _main():
+        print(f'[START] PTZ IP Server běží na ws://localhost:{WS_PORT}')
+        async with websockets.serve(handler, 'localhost', WS_PORT):
+            await asyncio.Future()
+    asyncio.run(_main())
+
+def _find_html_file():
+    """Nájde HTML súbor appky v BASE_DIR."""
+    for name in ['Ovládání_kamer_1_2_IP.html', 'Ovládání_kamer_1_1_IP.html']:
+        if os.path.exists(os.path.join(BASE_DIR, name)):
+            return name
+    for f in os.listdir(BASE_DIR):
+        if f.endswith('.html') and 'kamer' in f.lower():
+            return f
+    return None
+
+if __name__ == '__main__':
+    # Ak existuje mediamtx.yml, spusti MediaMTX hneď pri štarte
+    if os.path.exists(MEDIAMTX_CONF) and os.path.exists(MEDIAMTX_EXE):
+        ok, msg = _start_mediamtx()
+        print(f'[MEDIAMTX] {"Spustený" if ok else "Chyba: " + msg}')
+    else:
+        print(f'[MEDIAMTX] mediamtx.exe alebo mediamtx.yml nenájdený — nakonfigurujte v appke')
+
+    # WebSocket server — v samostatnom vlákne
+    ws_thread = threading.Thread(target=run_server, daemon=True)
+    ws_thread.start()
+
+    # pystray MUSÍ bežať v hlavnom vlákne (Windows požiadavka)
+    try:
+        import pystray
+        from PIL import Image, ImageDraw
+
+        def make_icon(color):
+            img = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+            d = ImageDraw.Draw(img)
+            d.ellipse([8, 8, 56, 56], fill=color)
+            return img
+
+        def on_quit(icon, item):
+            _stop_mediamtx()
+            icon.stop()
+            os._exit(0)
+
+        def on_open_browser(icon, item):
+            html_file = _find_html_file()
+            if html_file:
+                webbrowser.open(f'file:///{os.path.join(BASE_DIR, html_file).replace(os.sep, "/")}')
+
+        icon = pystray.Icon(
+            'PTZ IP Server',
+            make_icon('#22c55e'),
+            'PTZ IP Server – běží',
+            menu=pystray.Menu(
+                pystray.MenuItem('PTZ IP Server – běží', None, enabled=False),
+                pystray.MenuItem(f'ws://localhost:{WS_PORT}', None, enabled=False),
+                pystray.Menu.SEPARATOR,
+                pystray.MenuItem('Otevřít v prohlížeči', on_open_browser),
+                pystray.Menu.SEPARATOR,
+                pystray.MenuItem('Ukončit', on_quit),
+            )
+        )
+        icon.run()  # blokuje hlavné vlákno
+    except ImportError:
+        print('[INFO] pystray není dostupný — server běží bez ikonky')
+        ws_thread.join()

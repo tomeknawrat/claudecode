@@ -150,6 +150,13 @@ def _dump(data: Any) -> str:
     return json.dumps(data, indent=2, default=str, ensure_ascii=False)
 
 
+def _first(data: Any) -> dict:
+    """Unwrap a single-item list; several Garmin endpoints wrap a dict in a list."""
+    if isinstance(data, list):
+        return data[0] if data else {}
+    return data if isinstance(data, dict) else {}
+
+
 def _format(data: Any, fmt: ResponseFormat, markdown_fn: Callable[[Any], str]) -> str:
     """Dispatch to JSON dump or a markdown formatter based on ``fmt``."""
     if fmt == ResponseFormat.JSON:
@@ -251,6 +258,26 @@ class ActivityInput(_Base):
     include_weather: bool = Field(
         default=False, description="Include weather conditions if available."
     )
+
+
+class WeeklySummaryInput(_Base):
+    """Aggregate daily wellness stats over a trailing window of days."""
+
+    end_date: str = Field(
+        default_factory=_today,
+        description="Last day of the window, ISO format YYYY-MM-DD (default: today).",
+    )
+    days: int = Field(
+        default=7,
+        description="Number of days to aggregate, ending on end_date (7 = one week).",
+        ge=1,
+        le=31,
+    )
+
+    @field_validator("end_date")
+    @classmethod
+    def _v(cls, v: str) -> str:
+        return _validate_date(v)
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +491,141 @@ def _md_profile(d: dict) -> str:
     lines.append(f"- **Username**: {d.get('userName', 'n/a')}")
     lines.append(f"- **Unit system**: {d.get('unitSystem', 'n/a')}")
     return "\n".join(lines)
+
+
+def _clean(text: Any) -> str:
+    """Turn a Garmin enum-style token (e.g. 'BALANCED_LOW') into readable text."""
+    if text is None:
+        return "n/a"
+    return str(text).replace("_", " ").capitalize()
+
+
+def _md_training_readiness(d: dict) -> str:
+    d = _first(d)
+    lines = ["# Training Readiness", ""]
+    lines.append(f"- **Score**: {_num(d.get('score'))}/100  ({_clean(d.get('level'))})")
+    fb = d.get("feedbackLong") or d.get("feedbackShort")
+    if fb:
+        lines.append(f"- **Feedback**: {_clean(fb)}")
+    lines.append(f"- **Sleep score**: {_num(d.get('sleepScore'))} "
+                 f"({_clean(d.get('sleepScoreFactorFeedback'))})")
+    if d.get("recoveryTime") is not None:
+        lines.append(f"- **Recovery time remaining**: {_num(d.get('recoveryTime'))} min")
+    lines.append(f"- **HRV factor**: {_clean(d.get('hrvFactorFeedback'))} "
+                 f"(weekly avg {_num(d.get('hrvWeeklyAverage'))} ms)")
+    lines.append(f"- **Stress factor**: {_clean(d.get('stressHistoryFactorFeedback'))}")
+    lines.append(f"- **Acute load**: {_num(d.get('acuteLoad'))}")
+    return "\n".join(lines)
+
+
+def _md_hrv(d: dict) -> str:
+    d = d or {}
+    s = d.get("hrvSummary") or d
+    baseline = s.get("baseline") or {}
+    lines = ["# Heart Rate Variability (HRV)", ""]
+    lines.append(f"- **Status**: {_clean(s.get('status'))}")
+    lines.append(f"- **Last night avg**: {_num(s.get('lastNightAvg'))} ms")
+    lines.append(f"- **7-day avg**: {_num(s.get('weeklyAvg'))} ms")
+    lines.append(f"- **Last night 5-min high**: {_num(s.get('lastNight5MinHigh'))} ms")
+    if baseline:
+        lines.append(
+            f"- **Balanced baseline range**: {_num(baseline.get('balancedLow'))}"
+            f"–{_num(baseline.get('balancedUpper'))} ms"
+        )
+    readings = d.get("hrvReadings") or []
+    if readings:
+        lines.append(f"- **Overnight readings**: {len(readings)} "
+                     "(use json format for the full series)")
+    return "\n".join(lines)
+
+
+def _md_max_metrics(d: dict) -> str:
+    d = _first(d)
+    generic = d.get("generic") or {}
+    cycling = d.get("cycling") or {}
+    accl = d.get("heatAltitudeAcclimation") or {}
+    lines = ["# VO2 Max & Fitness Age", ""]
+    run_vo2 = generic.get("vo2MaxPreciseValue") or generic.get("vo2MaxValue")
+    lines.append(f"- **VO2 max (running)**: {_num(run_vo2, 1)} ml/kg/min")
+    if generic.get("fitnessAge") is not None:
+        lines.append(f"- **Fitness age**: {_num(generic.get('fitnessAge'))} years")
+    cyc_vo2 = cycling.get("vo2MaxPreciseValue") or cycling.get("vo2MaxValue")
+    if cyc_vo2 is not None:
+        lines.append(f"- **VO2 max (cycling)**: {_num(cyc_vo2, 1)} ml/kg/min")
+    if accl:
+        lines.append(f"- **Heat acclimation**: {_num(accl.get('heatAcclimationPercentage'))} %")
+        lines.append(f"- **Altitude acclimation**: {_num(accl.get('altitudeAcclimation'))} m")
+    return "\n".join(lines)
+
+
+def _md_weekly(a: dict) -> str:
+    lines = [f"# Weekly summary — {a['start_date']} → {a['end_date']}", ""]
+    lines.append(f"- **Days with data**: {a['days_with_data']}/{a['days_requested']}")
+    lines.append(f"- **Total steps**: {_num(a['total_steps'])} "
+                 f"(avg {_num(a['avg_steps_per_day'])}/day)")
+    lines.append(f"- **Total distance**: {_num(a['total_distance_km'], 1)} km")
+    lines.append(f"- **Total calories**: {_num(a['total_calories'])} kcal "
+                 f"(active {_num(a['total_active_calories'])})")
+    lines.append(f"- **Total floors**: {_num(a['total_floors'])}")
+    lines.append(f"- **Avg resting HR**: {_num(a['avg_resting_hr'])} bpm")
+    lines.append(f"- **Avg stress**: {_num(a['avg_stress'])}")
+    lines.append(f"- **Intensity minutes**: {_num(a['total_intensity_minutes'])} "
+                 f"(moderate {_num(a['moderate_intensity_minutes'])}, "
+                 f"vigorous {_num(a['vigorous_intensity_minutes'])})")
+    if a.get("best_day"):
+        lines.append(f"- **Most active day**: {a['best_day']['date']} "
+                     f"({_num(a['best_day']['steps'])} steps)")
+    return "\n".join(lines)
+
+
+def _aggregate_days(
+    start_date: str, end_date: str, days_requested: int, summaries: list
+) -> dict:
+    """Aggregate a list of daily user-summary dicts into weekly totals/averages."""
+
+    def vals(key: str) -> list:
+        return [x.get(key) for x in summaries if x.get(key) is not None]
+
+    steps = vals("totalSteps")
+    total_steps = int(sum(steps))
+    rhr = vals("restingHeartRate")
+    stress = vals("averageStressLevel")
+    mod = int(sum(vals("moderateIntensityMinutes")))
+    vig = int(sum(vals("vigorousIntensityMinutes")))
+    n = len(summaries)
+
+    best = None
+    if summaries:
+        top = max(summaries, key=lambda x: x.get("totalSteps") or 0)
+        if top.get("totalSteps"):
+            best = {"date": top.get("calendarDate"), "steps": top.get("totalSteps")}
+
+    return {
+        "start_date": start_date,
+        "end_date": end_date,
+        "days_requested": days_requested,
+        "days_with_data": n,
+        "total_steps": total_steps,
+        "avg_steps_per_day": round(total_steps / n) if n else 0,
+        "total_distance_km": round(sum(vals("totalDistanceMeters")) / 1000.0, 2),
+        "total_calories": int(sum(vals("totalKilocalories"))),
+        "total_active_calories": int(sum(vals("activeKilocalories"))),
+        "total_floors": int(sum(vals("floorsAscended"))),
+        "avg_resting_hr": round(sum(rhr) / len(rhr)) if rhr else None,
+        "avg_stress": round(sum(stress) / len(stress)) if stress else None,
+        "total_intensity_minutes": mod + vig,
+        "moderate_intensity_minutes": mod,
+        "vigorous_intensity_minutes": vig,
+        "best_day": best,
+        "per_day": [
+            {
+                "date": x.get("calendarDate"),
+                "steps": x.get("totalSteps"),
+                "restingHeartRate": x.get("restingHeartRate"),
+            }
+            for x in summaries
+        ],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -769,6 +931,139 @@ async def garmin_get_body_composition(params: DateRangeInput) -> str:
             lambda api: api.get_body_composition(params.start_date, params.end_date)
         )
         return _format(data, params.response_format, _md_body_composition)
+    except Exception as e:
+        return _handle_error(e)
+
+
+# ---------------------------------------------------------------------------
+# Tools — Training & performance
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(name="garmin_get_training_readiness", annotations={"title": "Get Training Readiness", **_READ_ONLY})
+async def garmin_get_training_readiness(params: DateInput) -> str:
+    """Get the Training Readiness score for a single day.
+
+    Training Readiness (0-100) tells you how prepared your body is to train,
+    combining sleep, recovery time, HRV, acute training load, and stress
+    history. Higher is better. Only available on newer Garmin devices.
+
+    Args:
+        params (DateInput): cdate (YYYY-MM-DD, default today), response_format.
+
+    Returns:
+        str: Readiness summary. Key JSON fields: score, level, feedbackShort,
+        sleepScore, recoveryTime, hrvFactorFeedback, hrvWeeklyAverage,
+        stressHistoryFactorFeedback, acuteLoad. On failure: "Error: <message>".
+    """
+    try:
+        data = await _call(lambda api: api.get_training_readiness(params.cdate))
+        if not data:
+            return (
+                f"No training readiness data for {params.cdate}. This metric "
+                "requires a compatible Garmin device that computes readiness."
+            )
+        return _format(data, params.response_format, _md_training_readiness)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(name="garmin_get_hrv", annotations={"title": "Get HRV Status", **_READ_ONLY})
+async def garmin_get_hrv(params: DateInput) -> str:
+    """Get overnight Heart Rate Variability (HRV) status for a single day.
+
+    HRV reflects recovery and autonomic balance. Reports last-night average,
+    7-day average, the status (BALANCED / UNBALANCED / LOW / POOR), and the
+    personalized balanced baseline range. Requires a device worn overnight.
+
+    Args:
+        params (DateInput): cdate (YYYY-MM-DD, default today), response_format.
+
+    Returns:
+        str: HRV summary. Key JSON path: hrvSummary.{status, lastNightAvg,
+        weeklyAvg, lastNight5MinHigh, baseline.{balancedLow, balancedUpper}}.
+        On failure: "Error: <message>".
+    """
+    try:
+        data = await _call(lambda api: api.get_hrv_data(params.cdate))
+        if not data:
+            return (
+                f"No HRV data for {params.cdate}. HRV status requires a "
+                "compatible Garmin device worn overnight."
+            )
+        return _format(data, params.response_format, _md_hrv)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(name="garmin_get_vo2max", annotations={"title": "Get VO2 Max & Fitness Age", **_READ_ONLY})
+async def garmin_get_vo2max(params: DateInput) -> str:
+    """Get VO2 max, fitness age, and acclimation for a single day.
+
+    VO2 max estimates cardiorespiratory fitness (ml/kg/min) — separately for
+    running and cycling. Also returns fitness age and heat/altitude
+    acclimation when the device provides them.
+
+    Args:
+        params (DateInput): cdate (YYYY-MM-DD, default today), response_format.
+
+    Returns:
+        str: Fitness metrics. Key JSON path: generic.{vo2MaxValue,
+        vo2MaxPreciseValue, fitnessAge}, cycling.{vo2MaxValue},
+        heatAltitudeAcclimation.{heatAcclimationPercentage, altitudeAcclimation}.
+        On failure: "Error: <message>".
+    """
+    try:
+        data = await _call(lambda api: api.get_max_metrics(params.cdate))
+        if not data:
+            return f"No VO2 max / fitness metrics available for {params.cdate}."
+        return _format(data, params.response_format, _md_max_metrics)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(name="garmin_get_weekly_summary", annotations={"title": "Get Weekly Wellness Summary", **_READ_ONLY})
+async def garmin_get_weekly_summary(params: WeeklySummaryInput) -> str:
+    """Aggregate daily wellness stats over a trailing window (default 7 days).
+
+    Fetches each day's summary in the window ending on ``end_date`` and rolls
+    them up into totals and averages: total/avg steps, distance, calories,
+    floors, average resting HR, average stress, intensity minutes, and the
+    most active day. Days without data are skipped.
+
+    Args:
+        params (WeeklySummaryInput): end_date (default today), days (1-31,
+            default 7), response_format.
+
+    Returns:
+        str: Aggregated summary. JSON fields: start_date, end_date,
+        days_with_data, total_steps, avg_steps_per_day, total_distance_km,
+        total_calories, total_active_calories, total_floors, avg_resting_hr,
+        avg_stress, total/moderate/vigorous_intensity_minutes, best_day,
+        per_day[]. On failure: "Error: <message>".
+
+    Examples:
+        - "How did my week look?" -> defaults (last 7 days)
+        - "Aggregate the last 30 days ending 2024-06-30" -> end_date=2024-06-30, days=30
+    """
+    try:
+        end = datetime.strptime(params.end_date, _DATE_FMT).date()
+        dates = [(end - timedelta(days=i)).strftime(_DATE_FMT) for i in range(params.days)]
+        dates.reverse()  # chronological order (oldest first)
+
+        api = await asyncio.to_thread(client.get_api)
+        summaries = []
+        for d in dates:
+            try:
+                # Sequential: garminconnect's session is not safe for concurrent use.
+                s = await asyncio.to_thread(api.get_user_summary, d)
+            except Exception:
+                continue  # skip days the API can't return (e.g. future/no data)
+            if s and s.get("totalSteps") is not None:
+                summaries.append(s)
+
+        agg = _aggregate_days(dates[0], params.end_date, params.days, summaries)
+        return _format(agg, params.response_format, _md_weekly)
     except Exception as e:
         return _handle_error(e)
 

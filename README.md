@@ -12,7 +12,8 @@ Server je **pouze pro čtení** – žádná data v Garminu neupravuje ani nema�
 
 ## Co umí
 
-Pokrývá čtyři oblasti dat:
+Pokrývá aktivity, zdraví a wellness, tělesné složení, souhrny a
+výkonnostní/tréninkové metriky:
 
 | Nástroj | Popis |
 | --- | --- |
@@ -26,6 +27,10 @@ Pokrývá čtyři oblasti dat:
 | `garmin_get_body_battery` | Body Battery za rozsah dat (nabito/vybito, průběh) |
 | `garmin_get_steps` | Kroky během dne po 15minutových intervalech |
 | `garmin_get_body_composition` | Tělesné složení z chytré váhy (váha, % tuku, BMI, svaly, voda) |
+| `garmin_get_training_readiness` | Připravenost k tréninku (0–100) ze spánku, HRV, zátěže a stresu |
+| `garmin_get_hrv` | HRV status přes noc (průměr, 7denní průměr, baseline, stav) |
+| `garmin_get_vo2max` | VO2 max (běh + kolo), fitness age, aklimatizace |
+| `garmin_get_weekly_summary` | Týdenní (1–31 dní) agregace: kroky, kalorie, klidový tep, stres, intenzitní minuty |
 
 Každý nástroj podporuje `response_format`: `markdown` (přehledné shrnutí,
 default) nebo `json` (kompletní strukturovaná data).

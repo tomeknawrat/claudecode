@@ -1,6 +1,6 @@
 """
-PTZ Camera WebSocket Server — IP/LAN verzia
-Preposiela príkazy z HTML aplikácie na IP kamery cez HTTP CGI.
+PTZ Camera WebSocket Server — IP/LAN verze
+Přeposílá příkazy z HTML aplikace na IP kamery přes HTTP CGI.
 """
 
 import asyncio
@@ -17,18 +17,18 @@ import subprocess
 
 WS_PORT  = 8765
 
-# Priečinok kde sa hľadá HTML súbor — rovnaký ako ptz_server.py
+# Složka kde se hledá HTML soubor — stejná jako ptz_server.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEDIAMTX_EXE  = os.path.join(BASE_DIR, 'mediamtx.exe')
 MEDIAMTX_CONF = os.path.join(BASE_DIR, 'mediamtx.yml')
 
-# Globálny proces MediaMTX
+# Globální proces MediaMTX
 _mediamtx_proc = None
 _mediamtx_lock = threading.Lock()
 
 def _write_mediamtx_conf(rtsp_url: str, stream_name: str = 'cam2'):
     """Zapíše mediamtx.yml s danou RTSP URL."""
-    conf = f"""# Auto-generovaný konfig — upravený cez PTZ appku
+    conf = f"""# Auto-generovaný konfig — upravený přes PTZ appku
 logLevel: error
 logDestinations: [stdout]
 
@@ -45,10 +45,10 @@ paths:
         f.write(conf)
 
 def _start_mediamtx():
-    """Spustí MediaMTX proces."""
+    """Spustí proces MediaMTX."""
     global _mediamtx_proc
     if not os.path.exists(MEDIAMTX_EXE):
-        return False, 'mediamtx.exe nenájdený v ' + BASE_DIR
+        return False, 'mediamtx.exe nenalezen v ' + BASE_DIR
     try:
         _mediamtx_proc = subprocess.Popen(
             [MEDIAMTX_EXE, MEDIAMTX_CONF],
@@ -61,7 +61,7 @@ def _start_mediamtx():
         return False, str(e)
 
 def _stop_mediamtx():
-    """Zastaví MediaMTX proces."""
+    """Zastaví proces MediaMTX."""
     global _mediamtx_proc
     if _mediamtx_proc and _mediamtx_proc.poll() is None:
         _mediamtx_proc.terminate()
@@ -70,7 +70,7 @@ def _stop_mediamtx():
     _mediamtx_proc = None
 
 def _restart_mediamtx(rtsp_url: str, stream_name: str = 'cam2'):
-    """Prepíše konfig a reštartuje MediaMTX."""
+    """Přepíše konfig a restartuje MediaMTX."""
     with _mediamtx_lock:
         _stop_mediamtx()
         _write_mediamtx_conf(rtsp_url, stream_name)
@@ -84,9 +84,9 @@ cameras = {
 
 connected_clients = set()
 
-# Každá kamera musí dostávať PTZ príkazy striktne v poradí, v akom boli odoslané —
-# inak sa napr. "stop" poslaný krátko po "move" môže na sieti predbehnúť a kamera
-# potom pokračuje v pohybe, kým nepríde ďalší príkaz (nekonečný pohyb po pustení šípky).
+# Každá kamera musí dostávat PTZ příkazy striktně v pořadí, v jakém byly odeslány —
+# jinak se např. "stop" poslaný krátce po "move" může na síti předběhnout a kamera
+# pak pokračuje v pohybu, dokud nepřijde další příkaz (nekonečný pohyb po puštění šipky).
 cam_locks = {1: asyncio.Lock(), 2: asyncio.Lock()}
 
 def cgi_request(ip, user, password, path):
@@ -107,7 +107,7 @@ def cgi_request(ip, user, password, path):
 def build_cgi_path(cmd, speed=5, preset=None):
     base = '/cgi-bin/ptzctrl.cgi'
     s = speed
-    # Pohyb — /cgi-bin/ptzctrl.cgi?ptzcmd&<smer>&<rychlost>
+    # Pohyb — /cgi-bin/ptzctrl.cgi?ptzcmd&<směr>&<rychlost>
     move_map = {
         'up':        'up',
         'down':      'down',
@@ -129,7 +129,7 @@ def build_cgi_path(cmd, speed=5, preset=None):
     }
     if cmd in move_map:
         if cmd in ('stop', 'zoomstop', 'focusstop', 'focusauto', 'focuslock'):
-            return f'{base}?ptzcmd&{move_map[cmd]}'  # stop bez rýchlosti
+            return f'{base}?ptzcmd&{move_map[cmd]}'  # stop bez rychlosti
         return f'{base}?ptzcmd&{move_map[cmd]}&{s}'
     if cmd == 'gotopreset' and preset is not None:
         return f'{base}?ptzcmd&poscall&{preset}'
@@ -173,12 +173,12 @@ async def handler(websocket):
                         await websocket.send(json.dumps({'type': 'error', 'msg': f'CAM{cam}: Neznámý příkaz: {action}'}))
                         continue
 
-                    # Každý PTZ príkaz spustíme ako samostatný asyncio task, aby stop
-                    # nečakal vo fronte za pomalým HTTP requestom od klienta/websocketu.
-                    # Voči kamere ale musí byť poradie príkazov (napr. move → stop)
-                    # garantované, preto sa každý request pre danú kameru serializuje
-                    # cez cam_locks — ďalší príkaz sa odošle až keď predchádzajúci
-                    # dostal HTTP odpoveď (alebo timeoutol).
+                    # Každý PTZ příkaz spustíme jako samostatný asyncio task, aby stop
+                    # nečekal ve frontě za pomalým HTTP requestem od klienta/websocketu.
+                    # Vůči kameře ale musí být pořadí příkazů (např. move → stop)
+                    # zaručené, proto se každý request pro danou kameru serializuje
+                    # přes cam_locks — další příkaz se odešle až když předchozí
+                    # dostal HTTP odpověď (nebo vypršel timeout).
                     is_stop = action in ('stop', 'zoomstop', 'focusstop')
                     timeout = 1.5 if is_stop else 4.0
 
@@ -219,7 +219,7 @@ async def handler(websocket):
                     rtsp_url    = msg.get('rtsp_url', '')
                     stream_name = msg.get('stream_name', 'cam2')
                     if not rtsp_url:
-                        await websocket.send(json.dumps({'type': 'rtsp_result', 'ok': False, 'msg': 'RTSP URL je prázdna'}))
+                        await websocket.send(json.dumps({'type': 'rtsp_result', 'ok': False, 'msg': 'RTSP URL je prázdná'}))
                         continue
                     loop = asyncio.get_event_loop()
                     ok, err = await loop.run_in_executor(None, _restart_mediamtx, rtsp_url, stream_name)
@@ -247,7 +247,7 @@ async def handler(websocket):
         print(f'[WS] Klient odpojen: {ip}')
 
 def run_server():
-    """Spustí asyncio WebSocket server v samostatnom vlákne."""
+    """Spustí asyncio WebSocket server v samostatném vlákně."""
     async def _main():
         print(f'[START] PTZ IP Server běží na ws://localhost:{WS_PORT}')
         async with websockets.serve(handler, 'localhost', WS_PORT):
@@ -255,7 +255,7 @@ def run_server():
     asyncio.run(_main())
 
 def _find_html_file():
-    """Nájde HTML súbor appky v BASE_DIR."""
+    """Najde HTML soubor appky v BASE_DIR."""
     for name in ['Ovládání_kamer_1_2_IP.html', 'Ovládání_kamer_1_1_IP.html']:
         if os.path.exists(os.path.join(BASE_DIR, name)):
             return name
@@ -265,18 +265,18 @@ def _find_html_file():
     return None
 
 if __name__ == '__main__':
-    # Ak existuje mediamtx.yml, spusti MediaMTX hneď pri štarte
+    # Pokud existuje mediamtx.yml, spusť MediaMTX hned při startu
     if os.path.exists(MEDIAMTX_CONF) and os.path.exists(MEDIAMTX_EXE):
         ok, msg = _start_mediamtx()
-        print(f'[MEDIAMTX] {"Spustený" if ok else "Chyba: " + msg}')
+        print(f'[MEDIAMTX] {"Spuštěn" if ok else "Chyba: " + msg}')
     else:
-        print(f'[MEDIAMTX] mediamtx.exe alebo mediamtx.yml nenájdený — nakonfigurujte v appke')
+        print(f'[MEDIAMTX] mediamtx.exe nebo mediamtx.yml nenalezen — nakonfigurujte v appce')
 
-    # WebSocket server — v samostatnom vlákne
+    # WebSocket server — v samostatném vlákně
     ws_thread = threading.Thread(target=run_server, daemon=True)
     ws_thread.start()
 
-    # pystray MUSÍ bežať v hlavnom vlákne (Windows požiadavka)
+    # pystray MUSÍ běžet v hlavním vlákně (požadavek Windows)
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -310,7 +310,7 @@ if __name__ == '__main__':
                 pystray.MenuItem('Ukončit', on_quit),
             )
         )
-        icon.run()  # blokuje hlavné vlákno
+        icon.run()  # blokuje hlavní vlákno
     except ImportError:
         print('[INFO] pystray není dostupný — server běží bez ikonky')
         ws_thread.join()

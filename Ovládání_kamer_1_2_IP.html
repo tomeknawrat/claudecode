@@ -7,9 +7,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
 <script>if(window.tf) tf.env().set('DEBUG', false);</script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
-<!-- Udržiavaný fork face-api.js kompatibilný s TensorFlow.js 2.x–4.x.
-     Pôvodné face-api.js@0.22.2 je stavané pre TF.js 1.7 a s tfjs@4.x sa
-     inferencia (detectSingleFace) zasekne — preto vladmandic fork. Rovnaké API. -->
+<!-- Udržovaný fork face-api.js kompatibilní s TensorFlow.js 2.x–4.x.
+     Původní face-api.js@0.22.2 je stavěný pro TF.js 1.7 a s tfjs@4.x se
+     inference (detectSingleFace) zasekne — proto vladmandic fork. Stejné API. -->
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.js"></script>
 <script>
 // Potlač duplicitné backend varovania — face-api a tfjs registrujú rovnaké backendy
@@ -572,7 +572,7 @@ console.warn = (...args) => {
   .add-preset-btn:hover { background: var(--green); color: white; }
 
 
-  /* Tlačidlá v paneloch — základné veľkosti */
+  /* Tlačítka v panelech — základní velikosti */
   .add-preset-btn,
   .edit-order-btn,
   .hide-presets-btn,
@@ -590,7 +590,7 @@ console.warn = (...args) => {
 
   .presets-grid { display: grid; grid-template-columns: repeat(auto-fill, var(--card-w, 97px)); gap: 8px; }
   .panel--cam2 .presets-grid { grid-template-columns: repeat(auto-fill, var(--card-w, 97px)); }
-  /* Klasický grid: minimálna šírka pre 13 stĺpcov */
+  /* Klasický grid: minimální šířka pro 13 sloupců */
   .panel--cam2 .cam-presets-section { width: 100%; }
   /* Seat layout: roztiahni na celú šírku panelu */
   .panel--cam2.seat-layout-active .cam-presets-section { width: 100%; }
@@ -656,7 +656,7 @@ console.warn = (...args) => {
   }
 
   .preset-name { padding: calc(var(--card-w) * 0.05) calc(var(--card-w) * 0.07); font-size: calc(var(--card-w) * 0.115); font-weight: 600; color: var(--text); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* Spodná lišta schovaná — úprava cez pravý klik */
+  /* Spodní lišta schovaná — úprava přes pravý klik */
   .preset-actions { display: none; }
 
   /* ── LOG ── */
@@ -787,17 +787,17 @@ console.warn = (...args) => {
     filter: grayscale(.6);
   }
   .preset-card.hidden-preset .hide-toggle-overlay svg { color: var(--amber-d); }
-  /* Globálne: skryté karty mimo hide-mode sa nezobrazia — ALE nie v seat layout */
+  /* Globálně: skryté karty mimo hide-mode se nezobrazí — ALE ne v seat layout */
   .preset-card.hidden-preset:not(.force-show):not(.slot-card) {
     display: none;
   }
-  /* V klasickom hide-mode sa skryté karty zobrazia ako priesvitné */
+  /* V klasickém hide-mode se skryté karty zobrazí jako průhledné */
   .presets-grid.hide-mode .preset-card.hidden-preset {
     display: block;
     opacity: .35;
     filter: grayscale(.6);
   }
-  /* Slot karty sa riadia cez seat-layout-grid triedu */
+  /* Slot karty se řídí přes třídu seat-layout-grid */
   .seat-slot .slot-card.hidden-preset {
     display: none;
   }
@@ -855,7 +855,7 @@ console.warn = (...args) => {
   .panel--cam1 .edit-order-btn.active { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
   .panel--cam1 .add-preset-btn { font-size: 11.5px; padding: 4px 8px; letter-spacing: 0; white-space: nowrap; }
   .panel--cam1 .cam-presets-header { flex-wrap: nowrap; gap: 3px; }
-  /* Presety cam1 — menšie karty vedľa seba */
+  /* Presety cam1 — menší karty vedle sebe */
   .panel--cam1 .cam-presets-section { --card-w: var(--cam1-card-w, 105px); width: 100%; }
   .panel--cam1 .presets-grid { grid-template-columns: repeat(auto-fill, var(--cam1-card-w, 105px)); gap: 8px; }
 
@@ -867,7 +867,7 @@ console.warn = (...args) => {
   .panel--cam2 .seat-layout-btn { font-size: 13.5px; padding: 6px 9px; letter-spacing: .2px; }
   .panel--cam2 .cam-presets-header { flex-wrap: nowrap; gap: 4px; }
 
-  /* ── MIESTA PODĽA STOLIČIEK — tlačidlo ── */
+  /* ── MÍSTA PODLE ŽIDLÍ — tlačítko ── */
   .seat-layout-btn {
     display: flex; align-items: center; gap: 8px;
     padding: 10.5px 24px; border: 1.5px solid var(--border2); border-radius: var(--r-xs);
@@ -910,7 +910,7 @@ console.warn = (...args) => {
   }
 
   /* ── SLOT LAYOUT ── */
-  /* Šírka: ľavý(4×105+3×6) + gap(20) + stred(6×105+5×6) + gap(20) + pravý(4×105+3×6) + 2×padding(20) = 1576px */
+  /* Šířka: levý(4×105+3×6) + gap(20) + střed(6×105+5×6) + gap(20) + pravý(4×105+3×6) + 2×padding(20) = 1576px */
   .seat-layout-grid {
     padding: 8px 16px 8px 32px;
     user-select: none;
@@ -919,7 +919,7 @@ console.warn = (...args) => {
     overflow-y: visible;
     box-sizing: border-box;
   }
-  /* Keď je seat layout aktívny, uvoľni overflow aby sa neoriezali tiene kariet */
+  /* Když je seat layout aktivní, uvolni overflow aby se neořízly stíny karet */
   .panel--cam2.seat-layout-active .cam-presets-section {
     overflow: visible;
     padding-bottom: 8px;
@@ -1001,10 +1001,10 @@ console.warn = (...args) => {
   }
 
   /* Keď je seat layout aktívny, rozšír cam2 sekciu na plnú šírku layoutu */
-  /* seat-layout-active - šírka sekcie sa nemení */
+  /* seat-layout-active - šířka sekce se nemění */
 
   /* Hide-mode v seat layout */
-  /* Seat layout hide-mode — viditeľné karty normálne, skryté polopriesvitné */
+  /* Seat layout hide-mode — viditelné karty normálně, skryté poloprůhledné */
   .seat-layout-grid.hide-mode .slot-card {
     cursor: pointer;
     position: relative;
@@ -1190,7 +1190,7 @@ console.warn = (...args) => {
     .panel--cam2 .cam-presets-section { width: 100% !important; }
     .controls-row { flex-wrap: wrap; justify-content: center; gap: 12px; }
     .ctrl-divider { display: none; }
-    /* Kompaktní tlačidlá */
+    /* Kompaktní tlačítka */
     .add-preset-btn,
     .edit-order-btn,
     .hide-presets-btn,
@@ -1372,7 +1372,7 @@ console.warn = (...args) => {
   .scan-speed-row input[type=range] { width: 80px; accent-color: #7c3aed; }
   .scan-speed-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-2); min-width: 12px; }
 
-  /* ── OSOBY (rozpoznávanie tvárí) ── */
+  /* ── OSOBY (rozpoznávání tváří) ── */
   .person-card {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 10px; border-radius: var(--r-sm);
@@ -1404,7 +1404,7 @@ console.warn = (...args) => {
   }
   .person-del-btn:hover { background: var(--red-soft); border-color: #fca5a5; color: var(--red); }
 
-  /* ── SLOT EDIT — štruktúra (rady, sekcie, akčné tlačidlá) ── */
+  /* ── SLOT EDIT — struktura (řady, sekce, akční tlačítka) ── */
   .sed-hall { display:flex;flex-wrap:wrap;gap:var(--hall-gap);align-items:flex-start; }
   .sed-section { display:flex;flex-direction:column;gap:4px; }
   .sed-section-header {
@@ -1445,7 +1445,7 @@ console.warn = (...args) => {
     font-weight:600;transition:all .15s;
   }
   .sed-add-section-btn:hover { border-color:var(--amber-mid);color:var(--amber-d);background:var(--amber-soft); }
-  /* Drag ghost pre slot edit */
+  /* Drag ghost pro slot edit */
   .sed-drag-ghost {
     position:fixed;z-index:9999;pointer-events:none;opacity:.9;
     box-shadow:0 8px 24px rgba(0,0,0,.25);border-radius:var(--r-xs);
@@ -1453,14 +1453,14 @@ console.warn = (...args) => {
   /* ── 2D CANVAS SEAT LAYOUT ── */
   .sed-snap-line { pointer-events: none; }
 
-  /* Prázdny slot s kalibráciou — klikateľný */
+  /* Prázdný slot s kalibrací — klikatelný */
   .seat-slot.slot-has-calib { cursor: pointer; }
   .seat-slot.slot-has-calib:hover .slot-empty-label { color: var(--text-2); }
   .seat-slot.slot-has-calib:hover { border-color: var(--border2); background: var(--surface3); }
   .seat-slot.slot-has-calib.recalled { border-color: var(--green); background: var(--green-soft, #dcfce7); }
   .seat-slot.recalled .slot-empty-label { color: var(--green, #16a34a); font-weight: 700; }
 
-  /* Dotykové zariadenia — väčšia oblasť kliknutia */
+  /* Dotyková zařízení — větší oblast kliknutí */
   @media (hover: none) and (pointer: coarse) {
     .ptz-btn { min-height: 52px; min-width: 52px; }
     .zoom-btn { min-height: 52px; min-width: 52px; }
@@ -1609,12 +1609,12 @@ console.warn = (...args) => {
               onchange="saveSettings()">
           </div>
           <div style="margin-top:6px;font-size:11px;color:var(--text-3);line-height:1.6;">
-            Typické URL pre VHD V600:<br>
+            Typické URL pro VHD V600:<br>
             <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-2)">rtsp://admin:admin@IP:554/stream1</span><br>
             <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-2)">rtsp://admin:admin@IP:554/ch0</span>
           </div>
           <div style="margin-top:10px">
-            <button onclick="applyRtspUrl()" style="width:100%;padding:8px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-2)">✓ Použiť RTSP URL</button>
+            <button onclick="applyRtspUrl()" style="width:100%;padding:8px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-2)">✓ Použít RTSP URL</button>
           </div>
           <div id="rtspApplyResult" style="margin-top:6px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3);min-height:16px"></div>
         </div>
@@ -2002,7 +2002,7 @@ console.warn = (...args) => {
         </div>
       </div>
 
-      <!-- Kompaktné PTZ ovládanie — rovnaké ako jantarový panel CAM2 -->
+      <!-- Kompaktní PTZ ovládání — stejné jako jantarový panel CAM2 -->
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;">
         <div class="controls-row">
 
@@ -2106,7 +2106,7 @@ function _wsConnect() {
       } else if (msg.type === 'rtsp_result') {
         const res = document.getElementById('rtspApplyResult');
         if (res) {
-          res.textContent = msg.ok ? '✅ MediaMTX reštartovaný — stream aktívny' : '❌ ' + msg.msg;
+          res.textContent = msg.ok ? '✅ MediaMTX restartovaný — stream aktivní' : '❌ ' + msg.msg;
           res.style.color = msg.ok ? '#16a34a' : 'var(--red)';
         }
         logMsg(msg.ok ? 'info' : 'err', 'MediaMTX: ' + (msg.ok ? 'stream nakonfigurovaný' : msg.msg));
@@ -2206,7 +2206,7 @@ async function sendCmd(cam, cmd, presetNum) {
 }
 
 // ══════════════════════════════════════════════════
-//  INDEXEDDB — úložisko pre presety (bez limitu)
+//  INDEXEDDB — úložiště pro presety (bez limitu)
 // ══════════════════════════════════════════════════
 let _db = null;
 
@@ -2268,11 +2268,11 @@ function loadPresets() {
         } catch(e) {}
       }
       renderPresets();
-      // Aktivuj seat layout až po načítaní presetů
+      // Aktivuj seat layout až po načtení presetů
       if (!seatLayoutActive) toggleSeatLayout();
     };
   }).catch(e => {
-    // Fallback na localStorage ak IndexedDB nefunguje
+    // Fallback na localStorage pokud IndexedDB nefunguje
     try {
       state.presets[1] = JSON.parse(localStorage.getItem('ptz_presets_1') || '[]');
       state.presets[2] = JSON.parse(localStorage.getItem('ptz_presets_2') || '[]');
@@ -2356,8 +2356,8 @@ function setFocusMode(cam, mode) {
 
 let activeTimers={};
 let pressedKeys={};
-// Minimálny čas pohybu pri krátkom kliknutí (ms) — pri držaní dlhšie ako toto
-// sa pohyb nezastavuje a pokračuje, kým sa tlačidlo/klávesa nepustí.
+// Minimální čas pohybu při krátkém kliknutí (ms) — při držení déle než toto
+// se pohyb nezastavuje a pokračuje, dokud se tlačítko/klávesa nepustí.
 const CLICK_MOVE_MS = 350;
 
 const PTZ_STOP_MAP = { up:'stop', down:'stop', left:'stop', right:'stop',
@@ -2371,10 +2371,10 @@ function startCmd(cam, cmd) {
   sendCmd(cam, cmd);
   const stopAction = PTZ_STOP_MAP[cmd];
   if (!stopAction) return;
-  // Zruš predchádzajúci timer
+  // Zruš předchozí timer
   if (activeTimers[key]) { clearTimeout(activeTimers[key]); delete activeTimers[key]; }
-  // Po CLICK_MOVE_MS: ak je tlačidlo stále držané (hold), nechaj kameru jazdiť
-  // ďalej — zastaví ju až stopCmd pri pustení. Ak už bolo pustené (krátky klik),
+  // Po CLICK_MOVE_MS: pokud je tlačítko stále držené (hold), nech kameru jet
+  // dál — zastaví ji až stopCmd při puštění. Pokud už bylo puštěno (krátký klik),
   // toto je jeho stop.
   activeTimers[key] = setTimeout(() => {
     delete activeTimers[key];
@@ -2388,11 +2388,11 @@ function startCmd(cam, cmd) {
 function stopCmd(cam, cmd) {
   const key = cam+cmd;
   pressedKeys[key] = false;
-  // Zruš naplánovaný auto-stop (ak ešte nedobehol)
+  // Zruš naplánovaný auto-stop (pokud ještě nedoběhl)
   if (activeTimers[key]) { clearTimeout(activeTimers[key]); delete activeTimers[key]; }
   const stopAction = PTZ_STOP_MAP[cmd];
   if (!stopAction) return;
-  // Pošli stop okamžite — a ešte raz pre istotu
+  // Pošli stop okamžitě — a ještě jednou pro jistotu
   sendCmd(cam, stopAction);
   setTimeout(() => sendCmd(cam, stopAction), 150);
 }
@@ -2423,7 +2423,7 @@ function renderPresets() {
   [1,2].forEach(cam => {
     const grid=document.getElementById('presetsGrid'+cam), empty=document.getElementById('presetsEmpty'+cam);
     const presets=state.presets[cam]; grid.innerHTML='';
-    // Obnov hide-mode triedu po vymazaní innerHTML
+    // Obnov hide-mode třídu po vymazání innerHTML
     if (hideMode[cam]) grid.classList.add('hide-mode');
     else grid.classList.remove('hide-mode');
     if(presets.length===0){empty.style.display='block';return;} empty.style.display='none';
@@ -2437,7 +2437,7 @@ function renderPresets() {
         : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 
       card.innerHTML=`
-        <div class="hide-toggle-overlay" title="${p.hidden ? 'Zobraziť preset' : 'Skryť preset'}">${eyeIcon}</div>
+        <div class="hide-toggle-overlay" title="${p.hidden ? 'Zobrazit preset' : 'Skrýt preset'}">${eyeIcon}</div>
         <div class="preset-img-area">
           <div class="preset-img-slot"></div>
           <div class="preset-number">${idx + 1}</div>
@@ -2456,14 +2456,14 @@ function renderPresets() {
       // Pravý klik = upraviť
       card.addEventListener('contextmenu', e => { e.preventDefault(); editPreset(cam, idx); });
 
-      // Klik na overlay v hide-mode = prepnúť viditeľnosť
+      // Klik na overlay v hide-mode = přepnout viditelnost
       card.addEventListener('click', e => {
         if (!grid.classList.contains('hide-mode')) return;
         e.stopPropagation();
         togglePresetHidden(cam, idx);
       });
 
-      // Hold na celej karte = uložiť preset; krátky klik = vyvolať
+      // Hold na celé kartě = uložit preset; krátký klik = vyvolat
       const bar = card.querySelector('.preset-hold-bar');
       let holdTimer=null, holdStart=null, barTimer=null;
       const HOLD_MS=2000;
@@ -2500,7 +2500,7 @@ function renderPresets() {
       grid.appendChild(card);
     });
   });
-  // Prepočítaj veľkosť kariet podľa aktuálneho počtu presetů
+  // Přepočítej velikost karet podle aktuálního počtu presetů
   if (window.applyZoom) window.applyZoom();
 }
 
@@ -2646,10 +2646,10 @@ function recallPreset(cam,idx) {
   sendCmd(cam,'gotopreset',p.num);
   resetPose(cam);
   logMsg('info',`CAM${cam}: Vyvolán preset "${p.name}" (#${p.num})`);
-  // Animácia v bežnom preset gride — presný selektor s cam aj idx
+  // Animace v běžném preset gridu — přesný selektor s cam i idx
   const card=document.querySelector(`#presetsGrid${cam} .preset-card[data-cam="${cam}"][data-idx="${idx}"]`);
   if(card){card.classList.add('recalled');setTimeout(()=>card.classList.remove("recalled"),700);}
-  // Animácia v seat layout gride — len pre cam2
+  // Animace v seat layout gridu — jen pro cam2
   if(cam===2){
     const slotCard=document.querySelector(`#seatLayoutGrid2 .slot-card[data-idx="${idx}"]`);
     if(slotCard){slotCard.classList.add('recalled');setTimeout(()=>slotCard.classList.remove("recalled"),700);}
@@ -2658,7 +2658,7 @@ function recallPreset(cam,idx) {
 
 function savePresetNow(cam, idx) {
   const p = state.presets[cam][idx]; if (!p) return;
-  // Ak má karta číslo mimo platného rozsahu, prideľ nové
+  // Pokud má karta číslo mimo platný rozsah, přiděl nové
   const [minP, maxP] = cam === 2 ? [175, 255] : [1, 99];
   if (p.num < minP || p.num > maxP) {
     const newNum = _nextAvailablePresetNum(cam);
@@ -2697,7 +2697,7 @@ async function clearPreset(cam,idx) {
   await sendCmd(cam,'clearpreset',p.num);
   logMsg('info',`CAM${cam}: Preset "${p.name}" (#${p.num}) smazán z kamery`);
   state.presets[cam].splice(idx,1);
-  // Aktualizuj slotAssignments — odstráň vymazaný index, posuň ostatné
+  // Aktualizuj slotAssignments — odstraň vymazaný index, posuň ostatní
   if (cam === 2 && slotAssignments) {
     for (let i = 0; i < slotAssignments.length; i++) {
       if (slotAssignments[i] === idx) slotAssignments[i] = null;
@@ -2801,7 +2801,7 @@ async function savePresetModal() {
         showToast(`⚠️ Číslo presetu musí být v rozsahu ${minN}–${maxN}`);
         return; // finally resetuje _saving
       }
-      // Guard: skontroluj či preset s týmto číslom už neexistuje (ochrana pred duplikátmi)
+      // Guard: zkontroluj jestli preset s tímto číslem už neexistuje (ochrana před duplikáty)
       if (state.presets[cam].some(p => p.num === num2)) {
         showToast(`⚠️ Preset #${num2} již existuje`);
         return;
@@ -2829,7 +2829,7 @@ async function savePresetModal() {
 }
 
 function openImgPicker() {
-  // Zabráni zatvoreniu modalu cez overlay click ktorý môže prísť po zatvorení file pickeru
+  // Zabrání zavření modalu přes overlay click který může přijít po zavření file pickeru
   state._pickerOpen = true;
   document.getElementById('imgFileInput').click();
   setTimeout(() => { state._pickerOpen = false; }, 500);
@@ -2899,7 +2899,7 @@ function importPresets(e) {
   reader.onload = async ev => {
     try {
       const data = JSON.parse(ev.target.result);
-      if (!data.presets || !data.presets[1] || !data.presets[2]) throw new Error('Neplatný formát súboru');
+      if (!data.presets || !data.presets[1] || !data.presets[2]) throw new Error('Neplatný formát souboru');
       state.presets[1] = data.presets[1];
       state.presets[2] = data.presets[2];
       if (Array.isArray(data.slotAssignments) && data.slotAssignments.length === TOTAL_SEATS) {
@@ -2919,7 +2919,7 @@ function importPresets(e) {
 }
 
 function _nextAvailablePresetNum(cam) {
-  // CAM1: rozsah 1–99, CAM2: rozsah 175–255 (stoličky používajú 0–168)
+  // CAM1: rozsah 1–99, CAM2: rozsah 175–255 (židle používají 0–168)
   const used = new Set(state.presets[cam].map(p => p.num));
   const [from, to] = cam === 2 ? [175, 255] : [1, 99];
   for (let n = from; n <= to; n++) {
@@ -2957,11 +2957,11 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;con
 document.addEventListener('keyup',e=>{const cmd=keyMap[e.key];if(cmd){keysDown[e.key]=false;stopCmd(1,cmd);}});
 
 // ══════════════════════════════════════════════════
-//  SKRYŤ / ZOBRAZIŤ PRESETY
+//  SKRÝT / ZOBRAZIT PRESETY
 // ══════════════════════════════════════════════════
 const hideMode = { 1: false, 2: false };
 
-// ── VIDITEĽNOSŤ TLAČIDIEL CAM1 ──
+// ── VIDITELNOST TLAČÍTEK CAM1 ──
 function _updateCam1BtnVisibility() {
   const editing = editOrderState[1];
   const show = id => { const el = document.getElementById(id); if (el) el.style.display = ''; };
@@ -2970,7 +2970,7 @@ function _updateCam1BtnVisibility() {
   else         { show('addPresetBtn1'); show('editOrderBtn1'); }
 }
 
-// ── VIDITEĽNOSŤ TLAČIDIEL CAM2 — zabraňuje kombinovaniu módov ──
+// ── VIDITELNOST TLAČÍTEK CAM2 — zabraňuje kombinování módů ──
 function _updateCam2BtnVisibility() {
   const editing   = editOrderState[2];
   const hiding    = hideMode[2];
@@ -3003,13 +3003,13 @@ function toggleHideMode(cam) {
   } else {
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Skryté presety`;
   }
-  // Zobraz/skryj tlačidlo hostí spolu s hide-mode
+  // Zobraz/skryj tlačítko hostů spolu s hide-mode
   if (cam === 2) {
     const gb = document.getElementById('hideGuestsBtn2');
     if (gb) {
       gb.style.display = hideMode[cam] ? '' : 'none';
       if (hideMode[cam]) {
-        // Obnov stav podľa _guestsHidden
+        // Obnov stav podle _guestsHidden
         gb.classList.toggle('active', _guestsHidden);
         gb.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${_guestsHidden ? 'Odkrýt hosty' : 'Skrýt hosty'}`;
       }
@@ -3027,7 +3027,7 @@ async function toggleHideGuests() {
   btn.classList.toggle('active', _guestsHidden);
   // Nastav text
   btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${_guestsHidden ? 'Odkrýt hosty' : 'Skrýt hosty'}`;
-  // Nastav hidden flag na všetkých presetoch začínajúcich "Hosť"
+  // Nastav hidden flag na všech presetech začínajících "Host"
   const cam = 2;
   let changed = false;
   state.presets[cam].forEach(p => {
@@ -3062,30 +3062,30 @@ async function togglePresetHidden(cam, idx) {
 }
 
 // ══════════════════════════════════════════════════
-//  MIESTA PODĽA STOLIČIEK — slot layout
-//  Ľavý:  8×4=32, Stred: 7×6=42, Pravý: 8×4+4=36, Dole: 2+1+1=4 → 114 slotov
+//  MÍSTA PODLE ŽIDLÍ — slot layout
+//  Levý:  8×4=32, Střed: 7×6=42, Pravý: 8×4+4=36, Dole: 2+1+1=4 → 114 slotů
 // ══════════════════════════════════════════════════
 
 let seatLayoutActive = false;
 let slotEditActive = false;
-// slotPresets[i] = číslo presetu kamery pre slot i (null = nenastavené)
-// Číslujeme od 255 dole: stolička 1 → preset 255, stolička 2 → preset 254, ...
-let slotPresets = null; // inicializuje sa pri prvom otvorení
+// slotPresets[i] = číslo presetu kamery pro slot i (null = nenastaveno)
+// Číslujeme od 255 dolů: židle 1 → preset 255, židle 2 → preset 254, ...
+let slotPresets = null; // inicializuje se při prvním otevření
 let seatLayoutEditMode = false;
-let slotAssignments = null; // pole indexov do state.presets[2], alebo null
+let slotAssignments = null; // pole indexů do state.presets[2], nebo null
 
-// ── Dynamický layout sedadiel ──
-// Ukladaný do localStorage ako JSON
-// Štruktúra: { sections: [ { id, name, rows: [ [seatNum, ...], ... ] } ] }
+// ── Dynamický layout sedadel ──
+// Ukládaný do localStorage jako JSON
+// Struktura: { sections: [ { id, name, rows: [ [seatNum, ...], ... ] } ] }
 
-// ── SEAT LAYOUT — pôvodná štruktúra (rows + margin-left) ──
+// ── SEAT LAYOUT — původní struktura (rows + margin-left) ──
 const SEAT_LAYOUT = {
   left: [
     [15, 14, 13, 12, 11],
     [27, 26, 25, 24, 23, 22, 21],
     [38, 37, 36, 35, 34, 33, 32, 31],
     [47, 46, 45, 44, 43, 42, 41],
-    // Rad 5: [0,1] medzera [57..51]
+    // Řada 5: [0,1] mezera [57..51]
     { left: [0, 1], right: [57, 56, 55, 54, 53, 52, 51] },
   ],
   right: [
@@ -3112,7 +3112,7 @@ const SEAT_NUM_TO_IDX = {};
 SEAT_NUMBERS.forEach((sn, i) => { SEAT_NUM_TO_IDX[sn] = i; });
 const TOTAL_SEATS = SEAT_NUMBERS.length;
 
-// Dummy pre kompatibilitu s novým kódom
+// Dummy pro kompatibilitu s novým kódem
 function _loadSeatLayoutDef() { return null; }
 function _saveSeatLayoutDef() {}
 function _computeSeatMaps() {}
@@ -3147,14 +3147,14 @@ function toggleSlotEditMode() {
   _updateCam2BtnVisibility();
 }
 
-// ── SEAT LAYOUT RENDER (normálny mód) ──
+// ── SEAT LAYOUT RENDER (normální mód) ──
 function renderSeatLayout() {
   const slotGrid = document.getElementById('seatLayoutGrid2');
   slotGrid.innerHTML = '';
   const hall = document.createElement('div');
   hall.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
 
-  // Ľavý blok
+  // Levý blok
   const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 0];
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
@@ -3233,7 +3233,7 @@ function _makeViewSlotOld(seatNum) {
 
 // ── SLOT EDIT RENDER ──
 
-// Vytvorí slot pre editáciu z čísla sedadla
+// Vytvoří slot pro editaci z čísla sedadla
 function makeSlotEditSlot(seatNum) {
   const si = SEAT_NUM_TO_IDX[seatNum] ?? 0;
   const hasPreset = slotPresets && slotPresets[si] !== null;
@@ -3324,7 +3324,7 @@ function renderSlotEditGrid() {
   const wrap = document.createElement('div');
   wrap.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
 
-  // Ľavý blok
+  // Levý blok
   const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 0];
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
@@ -3365,7 +3365,7 @@ function renderSlotEditGrid() {
   editGrid.appendChild(wrap);
 }
 
-// Vypočítá rozmery plátna sekcie
+// Vypočítá rozměry plátna sekce
 function _secCanvasSize(sec) {
   const SW = window._sedSlotW || 42;
   const SH = window._sedSlotH || 42;
@@ -3375,7 +3375,7 @@ function _secCanvasSize(sec) {
   return { w: maxX + PAD, h: maxY + PAD };
 }
 
-// Vytvorí plátno sekcie — pre seat layout aj edit
+// Vytvoří plátno sekce — pro seat layout i edit
 function _sedMakeCanvas(sec, isEdit) {
   const SLOT = 42;
   const { w, h } = _secCanvasSize(sec);
@@ -3392,7 +3392,7 @@ function _sedMakeCanvas(sec, isEdit) {
   return wrap;
 }
 
-// Slot pre normálny seat layout view
+// Slot pro normální seat layout view
 function _makeViewSlot(seat) {
   const si = SEAT_NUM_TO_IDX[seat.id] ?? 0;
   const slot = document.createElement('div');
@@ -3403,7 +3403,7 @@ function _makeViewSlot(seat) {
   const presetIdx = slotAssignments ? slotAssignments[si] : null;
   const preset = (presetIdx !== null && presetIdx !== undefined) ? state.presets[2][presetIdx] : null;
 
-  // Click handler — rovnaký pre obsadené aj prázdne sloty
+  // Click handler — stejný pro obsazené i prázdné sloty
   let t = null;
   slot.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); t = Date.now(); });
   slot.addEventListener('pointerup', () => {
@@ -3432,7 +3432,7 @@ function _makeViewSlot(seat) {
   return slot;
 }
 
-// ── SLOT EDIT SEKCIA ──
+// ── SLOT EDIT SEKCE ──
 function _sedMakeSectionEdit(sec, si) {
   const wrap = document.createElement('div');
   wrap.className = 'sed-section';
@@ -3447,7 +3447,7 @@ function _sedMakeSectionEdit(sec, si) {
   actions.className = 'sed-section-actions';
   const addBtn = document.createElement('button');
   addBtn.className = 'sed-add-btn';
-  addBtn.innerHTML = '＋ Stoličku';
+  addBtn.innerHTML = '＋ Židli';
   addBtn.onclick = () => _sedAddSeat(si);
   const delBtn = document.createElement('button');
   delBtn.className = 'sed-mini-btn danger';
@@ -3461,7 +3461,7 @@ function _sedMakeSectionEdit(sec, si) {
   wrap.appendChild(header);
   // Plátno
   const SLOT = 42;
-  const PAD = 48; // extra miesto pre nové stoličky
+  const PAD = 48; // extra místo pro nové židle
   let { w, h } = _secCanvasSize(sec);
   w += PAD; h += PAD;
   w = Math.max(w, 120); h = Math.max(h, 80);
@@ -3481,7 +3481,7 @@ function _sedMakeSectionEdit(sec, si) {
   return wrap;
 }
 
-// Slot element pre edit mód — drag&drop, hold=uložiť, click=vyvolať, rclick=menu
+// Slot element pro edit mód — drag&drop, hold=uložit, click=vyvolat, rclick=menu
 function _sedMakeSlotEl(seat, sec, si, canvas, canvasW, canvasH) {
   const seatNum = seat.id;
   const slotIdx = SEAT_NUM_TO_IDX[seatNum] ?? 0;
@@ -3563,9 +3563,9 @@ function _sedMakeSlotEl(seat, sec, si, canvas, canvasW, canvasH) {
   return slot;
 }
 
-// ── DRAG & DROP — voľné 2D + snap ──
+// ── DRAG & DROP — volné 2D + snap ──
 let _sedDrag = null;
-const SNAP_PX = 32; // snap vzdialenosť
+const SNAP_PX = 32; // snap vzdálenost
 
 function _sedDragStart(slot, seat, sec, si, e) {
   const rect = slot.getBoundingClientRect();
@@ -3577,7 +3577,7 @@ function _sedDragStart(slot, seat, sec, si, e) {
     left:${rect.left}px;top:${rect.top}px;`;
   document.body.appendChild(ghost);
 
-  // Zbieranie pozícií všetkých ostatných sedadiel pre snap
+  // Sbírání pozic všech ostatních sedadel pro snap
   const SLOT_W_SNAP = window._sedSlotW || 42;
   const SLOT_H_SNAP = window._sedSlotH || 42;
   const snapTargets = [];
@@ -3596,13 +3596,13 @@ function _sedDragStart(slot, seat, sec, si, e) {
     });
   });
 
-  // Plátno aktuálnej sekcie
+  // Plátno aktuální sekce
   const canvasEl = document.querySelector(`[data-sec-idx="${si}"]`);
   const canvasRect = canvasEl ? canvasEl.getBoundingClientRect() : null;
 
   slot.style.opacity = '0.15';
 
-  // Nastav transition na všetky sloty pre plynulú animáciu
+  // Nastav transition na všechny sloty pro plynulou animaci
   const editGrid2 = document.getElementById('slotEditGrid2');
   if (editGrid2) {
     editGrid2.querySelectorAll('.slot-edit-slot').forEach(s => {
@@ -3638,15 +3638,15 @@ function _sedOnDragMove(e) {
     _sedDrawSnapLines(snapResult, cx, cy);
   }
 
-  // Animuj snap — ostatné sloty ustúpia na snap pozíciu
+  // Animuj snap — ostatní sloty ustoupí na snap pozici
   const SNAP_STEP_X = slotW + 4;
   const editGrid = document.getElementById('slotEditGrid2');
   const allSlotEls = editGrid ? [...editGrid.querySelectorAll('.slot-edit-slot')] : [];
 
-  // Nájdi slot ktorý je priamo na mieste kde by sme snappovali
+  // Najdi slot který je přímo na místě kde bychom snapovali
   let snapTargetEl = null;
   if (snapResult.snapX !== null && snapResult.snapY !== null) {
-    // Snap na oba — hľadáme slot na priesečníku
+    // Snap na oba — hledáme slot na průsečíku
     allSlotEls.forEach(s => {
       if (s === _sedDrag.slot) return;
       const r = s.getBoundingClientRect();
@@ -3671,11 +3671,11 @@ function _sedOnDragMove(e) {
   if (snapKey === _sedDrag.lastSnapKey) return;
   _sedDrag.lastSnapKey = snapKey;
 
-  // Reset všetkých transformov
+  // Reset všech transformů
   allSlotEls.forEach(s => { if (s !== _sedDrag.slot) s.style.transform = ''; });
 
   if (snapTargetEl) {
-    // Posun target slot o jeden krok doprava (uvoľní miesto)
+    // Posuň target slot o jeden krok doprava (uvolní místo)
     snapTargetEl.style.transform = `translateX(${SNAP_STEP_X}px)`;
   }
 }
@@ -3721,7 +3721,7 @@ function _sedOnDragEnd(e) {
   slot.style.opacity = '';
   _sedDrag = null;
 
-  // Reset všetkých transformov
+  // Reset všech transformů
   document.querySelectorAll('#slotEditGrid2 .slot-edit-slot').forEach(s => {
     s.style.transition = '';
     s.style.transform = '';
@@ -3730,12 +3730,12 @@ function _sedOnDragEnd(e) {
 
   if (!canvasRect) { renderSlotEditGrid(); return; }
 
-  // Veľkosť slotu — čítame priamo z inline style (applyZoom to tam ukladá)
+  // Velikost slotu — čteme přímo z inline style (applyZoom to tam ukládá)
   const SLOT_W = window._sedSlotW || 42;
   const SLOT_H = window._sedSlotH || 42;
   const PAD = 2;
 
-  // Vypočítaj novú pozíciu
+  // Vypočítej novou pozici
   let newCx = e.clientX - offsetX + SLOT_W / 2;
   let newCy = e.clientY - offsetY + SLOT_H / 2;
 
@@ -3749,10 +3749,10 @@ function _sedOnDragEnd(e) {
   newX = Math.max(0, newX);
   newY = Math.max(0, newY);
 
-  // Kolízia — všetky ostatné sedadlá v CELOM layoute (nielen v sekcii)
+  // Kolize — všechna ostatní sedadla v CELÉM layoutu (nejen v sekci)
   const allOthers = [];
   _seatLayoutDef.sections.forEach((s, sIdx) => {
-    // Offset sekcie voči canvasRect — len pre sekciu si
+    // Offset sekce vůči canvasRect — jen pro sekci si
     const offset = sIdx === si ? { x: 0, y: 0 } : (() => {
       const el = document.querySelector(`[data-sec-idx="${sIdx}"]`);
       if (!el) return null;
@@ -3774,10 +3774,10 @@ function _sedOnDragEnd(e) {
   }
 
   if (overlaps(newX, newY)) {
-    // Koliduje — vráť na pôvodnú pozíciu
-    // Nerobíme nič — seat.x/y ostávajú nezmenené
+    // Koliduje — vrať na původní pozici
+    // Neděláme nic — seat.x/y zůstávají nezměněné
     _sedCommit();
-    logMsg('warn', `Sedadlo ${seat.id}: pozícia obsadená, ponechána původní poloha`);
+    logMsg('warn', `Sedadlo ${seat.id}: pozice obsazená, ponechána původní poloha`);
     return;
   }
 
@@ -3786,7 +3786,7 @@ function _sedOnDragEnd(e) {
   _sedCommit();
 }
 
-// ── Pridanie / mazanie ──
+// ── Přidání / mazání ──
 function _sedAddSeat(si) {
   const sec = _seatLayoutDef.sections[si];
   let maxId = 0;
@@ -3841,7 +3841,7 @@ function _sedShowCtxMenu(x, y, seatNum, si, slotIdx, hasPreset, sec) {
   menu.className = 'ctx-menu'; menu.id = 'slotCtxMenu';
   const delSeat = document.createElement('div');
   delSeat.className = 'ctx-menu-item danger';
-  delSeat.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg> Smazat stoličku #${seatNum}`;
+  delSeat.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg> Smazat židli #${seatNum}`;
   delSeat.addEventListener('pointerdown', ev => {
     ev.stopPropagation(); _closeCtxMenu();
     if (slotPresets && slotPresets[slotIdx] !== null) {
@@ -3948,7 +3948,7 @@ function toggleSeatLayout() {
     const total = getTotalSlots();
     if (!slotAssignments) slotAssignments = new Array(total).fill(null);
 
-    // Nové presety ktoré ešte nie sú v žiadnom slote — doplň na prvé voľné miesta
+    // Nové presety které ještě nejsou v žádném slotu — doplň na první volná místa
     const assignedIdxs = new Set(slotAssignments.filter(x => x !== null));
     const unassigned = state.presets[2]
       .map((p, idx) => ({ p, idx }))
@@ -3979,11 +3979,11 @@ function toggleSeatLayout() {
   }
 }
 
-// Prepíšem toggleEditOrder aby fungoval aj pre slot layout
+// Přepíšu toggleEditOrder aby fungoval i pro slot layout
 function toggleEditOrder(cam) {
   if (cam === 2 && seatLayoutActive) {
     seatLayoutEditMode = !seatLayoutEditMode;
-    editOrderState[2] = seatLayoutEditMode; // synchronizuj pre _updateCam2BtnVisibility
+    editOrderState[2] = seatLayoutEditMode; // synchronizuj pro _updateCam2BtnVisibility
     const btn = document.getElementById('editOrderBtn2');
     btn.classList.toggle('active', seatLayoutEditMode);
     btn.textContent = seatLayoutEditMode ? '✓ HOTOVO' : '⇅ Přesunout';
@@ -3991,7 +3991,7 @@ function toggleEditOrder(cam) {
     _updateCam2BtnVisibility();
     return;
   }
-  // Pôvodná logika pre bežný grid
+  // Původní logika pro běžný grid
   editOrderState[cam] = !editOrderState[cam];
   const grid = document.getElementById('presetsGrid' + cam);
   const btn  = document.getElementById('editOrderBtn' + cam);
@@ -4020,14 +4020,14 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
   card.dataset.cam = cam;
   card.dataset.slotIdx = slotIdx;
 
-  // Hide-toggle overlay (pre hide-mode)
+  // Hide-toggle overlay (pro hide-mode)
   const eyeIcon = p.hidden
     ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
     : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 
-  // Bez spodnej lišty preset-actions
+  // Bez spodní lišty preset-actions
   card.innerHTML = `
-    <div class="hide-toggle-overlay" title="${p.hidden ? 'Zobraziť preset' : 'Skryť preset'}">${eyeIcon}</div>
+    <div class="hide-toggle-overlay" title="${p.hidden ? 'Zobrazit preset' : 'Skrýt preset'}">${eyeIcon}</div>
     <div class="preset-img-area">
       <div class="preset-img-slot"></div>
       <div class="preset-number">${seatNum}</div>
@@ -4043,10 +4043,10 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
     imgSlot.innerHTML = '<div class="preset-img-placeholder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>';
   }
 
-  // Pravý klik = upraviť preset
+  // Pravý klik = upravit preset
   card.addEventListener('contextmenu', e => { e.preventDefault(); editPreset(cam, presetIdx); });
 
-  // Hide-toggle klik (keď je aktívny hide-mode)
+  // Hide-toggle klik (když je aktivní hide-mode)
   card.addEventListener('click', e => {
     const slotGrid = document.getElementById('seatLayoutGrid2');
     if (!slotGrid.classList.contains('hide-mode')) return;
@@ -4054,7 +4054,7 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
     togglePresetHidden(cam, presetIdx);
   });
 
-  // Hold na celej karte = uložiť; krátky klik = vyvolať
+  // Hold na celé kartě = uložit; krátký klik = vyvolat
   const bar = card.querySelector('.preset-hold-bar');
   let holdTimer = null, holdStart = null, barTimer = null;
   const HOLD_MS = 2000;
@@ -4096,7 +4096,7 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
   card.addEventListener('touchstart', startHold, { passive: false });
   card.addEventListener('touchend',  endHold);
 
-  // Drag (len v edit-mode) — pointer-event systém s live preview
+  // Drag (jen v edit-mode) — pointer-event systém s live preview
   card.addEventListener('pointerdown', e => {
     if (!seatLayoutEditMode) return;
     if (e.button !== 0) return;
@@ -4107,7 +4107,7 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
   return card;
 }
 
-// ── POINTER DRAG PRE SEAT LAYOUT ──
+// ── POINTER DRAG PRO SEAT LAYOUT ──
 let _dragState = null;
 
 function startSlotDrag(card, fromSlotIdx, e) {
@@ -4128,7 +4128,7 @@ function startSlotDrag(card, fromSlotIdx, e) {
   if (gImg) gImg.style.cssText = 'width:100%;height:100%;object-fit:contain;';
   document.body.appendChild(ghost);
 
-  // Transition na všetky karty v slotoch
+  // Transition na všechny karty ve slotech
   allSlots.forEach(s => {
     const c = s.querySelector('.preset-card');
     if (c) { c.style.transition = 'transform 0.18s cubic-bezier(.25,.46,.45,.94)'; c.style.willChange = 'transform'; }
@@ -4140,7 +4140,7 @@ function startSlotDrag(card, fromSlotIdx, e) {
   _dragState = {
     fromSlotIdx, ghost, offsetX, offsetY, card, allSlots, slotRects,
     savedAssignments: [...slotAssignments],
-    // Jedno miesto pravdy: aktuálny preview stav
+    // Jedno místo pravdy: aktuální preview stav
     previewAssign: [...slotAssignments],
     lastHoverSlotIdx: -1
   };
@@ -4151,14 +4151,14 @@ function startSlotDrag(card, fromSlotIdx, e) {
 }
 
 function _computeSlotAssign(fromSlotIdx, hoverSlotIdx, savedAssignments) {
-  // Vypočíta nové slotAssignments pre daný hover — jeden zdroj pravdy
+  // Vypočítá nové slotAssignments pro daný hover — jeden zdroj pravdy
   const a = [...savedAssignments];
   const dragged = a[fromSlotIdx];
   const target  = a[hoverSlotIdx];
   a[fromSlotIdx] = null;
   a[hoverSlotIdx] = dragged;
   if (target !== null && target !== undefined) {
-    // Najbližší voľný slot pre vytlačenú kartu (bez fromSlotIdx)
+    // Nejbližší volný slot pro vytlačenou kartu (bez fromSlotIdx)
     let freeSlot = null, bestDist = Infinity;
     for (let i = 0; i < a.length; i++) {
       if (a[i] === null && i !== fromSlotIdx) {
@@ -4189,7 +4189,7 @@ function _onDragMove(e) {
   document.querySelectorAll('.seat-slot.drag-over').forEach(s => s.classList.remove('drag-over'));
 
   if (hoverSlotIdx < 0 || hoverSlotIdx === fromSlotIdx) {
-    // Reset — pôvodný stav
+    // Reset — původní stav
     allSlots.forEach(s => { const c = s.querySelector('.preset-card'); if (c && c !== card) c.style.transform = ''; });
     _dragState.previewAssign = [...savedAssignments];
     return;
@@ -4197,21 +4197,21 @@ function _onDragMove(e) {
 
   slotEl.classList.add('drag-over');
 
-  // Vypočítaj nový stav pomocou _computeSlotAssign
+  // Vypočítej nový stav pomocí _computeSlotAssign
   const newAssign = _computeSlotAssign(fromSlotIdx, hoverSlotIdx, savedAssignments);
   _dragState.previewAssign = newAssign;
 
-  // Vizuálny transform: karta v slot X sa presunie na pozíciu slot Y
-  // Porovnaj savedAssignments vs newAssign — ak sa karta presunula, daj jej transform
+  // Vizuální transform: karta ve slotu X se přesune na pozici slotu Y
+  // Porovnej savedAssignments vs newAssign — pokud se karta přesunula, dej jí transform
   allSlots.forEach(srcSlotEl => {
     const si = parseInt(srcSlotEl.dataset.slotIdx);
     const c = srcSlotEl.querySelector('.preset-card');
     if (!c || c === card) return;
     const presetInSlot = savedAssignments[si];
     if (presetInSlot === null || presetInSlot === undefined) return;
-    // Kde je tento preset v novom assign?
+    // Kde je tento preset v novém assign?
     const newSi = newAssign.indexOf(presetInSlot);
-    if (newSi === si) { c.style.transform = ''; return; } // nezmenilo sa
+    if (newSi === si) { c.style.transform = ''; return; } // nezměnilo se
     const dstSlotEl = allSlots.find(s => parseInt(s.dataset.slotIdx) === newSi);
     if (!dstSlotEl) { c.style.transform = ''; return; }
     const sr = slotRects[allSlots.indexOf(srcSlotEl)];
@@ -4236,13 +4236,13 @@ function _onDragEnd(e) {
   ghost.remove();
   document.querySelectorAll('.seat-slot').forEach(s => { s.classList.remove('drag-over'); s.classList.remove('drag-source'); });
 
-  // Aplikuj presne previewAssign — jeden zdroj pravdy
+  // Aplikuj přesně previewAssign — jeden zdroj pravdy
   slotAssignments.splice(0, slotAssignments.length, ...previewAssign);
 
   // Ulož do localStorage
   try { localStorage.setItem('ptz_slot_assignments', JSON.stringify(slotAssignments)); } catch(e) {}
 
-  // Pre každý slot kde sa zmenil preset — prepíš preset pozíciou slotu
+  // Pro každý slot kde se změnil preset — přepiš preset pozicí slotu
   _applySlotPresetsToChangedSlots(savedAssignments, previewAssign);
 
   _dragState = null;
@@ -4262,7 +4262,7 @@ function _applySlotPresetsToChangedSlots(oldAssign, newAssign) {
     const p = state.presets[2][newPresetIdx];
     if (!p) continue;
 
-    // Karta dostane číslo presetu slotu — žiadny pohyb kamery
+    // Karta dostane číslo presetu slotu — žádný pohyb kamery
     p.num = slotPresetNum;
     logMsg('info', `Sedadlo ${si + 1}: preset „${p.name}" obdržel číslo kamery #${slotPresetNum}`);
     changed = true;
@@ -4270,7 +4270,7 @@ function _applySlotPresetsToChangedSlots(oldAssign, newAssign) {
   if (changed) savePresetsStorage();
 }
 
-// ── POINTER DRAG PRE KLASICKÝ PRESET GRID ──
+// ── POINTER DRAG PRO KLASICKÝ PRESET GRID ──
 let _classicDrag = null;
 
 function startClassicDrag(card, cam, idx, e) {
@@ -4281,11 +4281,11 @@ function startClassicDrag(card, cam, idx, e) {
   const allCards = [...grid.querySelectorAll('.preset-card[data-idx]')];
   const n = allCards.length;
 
-  // Zmeraj skutočný počet stĺpcov z DOM
+  // Změř skutečný počet sloupců z DOM
   const gridStyle = getComputedStyle(grid);
   const cols = gridStyle.gridTemplateColumns.split(' ').length || 1;
 
-  // Nameraj rozmery raz — len šírka/výška, nie pozícia
+  // Naměř rozměry jednou — jen šířka/výška, ne pozice
   const cardW = rect.width;
   const cardH = rect.height;
   const stepX = cardW + 9;
@@ -4334,7 +4334,7 @@ function _onClassicMove(e) {
   ghost.style.left = (e.clientX - offsetX) + 'px';
   ghost.style.top  = (e.clientY - offsetY) + 'px';
 
-  // Zisti kartu pod kurzorom pomocou elementFromPoint
+  // Zjisti kartu pod kurzorem pomocí elementFromPoint
   ghost.style.visibility = 'hidden';
   card.style.pointerEvents = 'none';
   const el = document.elementFromPoint(e.clientX, e.clientY);
@@ -4344,23 +4344,23 @@ function _onClassicMove(e) {
   const overCard = el ? el.closest(`.preset-card[data-cam="${_classicDrag.cam}"]`) : null;
   const overDomIdx = overCard ? allCards.indexOf(overCard) : -1;
 
-  // Vypočítaj insertIdx v "others" zozname
+  // Vypočítej insertIdx v "others" seznamu
   let insertIdx;
   if (overDomIdx < 0) {
-    // Mimo kariet — nemeň
+    // Mimo karet — neměň
     if (_classicDrag.lastInsertIdx < 0) return;
     insertIdx = _classicDrag.lastInsertIdx;
   } else if (overCard === card) {
     insertIdx = _classicDrag.lastInsertIdx >= 0 ? _classicDrag.lastInsertIdx : fromIdx;
   } else {
-    // Kurzor je nad konkrétnou kartou — insertIdx = jej pozícia v "others"
-    // others = allCards bez fromIdx, v pôvodnom poradí
+    // Kurzor je nad konkrétní kartou — insertIdx = její pozice v "others"
+    // others = allCards bez fromIdx, v původním pořadí
     insertIdx = overDomIdx < fromIdx ? overDomIdx : overDomIdx - 1;
-    // Upresnenie: ak sme v ľavej alebo pravej polovici karty
+    // Upřesnění: pokud jsme v levé nebo pravé polovině karty
     const r = overCard.getBoundingClientRect();
     const midX = r.left + r.width / 2;
     const midY = r.top + r.height / 2;
-    // Ak sme v pravej/dolnej polovici, vložíme za túto kartu
+    // Pokud jsme v pravé/dolní polovině, vložíme za tuto kartu
     if (e.clientY > midY || (Math.abs(e.clientY - midY) < r.height / 2 && e.clientX > midX)) {
       insertIdx = overDomIdx < fromIdx ? overDomIdx + 1 : overDomIdx;
     }
@@ -4373,9 +4373,9 @@ function _onClassicMove(e) {
   const newOrder = _computeClassicOrder(fromIdx, insertIdx, n);
   _classicDrag.previewOrder = newOrder;
 
-  // Aplikuj transform na každú kartu podľa novej pozície
+  // Aplikuj transform na každou kartu podle nové pozice
   allCards.forEach((c, origDomI) => {
-    if (c === card) return; // zdrojová karta zostáva na mieste (opacity 0.15)
+    if (c === card) return; // zdrojová karta zůstává na místě (opacity 0.15)
     const newPos = newOrder.indexOf(origDomI);
     const oldRow = Math.floor(origDomI / cols), oldCol = origDomI % cols;
     const newRow = Math.floor(newPos / cols),   newCol = newPos % cols;
@@ -4409,7 +4409,7 @@ function _onClassicEnd(e) {
         }
       }
     }
-    // Renderuj okamžite, ulož na pozadí
+    // Renderuj okamžitě, ulož na pozadí
     renderPresets();
     if (seatLayoutActive) renderSeatLayout();
     savePresetsStorage();
@@ -4429,7 +4429,7 @@ function toggleDrawerSection(el) {
 }
 
 // ══════════════════════════════════════════════════
-//  SCAN — BlazeFace + kalibrácia sedadiel
+//  SCAN — BlazeFace + kalibrace sedadel
 // ══════════════════════════════════════════════════
 
 const _scan = {
@@ -4440,8 +4440,8 @@ const _scan = {
   seatsDone: 0,
   extraDone: 0,
   skipDone: 0,
-  settleMs: 1800,        // ms čakania po pohybe kamery
-  centerThreshold: 0.25, // tvár musí byť v strede ±25% šírky/výšky
+  settleMs: 1800,        // ms čekání po pohybu kamery
+  centerThreshold: 0.25, // tvář musí být ve středu ±25% šířky/výšky
 };
 
 // ── Scan log ──
@@ -4470,20 +4470,20 @@ function _sUpdateStats() {
   if (sk) sk.textContent = _scan.skipDone;
 }
 
-// ── Video inicializácia ──
+// ── Video inicializace ──
 const _BLACKMAGIC_KEYWORDS = ['blackmagic', 'decklink', 'intensity', 'ultrastudio', 'atem', 'bmd'];
 
 async function _initVideo() {
   const overlay = document.getElementById('scanVideoOverlay');
   const label   = document.getElementById('scanVideoLabel');
 
-  // Čítaj RTSP URL priamo z localStorage — nie z inputu (drawer môže byť zatvorený)
+  // Čti RTSP URL přímo z localStorage — ne z inputu (drawer může být zavřený)
   let rtspUrl = '';
   try {
     const s = JSON.parse(localStorage.getItem('ptz_settings') || '{}');
     rtspUrl = s.rtspUrl || '';
   } catch(e) {}
-  // Fallback — skús aj input priamo
+  // Fallback — zkus i input přímo
   if (!rtspUrl) rtspUrl = (document.getElementById('rtspUrl') || {}).value || '';
 
   if (rtspUrl) {
@@ -4494,7 +4494,7 @@ async function _initVideo() {
     const msg = document.getElementById('scanVideoMsg');
     if (msg) msg.textContent = 'Nastavte RTSP URL kamery v Nastavení → Video náhled';
     if (label) label.textContent = '⚠ Bez signálu';
-    _sLog('RTSP URL nie je nastavená — nastavte ju v Nastavení', 'warn');
+    _sLog('RTSP URL není nastavená — nastavte ji v Nastavení', 'warn');
   }
 }
 
@@ -4504,7 +4504,7 @@ async function _startStream(url, type) {
   const overlay = document.getElementById('scanVideoOverlay');
   const msg    = document.getElementById('scanVideoMsg');
 
-  // Zastav predchádzajúci stream
+  // Zastav předchozí stream
   if (_scan.videoStream) { _scan.videoStream.getTracks().forEach(t => t.stop()); _scan.videoStream = null; }
   if (video.srcObject) { video.srcObject = null; }
 
@@ -4515,7 +4515,7 @@ async function _startStream(url, type) {
       const pc = new RTCPeerConnection({ iceServers: [] });
       _scan._pc = pc;
 
-      // ontrack MUSÍ byť nastavený pred createOffer
+      // ontrack MUSÍ být nastavený před createOffer
       pc.ontrack = e => {
         if (e.streams && e.streams[0]) {
           video.srcObject = e.streams[0];
@@ -4523,7 +4523,7 @@ async function _startStream(url, type) {
           overlay.style.display = 'none';
           if (label) label.textContent = '● LIVE WebRTC';
           _scan.videoStream = e.streams[0];
-          _sLog('WebRTC stream pripojený', 'ok');
+          _sLog('WebRTC stream připojený', 'ok');
           video.onloadedmetadata = () => {
             const cv = document.getElementById('scanCanvas');
             if (cv) { cv.width = video.videoWidth; cv.height = video.videoHeight; }
@@ -4535,7 +4535,7 @@ async function _startStream(url, type) {
         _sLog(`WebRTC stav: ${pc.connectionState}`, pc.connectionState === 'failed' ? 'err' : 'info');
         if (pc.connectionState === 'failed') {
           if (overlay) overlay.style.display = 'flex';
-          if (msg) msg.textContent = 'WebRTC zlyhalo';
+          if (msg) msg.textContent = 'WebRTC selhalo';
         }
       };
 
@@ -4545,11 +4545,11 @@ async function _startStream(url, type) {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      // Počkaj na dokončenie ICE gatheringu pred odoslaním
+      // Počkej na dokončení ICE gatheringu před odesláním
       const gatherDone = new Promise(resolve => {
         if (pc.iceGatheringState === 'complete') { resolve(); return; }
         pc.onicegatheringstatechange = () => { if (pc.iceGatheringState === 'complete') resolve(); };
-        setTimeout(resolve, 2000); // max 2s čakania
+        setTimeout(resolve, 2000); // max 2s čekání
       });
       await gatherDone;
 
@@ -4564,31 +4564,31 @@ async function _startStream(url, type) {
       await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
 
     } else if (type === 'mjpeg') {
-      // ── MJPEG — zobrazíme cez <img> a kopírujeme do canvasu ──
+      // ── MJPEG — zobrazíme přes <img> a kopírujeme do canvasu ──
       const img = document.createElement('img');
       img.src = url;
       img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
       img.crossOrigin = 'anonymous';
       const wrap = document.querySelector('.scan-video-wrap');
-      // Odstráň starý MJPEG img ak existuje
+      // Odstraň starý MJPEG img pokud existuje
       wrap.querySelectorAll('img.mjpeg-src').forEach(e => e.remove());
       img.className = 'mjpeg-src';
       wrap.insertBefore(img, document.getElementById('scanCanvas'));
       video.style.display = 'none';
       overlay.style.display = 'none';
       if (label) label.textContent = '● LIVE MJPEG';
-      _sLog('MJPEG stream spustený', 'ok');
-      // Pre BlazeFace detekciu kreslíme img do canvasu
+      _sLog('MJPEG stream spuštěný', 'ok');
+      // Pro BlazeFace detekci kreslíme img do canvasu
       _scan._mjpegImg = img;
 
     } else if (type === 'hls') {
-      // ── HLS — použijeme natívnu podporu prehliadača (Edge/Chrome podporuje HLS natívne) ──
+      // ── HLS — použijeme nativní podporu prohlížeče (Edge/Chrome podporuje HLS nativně) ──
       video.src = url;
       video.style.display = 'block';
       await video.play();
       overlay.style.display = 'none';
       if (label) label.textContent = '● LIVE HLS';
-      _sLog('HLS stream spustený', 'ok');
+      _sLog('HLS stream spuštěný', 'ok');
       video.onloadedmetadata = () => {
         const cv = document.getElementById('scanCanvas');
         cv.width = video.videoWidth; cv.height = video.videoHeight;
@@ -4603,18 +4603,18 @@ async function _startStream(url, type) {
   }
 }
 
-// Pošle RTSP URL na Python server — ten prepíše mediamtx.yml a reštartuje MediaMTX
+// Pošle RTSP URL na Python server — ten přepíše mediamtx.yml a restartuje MediaMTX
 async function applyRtspUrl() {
   const url = (document.getElementById('rtspUrl') || {}).value || '';
   const res = document.getElementById('rtspApplyResult');
-  if (!url) { if(res){res.textContent='❌ RTSP URL nie je zadaná';res.style.color='var(--red)';} return; }
-  if(res){res.textContent='⏳ Aplikujem…';res.style.color='var(--text-3)';}
+  if (!url) { if(res){res.textContent='❌ RTSP URL není zadaná';res.style.color='var(--red)';} return; }
+  if(res){res.textContent='⏳ Aplikuji…';res.style.color='var(--text-3)';}
   const ok = _wsSend({ cmd: 'set_rtsp', rtsp_url: url, stream_name: 'cam2' });
   if (!ok) {
-    if(res){res.textContent='❌ Server nie je pripojený';res.style.color='var(--red)';}
+    if(res){res.textContent='❌ Server není připojený';res.style.color='var(--red)';}
     return;
   }
-  if(res){res.textContent='✓ Odoslané — MediaMTX sa reštartuje…';res.style.color='#16a34a';}
+  if(res){res.textContent='✓ Odesláno — MediaMTX se restartuje…';res.style.color='#16a34a';}
   logMsg('info', `Video náhled: RTSP URL nastavená → ${url}`);
 }
 
@@ -4629,19 +4629,19 @@ async function _loadModel() {
   } catch(e) { _sLog('Chyba modelu: ' + e.message, 'err'); return null; }
 }
 
-// Vráti aktuálne detekované tváre + vykreslí ich do canvasu
+// Vrátí aktuálně detekované tváře + vykreslí je do canvasu
 async function _detectAndDraw() {
   const v  = document.getElementById('scanVideo');
   const cv = document.getElementById('scanCanvas');
   if (!cv || !_scan.model) return [];
   const ctx = cv.getContext('2d');
 
-  // Zdroj: MJPEG img alebo video
+  // Zdroj: MJPEG img nebo video
   const src = _scan._mjpegImg || v;
   if (!src) return [];
   if (src === v && v.readyState < 2) return [];
 
-  // Nastav rozmery canvasu ak treba
+  // Nastav rozměry canvasu pokud třeba
   if (src === v && (cv.width !== v.videoWidth || cv.height !== v.videoHeight)) {
     cv.width = v.videoWidth || cv.width;
     cv.height = v.videoHeight || cv.height;
@@ -4664,16 +4664,16 @@ async function _detectAndDraw() {
   } catch(e) { return []; }
 }
 
-// Skontroluje či je tvár vycentrovaná v obraze (±threshold)
+// Zkontroluje jestli je tvář vycentrovaná v obraze (±threshold)
 function _isFaceCentered(face, canvasW, canvasH) {
   const [x1,y1] = face.topLeft, [x2,y2] = face.bottomRight;
   const cx = (x1+x2)/2, cy = (y1+y2)/2;
   const dx = Math.abs(cx - canvasW/2) / canvasW;
-  const dy = Math.abs(cy - canvasH*0.45) / canvasH; // trochu vyššie ako stred
+  const dy = Math.abs(cy - canvasH*0.45) / canvasH; // trochu výše než střed
   return dx < _scan.centerThreshold && dy < _scan.centerThreshold;
 }
 
-// Screenshot z aktuálneho video frame
+// Screenshot z aktuálního video frame
 function _screenshot() {
   const src = _scan._mjpegImg || document.getElementById('scanVideo');
   const tmp = document.createElement('canvas');
@@ -4685,7 +4685,7 @@ function _screenshot() {
 
 function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// Ďalšie voľné číslo presetu pre CAM2 (rozsah 175–239)
+// Další volné číslo presetu pro CAM2 (rozsah 175–239)
 function _nextPresetNum() {
   const used = new Set(state.presets[2].map(p => p.num));
   for (let n = 175; n <= 239; n++) { if (!used.has(n)) return n; }
@@ -4693,33 +4693,33 @@ function _nextPresetNum() {
 }
 
 // ══════════════════════════════════════════════════
-//  HLAVNÁ SCAN LOGIKA
+//  HLAVNÍ SCAN LOGIKA
 //
-//  Princíp:
-//  1. Pre každý sektor: kamera ide na wide-shot (uložený preset sektoru)
-//  2. Pre každé sedadlo ktoré má uloženú kalibráciu (slotPresets[i] !== null):
-//     a. Kamera ide na preset sedadla (= číslo stoličky, napr. #15)
+//  Princip:
+//  1. Pro každý sektor: kamera jede na wide-shot (uložený preset sektoru)
+//  2. Pro každé sedadlo které má uloženou kalibraci (slotPresets[i] !== null):
+//     a. Kamera jede na preset sedadla (= číslo židle, např. #15)
 //     b. Počká settleMs
-//     c. BlazeFace detekuje tváre
-//     d. Ak je tvár vycentrovaná → osoba na tomto sedadle
-//        → screenshot, nový preset (175+), prirad do slotAssignments
-//     e. Ak nie → sedadlo prázdne, preskočí
-//  3. Na konci: tváre detekované vo wide-shote ktoré neboli priradené
-//     → uložiť ako "Extra" do klasického gridu
+//     c. BlazeFace detekuje tváře
+//     d. Pokud je tvář vycentrovaná → osoba na tomto sedadle
+//        → screenshot, nový preset (175+), přiřaď do slotAssignments
+//     e. Pokud ne → sedadlo prázdné, přeskočí
+//  3. Na konci: tváře detekované ve wide-shotu které nebyly přiřazené
+//     → uložit jako "Extra" do klasického gridu
 // ══════════════════════════════════════════════════
 async function startScan() {
   if (_scan.active) return;
 
-  // Validácia
+  // Validace
   if (_scanSectors.length === 0) {
-    _sLog('Nie sú definované žiadne sektory!', 'err'); return;
+    _sLog('Nejsou definované žádné sektory!', 'err'); return;
   }
   const unset = _scanSectors.filter(s => s.presetNum === undefined);
   if (unset.length > 0) {
-    _sLog(`${unset.length} sektor(y) nemajú uloženú pozíciu — namiernite kameru a kliknite "Namiřit"`, 'err'); return;
+    _sLog(`${unset.length} sektor(y) nemají uloženou pozici — namiřte kameru a klikněte "Namiřit"`, 'err'); return;
   }
   if (!slotPresets || slotPresets.every(v => v === null)) {
-    _sLog('Žiadne sedadlá nie sú kalibrované! Najprv nastavte presety sedadiel v "Editace presetů sedadel".', 'err'); return;
+    _sLog('Žádná sedadla nejsou kalibrována! Nejprve nastavte presety sedadel v "Editace presetů sedadel".', 'err'); return;
   }
 
   _scan.active = true; _scan.aborting = false;
@@ -4737,18 +4737,18 @@ async function startScan() {
   const model = await _loadModel();
   if (!model) { _finishScan(); return; }
 
-  // Ak máme osoby, načítaj aj face-api modely
+  // Pokud máme osoby, načti i face-api modely
   if (_persons.length > 0) {
     _sLog(`Načítám modely rozpoznávání tváří pro ${_persons.length} osob…`);
     await _loadFaceApi();
-    if (_faceApiLoaded) _sLog('Face recognition pripravený', 'ok');
-    else _sLog('Face recognition nedostupný — použijú sa screenshoty', 'warn');
+    if (_faceApiLoaded) _sLog('Face recognition připravený', 'ok');
+    else _sLog('Face recognition nedostupný — použijí se screenshoty', 'warn');
   }
 
   const cv = document.getElementById('scanCanvas');
   const W = cv.width || 1920, H = cv.height || 1080;
 
-  // Zisti kalibrované sedadlá
+  // Zjisti kalibrovaná sedadla
   const calibrated = [];
   for (let i = 0; i < TOTAL_SEATS; i++) {
     if (slotPresets[i] !== null) {
@@ -4869,7 +4869,7 @@ function closeScanModal() {
   if (_scan.videoStream) { _scan.videoStream.getTracks().forEach(t => t.stop()); _scan.videoStream = null; }
   // Zastav WebRTC peer connection
   if (_scan._pc) { _scan._pc.close(); _scan._pc = null; }
-  // Odstráň MJPEG img
+  // Odstraň MJPEG img
   if (_scan._mjpegImg) { _scan._mjpegImg.remove(); _scan._mjpegImg = null; }
   const v = document.getElementById('scanVideo');
   if (v) { v.srcObject = null; v.src = ''; v.style.display = 'block'; }
@@ -4881,15 +4881,15 @@ function closeScanModal() {
 }
 
 // ══════════════════════════════════════════════════
-//  OSOBY — rozpoznávanie tvárí (face-api.js)
+//  OSOBY — rozpoznávání tváří (face-api.js)
 // ══════════════════════════════════════════════════
 
-// Štruktúra osoby: { id, name, photoDataUrl, descriptor: Float32Array }
-let _persons = []; // načíta sa z IndexedDB pri štarte
+// Struktura osoby: { id, name, photoDataUrl, descriptor: Float32Array }
+let _persons = []; // načítá se z IndexedDB při startu
 let _faceApiLoaded = false;
-let _pendingPersonPhoto = null; // base64 dočasná fotka pri pridávaní
+let _pendingPersonPhoto = null; // base64 dočasná fotka při přidávání
 
-// ── IndexedDB pre osoby ──
+// ── IndexedDB pro osoby ──
 async function _openPersonsDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open('ptz_persons', 1);
@@ -4933,27 +4933,27 @@ async function _loadPersonsDB() {
   } catch(e) { _persons = []; }
 }
 
-// ── Načítanie face-api modelov ──
+// ── Načítání face-api modelů ──
 async function _loadFaceApi() {
   if (_faceApiLoaded) return true;
   const status = document.getElementById('personsStatus');
   const setStatus = (txt, color) => { if (status) { status.textContent = txt; status.style.color = color || 'var(--text-3)'; } };
 
-  // Skontroluj či face-api knižnica vôbec existuje
+  // Zkontroluj jestli face-api knihovna vůbec existuje
   if (typeof faceapi === 'undefined') {
-    setStatus('❌ face-api.js sa nenačítalo — skontrolujte internetové pripojenie', 'var(--red)');
-    logMsg('err', 'face-api.js nie je dostupné');
+    setStatus('❌ face-api.js se nenačetlo — zkontrolujte internetové připojení', 'var(--red)');
+    logMsg('err', 'face-api.js není dostupné');
     return false;
   }
 
-  // Váhy z vladmandic forku — rovnaký formát/názvy súborov ako pôvodné face-api váhy.
+  // Váhy z vladmandic forku — stejný formát/názvy souborů jako původní face-api váhy.
   const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model';
   const TIMEOUT_MS = 30000; // 30s timeout na každý model
 
   function loadWithTimeout(promise, name) {
     return Promise.race([
       promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout načítania modelu ${name}`)), TIMEOUT_MS))
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout načítání modelu ${name}`)), TIMEOUT_MS))
     ]);
   }
 
@@ -4973,9 +4973,9 @@ async function _loadFaceApi() {
   } catch(e) {
     const msg = e.message || String(e);
     if (msg.includes('Timeout')) {
-      setStatus('❌ Timeout — modely sa nestihli stiahnúť (30s). Skontrolujte internet.', 'var(--red)');
+      setStatus('❌ Timeout — modely se nestihly stáhnout (30s). Zkontrolujte internet.', 'var(--red)');
     } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
-      setStatus('❌ Stiahnutie zlyhalo — skontrolujte internetové pripojenie alebo spustite cez http:// nie file://', 'var(--red)');
+      setStatus('❌ Stažení selhalo — zkontrolujte internetové připojení nebo spusťte přes http:// ne file://', 'var(--red)');
     } else {
       setStatus('❌ ' + msg, 'var(--red)');
     }
@@ -4987,8 +4987,8 @@ async function _loadFaceApi() {
 // ── Výpočet face descriptor z obrázka ──
 async function _computeDescriptor(imgEl) {
   try {
-    // Poistka: ak by inferencia niekedy zamrzla (napr. problém s TF backendom),
-    // po 20s vyhodíme timeout namiesto nekonečného „Počítám embedding…".
+    // Pojistka: pokud by inference někdy zamrzla (např. problém s TF backendem),
+    // po 20s vyhodíme timeout místo nekonečného „Počítám embedding…".
     const detection = await Promise.race([
       faceapi
         .detectSingleFace(imgEl, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
@@ -5003,13 +5003,13 @@ async function _computeDescriptor(imgEl) {
   }
 }
 
-// ── Porovnanie dvoch descriptorov (Euklidová vzdialenosť) ──
+// ── Porovnání dvou descriptorů (Euklidova vzdálenost) ──
 function _faceDistance(d1, d2) {
   if (!d1 || !d2) return 1.0;
   return faceapi.euclideanDistance(d1, d2);
 }
 
-// ── Hľadanie najlepšej zhody pre descriptor ──
+// ── Hledání nejlepší shody pro descriptor ──
 function _findBestMatch(descriptor) {
   const threshold = parseFloat(
     (document.getElementById('faceMatchThreshold') || {}).value || '0.5'
@@ -5027,18 +5027,18 @@ function _findBestMatch(descriptor) {
   return null;
 }
 
-// ── Rozpoznaj tvár z canvasu (výrez oblasti tváre) ──
+// ── Rozpoznej tvář z canvasu (výřez oblasti tváře) ──
 async function _recognizeFace(face) {
   if (_persons.length === 0 || !_faceApiLoaded) return null;
   const cv = document.getElementById('scanCanvas');
   if (!cv) return null;
 
-  // Vystrihni výrez tváre do dočasného canvasu
+  // Vystřihni výřez tváře do dočasného canvasu
   const [x1, y1] = face.topLeft;
   const [x2, y2] = face.bottomRight;
   const pw = Math.max(1, x2 - x1);
   const ph = Math.max(1, y2 - y1);
-  // Pridaj padding okolo tváre pre lepšiu detekciu
+  // Přidej padding okolo tváře pro lepší detekci
   const pad = Math.round(pw * 0.3);
   const sx = Math.max(0, x1 - pad);
   const sy = Math.max(0, y1 - pad);
@@ -5054,7 +5054,7 @@ async function _recognizeFace(face) {
   return _findBestMatch(descriptor);
 }
 
-// ── UI: render zoznamu osôb ──
+// ── UI: render seznamu osob ──
 function _renderPersonsList() {
   const list = document.getElementById('personsList');
   if (!list) return;
@@ -5083,7 +5083,7 @@ function _renderPersonsList() {
   });
 }
 
-// ── Obsluha výberu fotky ──
+// ── Obsluha výběru fotky ──
 function handlePersonPhoto(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -5105,7 +5105,7 @@ function clearPersonPhoto() {
   if (wrap) wrap.style.display = 'none';
 }
 
-// ── Pridanie osoby ──
+// ── Přidání osoby ──
 async function addPersonFromInput() {
   const nameEl = document.getElementById('newPersonName');
   const statusEl = document.getElementById('personsStatus');
@@ -5121,19 +5121,19 @@ async function addPersonFromInput() {
 
   if (statusEl) { statusEl.textContent = '⏳ Načítám modely a počítám embedding…'; statusEl.style.color = 'var(--text-3)'; }
 
-  // Zamkni tlačidlo počas spracovania
+  // Zamkni tlačítko během zpracování
   const addBtn = document.querySelector('[onclick="addPersonFromInput()"]');
   if (addBtn) addBtn.disabled = true;
 
   try {
-  // Načítaj face-api ak treba
+  // Načti face-api pokud třeba
   const ok = await _loadFaceApi();
   if (!ok) {
     if (statusEl) { statusEl.textContent = '❌ Nepodařilo se načíst face-api modely'; statusEl.style.color = 'var(--red)'; }
     return;
   }
 
-  // Vypočítaj descriptor z fotky
+  // Vypočítej descriptor z fotky
   const img = new Image();
   img.src = _pendingPersonPhoto;
   await new Promise(r => { img.onload = r; img.onerror = r; });
@@ -5150,7 +5150,7 @@ async function addPersonFromInput() {
   await _savePersonsDB();
   _renderPersonsList();
 
-  // Reset formulára
+  // Reset formuláře
   if (nameEl) nameEl.value = '';
   clearPersonPhoto();
   if (statusEl) {
@@ -5164,7 +5164,7 @@ async function addPersonFromInput() {
   }
 }
 
-// ── Zmazanie osoby ──
+// ── Smazání osoby ──
 async function deletePerson(id) {
   _persons = _persons.filter(p => p.id !== id);
   await _savePersonsDB();
@@ -5185,30 +5185,30 @@ function autoConnect() {
 autoConnect();
 logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
 
-// ── ŠKÁLOVANIE ──
+// ── ŠKÁLOVÁNÍ ──
 (function() {
   const drawer = document.getElementById('settingsDrawer');
   const overlay = document.getElementById('drawerOverlay');
   if (drawer) document.body.appendChild(drawer);
   if (overlay) document.body.appendChild(overlay);
 
-  // Seat layout: 14 stĺpcov (4+6+4) + 2 hall gaps (20px) + cam1 + padding
+  // Seat layout: 14 sloupců (4+6+4) + 2 hall gaps (20px) + cam1 + padding
   // cam1 = 2*C + 8 + 24 + 40 = 2*C + 72
   // cam2 = 14*C + 13*8 + 2*20 + 40 = 14*C + 144
   // total = cam1 + 16 + cam2 = 16*C + 232
   // C = (vw - 232) / 16
 
-  // Klasický: cam2 = auto-fill, vypočítame optimálnu veľkosť
+  // Klasický: cam2 = auto-fill, vypočítáme optimální velikost
   // cam2_avail = vw - cam1 - 16 - 40 = vw - (2*C+72) - 56 = vw - 2*C - 128
   // cols = round(cam2_avail / (C+8))
-  // Iteratívne hľadáme C
+  // Iterativně hledáme C
 
   function calcCam2CardW(vw, vh) {
-    // Dostupná šírka pre cam2 grid
+    // Dostupná šířka pro cam2 grid
     const cam1W = 230;
     const cam2W = vw - cam1W - 16 - 40; // -appGap -sectionPad*2
 
-    // Dostupná výška pre grid
+    // Dostupná výška pro grid
     // Fixné: header(60) + appPad(16) + panelTitle(28) + presetsHeader(36) + sectionPad(16) + appPadBot(16) = ~172px
     const fixedH = 172;
     const cam2H = vh - fixedH;
@@ -5219,7 +5219,7 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
 
     if (n === 0) return Math.max(80, Math.min(130, Math.floor(cam2W)));
 
-    // Hľadáme optimálnu veľkosť C kde grid vyplní priestor
+    // Hledáme optimální velikost C kde grid vyplní prostor
     // cols = floor(cam2W / (C+8)), rows = ceil(n / cols)
     // Výška gridu = rows*(C*h_ratio) + (rows-1)*8
     // h_ratio = 3/4 + 0.26 = 1.01 (img + name)
@@ -5235,10 +5235,10 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
       const gridH = rows * (C * H_RATIO) + (rows - 1) * GAP;
       const gridW = cols * C + (cols - 1) * GAP;
 
-      // Penalizuj ak grid presiahne dostupný priestor
+      // Penalizuj pokud grid přesáhne dostupný prostor
       if (gridW > cam2W + 4) continue;
 
-      // Score = ako dobre vyplní výšku (chceme gridH čo najbližšie k cam2H)
+      // Score = jak dobře vyplní výšku (chceme gridH co nejblíže k cam2H)
       const score = Math.abs(gridH - cam2H) + Math.max(0, gridH - cam2H) * 2;
       if (score < bestScore) {
         bestScore = score;
@@ -5250,9 +5250,9 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
 
   function calcCardW(vw, isSeat) {
     if (isSeat) {
-      // Hľadáme C tak aby sa hall zmestil do vw
-      // Skutočná card = round(C*0.9), gap = round(2*C/60), hall_gap = round(8*C/60)
-      // hall šírka = left + hall_gap + right = 2*(8*card+7*gap) + hall_gap
+      // Hledáme C tak aby se hall vešel do vw
+      // Skutečná card = round(C*0.9), gap = round(2*C/60), hall_gap = round(8*C/60)
+      // hall šířka = left + hall_gap + right = 2*(8*card+7*gap) + hall_gap
       // + padding 32+16 = 48px
       for (let C = 130; C >= 40; C--) {
         const card = Math.round(C * 0.75);
@@ -5278,7 +5278,7 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
 
     let card = calcCardW(vw, isSeat);
     if (card === null) {
-      // Klasický mód — vypočítaj podľa počtu presetů a dostupného priestoru
+      // Klasický mód — vypočítej podle počtu presetů a dostupného prostoru
       card = calcCam2CardW(vw, vh);
     }
     const gap = Math.round(2 * card / 60);
@@ -5286,7 +5286,7 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     document.documentElement.style.setProperty('--card-w', Math.round(card * 0.75) + 'px');
     window._sedSlotW = Math.round(card * 0.75);
     window._sedSlotH = Math.round(card * 0.75 * 1.01);
-    // Dynamické odsadenia radov podľa aktuálnej veľkosti slotu
+    // Dynamická odsazení řad podle aktuální velikosti slotu
     const actualCard = Math.round(card * 0.75);
     const unit = actualCard + gap;
     window._seatIndentsLeft  = [Math.round(1.5*unit), Math.round(0.5*unit), 0, Math.round(0.5*unit), 0];
@@ -5295,10 +5295,10 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     window._seatLeftGap      = (6*actualCard + 5*gap - 5*actualCard) / 4;
     document.documentElement.style.setProperty('--seat-gap', gap + 'px');
     document.documentElement.style.setProperty('--hall-gap', hall + 'px');
-    // Cam1 presety — 1.5× väčšie ako cam2, nezávisle
+    // Cam1 presety — 1.5× větší než cam2, nezávisle
     const cam1Card = Math.round(card * 1.5);
     document.documentElement.style.setProperty('--cam1-card-w', cam1Card + 'px');
-    // Ak je seat layout otvorený, prekreslíme ho
+    // Pokud je seat layout otevřený, překreslíme ho
     if (isSeat && window.renderSeatLayout) renderSeatLayout();
   }
 

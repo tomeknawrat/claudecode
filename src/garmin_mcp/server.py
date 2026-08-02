@@ -157,6 +157,18 @@ def _first(data: Any) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _first_val(mapping: Any) -> dict:
+    """Return the first value of a dict keyed by a dynamic id (e.g. a device id).
+
+    Several Garmin endpoints nest the data-of-interest under a per-device key
+    (the watch's ID), so callers can't know the key ahead of time.
+    """
+    if isinstance(mapping, dict) and mapping:
+        first = next(iter(mapping.values()))
+        return first if isinstance(first, dict) else {}
+    return {}
+
+
 def _format(data: Any, fmt: ResponseFormat, markdown_fn: Callable[[Any], str]) -> str:
     """Dispatch to JSON dump or a markdown formatter based on ``fmt``."""
     if fmt == ResponseFormat.JSON:
@@ -515,6 +527,43 @@ def _md_training_readiness(d: dict) -> str:
                  f"(weekly avg {_num(d.get('hrvWeeklyAverage'))} ms)")
     lines.append(f"- **Stress factor**: {_clean(d.get('stressHistoryFactorFeedback'))}")
     lines.append(f"- **Acute load**: {_num(d.get('acuteLoad'))}")
+    return "\n".join(lines)
+
+
+def _md_training_status(d: dict) -> str:
+    d = d or {}
+    status = _first_val((d.get("mostRecentTrainingStatus") or {}).get("latestTrainingStatusData"))
+    balance = _first_val(
+        (d.get("mostRecentTrainingLoadBalance") or {}).get("metricsTrainingLoadBalanceDTOMap")
+    )
+    lines = ["# Training Status", ""]
+    lines.append(
+        "- **Status**: "
+        f"{_clean(status.get('trainingStatusFeedbackPhrase') or status.get('trainingStatusKey'))}"
+    )
+    lines.append(f"- **Weekly training load**: {_num(status.get('weeklyTrainingLoad'))}")
+    if status.get("loadTunnelMin") is not None or status.get("loadTunnelMax") is not None:
+        lines.append(
+            f"- **Optimal load range**: {_num(status.get('loadTunnelMin'))}"
+            f"–{_num(status.get('loadTunnelMax'))}"
+        )
+    acute = status.get("acuteTrainingLoadDTO") or {}
+    acwr = acute.get("acwrPercent") or acute.get("dailyAcuteChronicWorkloadRatio")
+    if acwr is not None:
+        lines.append(f"- **Acute:chronic load ratio**: {_num(acwr, 2)}")
+    if balance:
+        lines.append(f"- **Load balance**: {_clean(balance.get('trainingBalanceFeedbackPhrase'))}")
+        lines.append(
+            "- **Monthly load (aerobic low / aerobic high / anaerobic)**: "
+            f"{_num(balance.get('monthlyLoadAerobicLow'))} / "
+            f"{_num(balance.get('monthlyLoadAerobicHigh'))} / "
+            f"{_num(balance.get('monthlyLoadAnaerobic'))}"
+        )
+    vo2 = d.get("mostRecentVO2Max") or {}
+    generic = vo2.get("generic") or {} if isinstance(vo2, dict) else {}
+    gvo2 = generic.get("vo2MaxPreciseValue") or generic.get("vo2MaxValue")
+    if gvo2 is not None:
+        lines.append(f"- **VO2 max**: {_num(gvo2, 1)} ml/kg/min")
     return "\n".join(lines)
 
 
@@ -964,6 +1013,40 @@ async def garmin_get_training_readiness(params: DateInput) -> str:
                 "requires a compatible Garmin device that computes readiness."
             )
         return _format(data, params.response_format, _md_training_readiness)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool(name="garmin_get_training_status", annotations={"title": "Get Training Status", **_READ_ONLY})
+async def garmin_get_training_status(params: DateInput) -> str:
+    """Get Training Status and training load for a single day.
+
+    Training Status interprets your recent training (e.g. PRODUCTIVE,
+    MAINTAINING, PEAKING, OVERREACHING, DETRAINING, RECOVERY) from your VO2 max
+    trend and training load. Also reports the weekly training load, the optimal
+    load range ("load tunnel"), the acute:chronic load ratio, and the monthly
+    aerobic/anaerobic load balance. Requires a compatible Garmin device.
+
+    Args:
+        params (DateInput): cdate (YYYY-MM-DD, default today), response_format.
+
+    Returns:
+        str: Training status summary. Key JSON paths: mostRecentTrainingStatus.
+        latestTrainingStatusData.<deviceId>.{trainingStatusKey,
+        trainingStatusFeedbackPhrase, weeklyTrainingLoad, loadTunnelMin,
+        loadTunnelMax, acuteTrainingLoadDTO}, and mostRecentTrainingLoadBalance.
+        metricsTrainingLoadBalanceDTOMap.<deviceId>.{monthlyLoadAerobicLow,
+        monthlyLoadAerobicHigh, monthlyLoadAnaerobic, trainingBalanceFeedbackPhrase}.
+        On failure: "Error: <message>".
+    """
+    try:
+        data = await _call(lambda api: api.get_training_status(params.cdate))
+        if not data:
+            return (
+                f"No training status data for {params.cdate}. This metric "
+                "requires a compatible Garmin device with recent training."
+            )
+        return _format(data, params.response_format, _md_training_status)
     except Exception as e:
         return _handle_error(e)
 

@@ -152,24 +152,48 @@ Rad 6: [161..168]   bez odsadenia
 | face-api zaseknutie | Modely sa načítavajú sériovo s 30s timeoutom, progress feedback |
 | Seat layout sloty neklikateľné | Click handler na všetkých slotoch (aj occupied) |
 | Duplikáty console warnings (TF.js) | Potlačené cez console.warn override |
+| face-api „Počítám embedding" zamrzne | **face-api.js@0.22.2 → @vladmandic/face-api@1.7.15** (kompatibilný s TF.js 4.x). MODEL_URL zmenené na vladmandic váhy. Pridaný 20s timeout do `_computeDescriptor`. Otestované — funguje, tváre sa rozpoznávajú. |
 
 ---
 
-## Aktuálne nedoriešené problémy
+## Aktuálny stav (aktualizácia 30.7.2026)
+
+Táto sekcia je novšia než zvyšok dokumentu — zachytáva prácu z posledného chatu.
+
+### Opravy urobené (v kóde), ale ešte NEOVERENÉ naostro pri kamere
+- **Zastavovanie kamery — 2 zmeny:**
+  1. `ptz_server.py` — per-camera `asyncio.Lock` (`cam_locks`), aby sa stop na sieti nepredbehol pred move (príkazy pre danú kameru idú striktne v poradí).
+  2. `Ovládání_kamer_1_2_IP.html` (`startCmd`/`stopCmd`, ~ř. 2358) — skutočný **hold/release**: krátky klik jde ~350ms a sám zastaví; držanie jde dokým pustíš. Stop sa posiela 2× (hneď + po 150ms).
+  → **Stále hlásené ako nefunkčné** (30.7.). Podozrenie sa presúva na samotný **stop CGI príkaz** kamery (`?ptzcmd&stop`) — možno VHD chce iný formát. **Ďalší krok:** priamy CGI test z Pythonu (move → sleep 1.5s → stop), pozorovať kameru. Treba heslo ku kamere.
+
+### Face recognition — VYRIEŠENÉ
+- Swap na `@vladmandic/face-api@1.7.15` (viď tabuľka vyššie). Testovacie tváre prechádzajú.
+
+### Prostredie (Windows PC uživateľa)
+- **Python 3.12.10** doinštalovaný cez winget do `C:\Users\thome\AppData\Local\Programs\Python\Python312` (pôvodná inštalácia bola rozbitá). Balíčky `websockets 16.1.1`, `pillow`, `pystray` — server naostro overený (WS 8765 odpovedá). Python pridaný do user PATH.
+- **Kamery na LAN:** CAM1 Pódium `192.168.1.51`, CAM2 Komentáre `192.168.1.52` — obe online (ping OK, HTTP 401, server `thttpd/2.25b`). Login default admin/admin, reálne heslo nastavené v appke.
+- **GitHub CLI (`gh` 2.97)** nainštalovaný a prihlásený ako `tomeknawrat`.
+
+### ⚠️ Cloud session vs. lokálne kamery
+Tento projekt reálne potrebuje **lokálnu sieť ku kameram + `ptz_server.py` bežiaci na tom PC v sále**. Cloud session (claude.ai/code) beží na vzdialenom stroji, takže na kamery ani na lokálny server **nedosiahne** — hodí sa na úpravy kódu, ale živé testovanie PTZ musí prebehnúť lokálne na tom počítači.
+
+---
+
+## Ostatné nedoriešené problémy
 
 1. **Duplikát preset kariet** — `savePresetModal` sa volá raz (potvrdené cez console.trace), `push` prebehne raz (0→1), ale na obrazovke sú 2 karty. Podozrenie: `loadPresets()` dobehne asynchrónne po save a prekreslí s duplikátom z IndexedDB (kde môžu byť staré duplikáty z predchádzajúcich bugov). **Odporúčané riešenie:** v Edge F12 → Application → IndexedDB → `ptz_controller` → Delete database, potom skúsiť znova.
 
-2. **Kamera sa nezastavuje po šípke** — posielame stop 2× ale niektoré kamery VHD ignorujú stop ak príde príliš rýchlo po pohybe. Treba otestovať na reálnej kamere a prípadne upraviť delay alebo URL formát.
-
 ---
 
-## Konverzácia a súbory
+## Verzovanie a súbory
 
-Aktuálne verzie súborov sú priložené k tomuto chatu:
-- `Ovládání_kamer_1_2_IP.html` — verzia 1.2, aktualizácia 28.5.2026
-- `ptz_server.py`
+Projekt je odteraz **git repozitár** na GitHube:
+- Remote: `https://github.com/tomeknawrat/claudecode.git`, vetva **`ptzcameracontroller`**
+- `Ovládání_kamer_1_2_IP.html` — hlavná appka
+- `ptz_server.py` — WS server
+- `mediamtx.yml` je v `.gitignore` (auto-generovaný serverom)
 
-Pri pokračovaní v novom chate: **nahraj oba súbory** a povedz s čím chceš pokračovať.
+Pri pokračovaní: repo je zdroj pravdy, netreba prikladať súbory ručne.
 
 ---
 

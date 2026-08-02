@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "garmin-mcp"
+version = "0.1.0"
+description = "MCP server exposing Garmin Connect data (activities, health, body composition, summaries) to MCP clients like Claude."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "tomeknawrat" }]
+keywords = ["mcp", "garmin", "garmin-connect", "claude", "fitness", "health"]
+
+dependencies = [
+    "mcp>=1.2.0",
+    "garminconnect>=0.2.19",
+]
+
+[project.scripts]
+garmin-mcp = "garmin_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

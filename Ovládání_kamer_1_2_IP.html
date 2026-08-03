@@ -2242,6 +2242,22 @@ async function savePresetsStorage() {
   } catch(e) {}
 }
 
+// Odstraní duplicitní presety podle čísla (num) — obrana proti poškozeným datům
+// v IndexedDB z předchozích bugů, kvůli kterým se na obrazovce zobrazovaly
+// dvě karty pro tentýž preset. Zachová první výskyt.
+function dedupePresets(list) {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const p of list) {
+    if (!p || typeof p.num === 'undefined') { out.push(p); continue; }
+    if (seen.has(p.num)) continue;
+    seen.add(p.num);
+    out.push(p);
+  }
+  return out;
+}
+
 function loadPresets() {
   openDB().then(db => {
     const tx = db.transaction('presets', 'readonly');
@@ -2251,6 +2267,14 @@ function loadPresets() {
     tx.oncomplete = () => {
       try { if (r1.result) state.presets[1] = JSON.parse(r1.result); } catch(e) {}
       try { if (r2.result) state.presets[2] = JSON.parse(r2.result); } catch(e) {}
+      // Deduplikuj po načtení — pokud byly v úložišti duplikáty, přepíšou se čistou verzí
+      const before1 = state.presets[1].length, before2 = state.presets[2].length;
+      state.presets[1] = dedupePresets(state.presets[1]);
+      state.presets[2] = dedupePresets(state.presets[2]);
+      if (state.presets[1].length !== before1 || state.presets[2].length !== before2) {
+        logMsg('info', `Odstraněny duplicitní presety (CAM1: ${before1-state.presets[1].length}, CAM2: ${before2-state.presets[2].length}).`);
+        savePresetsStorage();
+      }
       // Migrácia z localStorage (jednorazovo)
       if (!r1.result && !r2.result) {
         try {
@@ -2365,6 +2389,15 @@ const PTZ_STOP_MAP = { up:'stop', down:'stop', left:'stop', right:'stop',
   zoomin:'zoomstop', zoomout:'zoomstop',
   focusfar:'focusstop', focusnear:'focusstop' };
 
+// Některé VHD kamery ignorují stop, který přijde příliš brzy po pohybovém příkazu,
+// a pokračují v pohybu. Proto stop pošleme vícekrát s rostoucím odstupem (0/150/400 ms) —
+// stop je idempotentní, takže opakování neškodí a výrazně zvyšuje spolehlivost zastavení.
+function sendStopRepeated(cam, stopAction) {
+  sendCmd(cam, stopAction);
+  setTimeout(() => sendCmd(cam, stopAction), 150);
+  setTimeout(() => sendCmd(cam, stopAction), 400);
+}
+
 function startCmd(cam, cmd) {
   const key = cam+cmd;
   pressedKeys[key] = true;
@@ -2379,8 +2412,7 @@ function startCmd(cam, cmd) {
   activeTimers[key] = setTimeout(() => {
     delete activeTimers[key];
     if (!pressedKeys[key]) {
-      sendCmd(cam, stopAction);
-      setTimeout(() => sendCmd(cam, stopAction), 150);
+      sendStopRepeated(cam, stopAction);
     }
   }, CLICK_MOVE_MS);
 }
@@ -2392,9 +2424,8 @@ function stopCmd(cam, cmd) {
   if (activeTimers[key]) { clearTimeout(activeTimers[key]); delete activeTimers[key]; }
   const stopAction = PTZ_STOP_MAP[cmd];
   if (!stopAction) return;
-  // Pošli stop okamžitě — a ještě jednou pro jistotu
-  sendCmd(cam, stopAction);
-  setTimeout(() => sendCmd(cam, stopAction), 150);
+  // Pošli stop okamžitě — a ještě párkrát pro jistotu (viz sendStopRepeated)
+  sendStopRepeated(cam, stopAction);
 }
 
 document.querySelectorAll('.ptz-btn, .zoom-btn, .focus-btn').forEach(btn => {

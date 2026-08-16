@@ -4473,6 +4473,8 @@ const _scan = {
   skipDone: 0,
   settleMs: 1800,        // ms čekání po pohybu kamery
   centerThreshold: 0.25, // tvář musí být ve středu ±25% šířky/výšky
+  anchorYFrac: 0.35,     // cílový bod výběru/centrování tváře — top-center (0=nahoře, 1=dole)
+  recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
 };
 
 // ── Scan log ──
@@ -4705,7 +4707,7 @@ function _isFaceCentered(face, canvasW, canvasH) {
   const [x1,y1] = face.topLeft, [x2,y2] = face.bottomRight;
   const cx = (x1+x2)/2, cy = (y1+y2)/2;
   const dx = Math.abs(cx - canvasW/2) / canvasW;
-  const dy = Math.abs(cy - canvasH*0.45) / canvasH; // trochu výše než střed
+  const dy = Math.abs(cy - canvasH*_scan.anchorYFrac) / canvasH; // kotva top-center
   return dx < _scan.centerThreshold && dy < _scan.centerThreshold;
 }
 
@@ -4753,6 +4755,7 @@ async function startScan() {
 
   _scan.active = true; _scan.aborting = false;
   _scan.seatsDone = 0; _scan.extraDone = 0; _scan.skipDone = 0;
+  _scan.recognizedIds = new Set(); // reset dedup — každý sken začíná načisto
   _sUpdateStats();
 
   const startBtn = document.getElementById('scanStartBtn');
@@ -4804,13 +4807,14 @@ async function startScan() {
       continue;
     }
 
-    // Najdi tvář nejblíže středu
+    // Vyber tvář nejblíže top-center bodu obrazu (rámeček „nejvíc nahoře a uprostřed")
+    const ax = W/2, ay = H * _scan.anchorYFrac;
     let bestFace = faces[0];
     let bestDist = Infinity;
     faces.forEach(f => {
       const [x1,y1] = f.topLeft, [x2,y2] = f.bottomRight;
       const cx = (x1+x2)/2, cy = (y1+y2)/2;
-      const dist = Math.sqrt((cx-W/2)**2 + (cy-H*0.45)**2);
+      const dist = Math.sqrt((cx-ax)**2 + (cy-ay)**2);
       if (dist < bestDist) { bestDist = dist; bestFace = f; }
     });
 
@@ -4834,11 +4838,23 @@ async function startScan() {
     let finalPhoto = screenshot;
     let finalName  = `Sedadlo ${seatNum}`;
     if (_persons.length > 0 && _faceApiLoaded) {
-      const match = await _recognizeFace(bestFace);
-      if (match) {
-        finalPhoto = match.person.photoDataUrl;
-        finalName  = match.person.name;
-        _sLog(`  Rozpoznána: ${match.person.name} (dist: ${match.distance.toFixed(3)})`, 'ok');
+      const res = await _recognizeFace(bestFace);
+      if (res && res.matched) {
+        // Dedup: pokud jsme tuto osobu už v tomto skenu rozpoznali, druhý výskyt ignoruj
+        if (_scan.recognizedIds.has(res.person.id)) {
+          _sLog(`  Sedadlo ${seatNum}: ${res.person.name} už rozpoznán dříve (dist: ${res.distance.toFixed(3)}) → ignoruji`, 'warn');
+          _scan.skipDone++;
+          _sUpdateStats();
+          continue;
+        }
+        _scan.recognizedIds.add(res.person.id);
+        finalPhoto = res.person.photoDataUrl;
+        finalName  = res.person.name;
+        _sLog(`  Rozpoznána: ${res.person.name} (dist: ${res.distance.toFixed(3)})`, 'ok');
+      } else if (res && res.noFace) {
+        _sLog(`  Sedadlo ${seatNum}: v ořezu nenalezena tvář pro embedding → screenshot`, 'warn');
+      } else if (res && res.person) {
+        _sLog(`  Sedadlo ${seatNum}: nejblíže ${res.person.name} (dist: ${res.distance.toFixed(3)}) > práh ${res.threshold} → screenshot`, 'warn');
       }
     }
 
@@ -5019,7 +5035,7 @@ async function _computeDescriptor(imgEl) {
     // po 20s vyhodíme timeout místo nekonečného „Počítám embedding…".
     const detection = await Promise.race([
       faceapi
-        .detectSingleFace(imgEl, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+        .detectSingleFace(imgEl, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
         .withFaceLandmarks()
         .withFaceDescriptor(),
       new Promise((_, reject) => setTimeout(() => reject(new Error('timeout výpočtu embeddingu (20s)')), 20000)),
@@ -5049,10 +5065,9 @@ function _findBestMatch(descriptor) {
     const dist = _faceDistance(descriptor, p.descriptor);
     if (dist < bestDist) { bestDist = dist; bestPerson = p; }
   });
-  if (bestPerson && bestDist <= threshold) {
-    return { person: bestPerson, distance: bestDist };
-  }
-  return null;
+  if (!bestPerson) return null; // žádná uložená osoba nemá embedding
+  // Vrací nejbližší osobu vždy + zda prošla prahem — volající to využije pro logování near-miss
+  return { person: bestPerson, distance: bestDist, matched: bestDist <= threshold, threshold };
 }
 
 // ── Rozpoznej tvář z canvasu (výřez oblasti tváře) ──
@@ -5078,8 +5093,8 @@ async function _recognizeFace(face) {
   tmp.getContext('2d').drawImage(cv, sx, sy, sw, sh, 0, 0, sw, sh);
 
   const descriptor = await _computeDescriptor(tmp);
-  if (!descriptor) return null;
-  return _findBestMatch(descriptor);
+  if (!descriptor) return { noFace: true }; // v ořezu se nepodařilo detekovat tvář
+  return _findBestMatch(descriptor); // { person, distance, matched, threshold } nebo null
 }
 
 // ── UI: render seznamu osob ──

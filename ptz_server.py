@@ -14,8 +14,18 @@ import os
 import sys
 import webbrowser
 import subprocess
+import http.server
+import socketserver
 
 WS_PORT  = 8765
+
+# CORS proxy pro WHEP handshake (video náhled). MediaMTX 1.20 nevrací CORS hlavičky
+# na preflight OPTIONS, takže přímý fetch z file:// (Origin: null) padá na CORS.
+# Appka proto posílá SDP handshake sem, proxy ho přepošle na MediaMTX (server↔server,
+# bez CORS) a doplní Access-Control-* hlavičky. Video pak teče WebRTC/UDP napřímo.
+WHEP_PROXY_PORT       = 8890
+MEDIAMTX_WEBRTC_HOST  = '127.0.0.1'
+MEDIAMTX_WEBRTC_PORT  = 8889
 
 # Složka kde se hledá HTML soubor — stejná jako ptz_server.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -140,6 +150,90 @@ def build_cgi_path(cmd, speed=5, preset=None):
     if cmd == 'home':
         return f'{base}?ptzcmd&poscall&0'
     return None
+
+class _WhepProxyHandler(http.server.BaseHTTPRequestHandler):
+    """Přeposílá WHEP požadavky (SDP handshake) na MediaMTX a doplňuje CORS hlavičky.
+
+    Appka běží z file:// (Origin: null) a MediaMTX 1.20 nevrací CORS hlavičky na
+    preflight OPTIONS → přímý fetch padá. Tady OPTIONS zodpovíme sami a POST/ostatní
+    metody přepošleme na MediaMTX (server↔server, kde CORS neplatí) a k odpovědi
+    přidáme Access-Control-*. Video jde WebRTC/UDP mimo tuto proxy."""
+
+    protocol_version = 'HTTP/1.1'
+
+    def _send_cors(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, PATCH, DELETE')
+        self.send_header('Access-Control-Allow-Headers', '*')
+        self.send_header('Access-Control-Expose-Headers', '*')
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._send_cors()
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+
+    def _forward(self, method):
+        try:
+            length = int(self.headers.get('Content-Length', 0) or 0)
+        except ValueError:
+            length = 0
+        body = self.rfile.read(length) if length else None
+        target = f'http://{MEDIAMTX_WEBRTC_HOST}:{MEDIAMTX_WEBRTC_PORT}{self.path}'
+        req = urllib.request.Request(target, data=body, method=method)
+        ct = self.headers.get('Content-Type')
+        if ct:
+            req.add_header('Content-Type', ct)
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data      = resp.read()
+                status    = resp.status
+                resp_ct   = resp.headers.get('Content-Type', 'application/sdp')
+        except urllib.error.HTTPError as e:
+            data    = e.read()
+            status  = e.code
+            resp_ct = e.headers.get('Content-Type', 'text/plain')
+        except Exception as e:
+            msg = f'WHEP proxy: MediaMTX nedostupný ({e})'.encode('utf-8')
+            self.send_response(502)
+            self._send_cors()
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.send_header('Content-Length', str(len(msg)))
+            self.end_headers()
+            self.wfile.write(msg)
+            return
+        self.send_response(status)
+        self._send_cors()
+        self.send_header('Content-Type', resp_ct)
+        self.send_header('Content-Length', str(len(data)))
+        self.end_headers()
+        if data:
+            self.wfile.write(data)
+
+    def do_POST(self):   self._forward('POST')
+    def do_PATCH(self):  self._forward('PATCH')
+    def do_DELETE(self): self._forward('DELETE')
+    def do_GET(self):    self._forward('GET')
+
+    def log_message(self, *args):
+        pass  # ticho — jinak spamuje konzoli u každého segmentu
+
+
+class _ThreadingHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
+
+def run_whep_proxy():
+    """Spustí CORS proxy pro WHEP handshake na localhost:WHEP_PROXY_PORT."""
+    try:
+        srv = _ThreadingHTTPServer(('127.0.0.1', WHEP_PROXY_PORT), _WhepProxyHandler)
+    except Exception as e:
+        print(f'[WHEP-PROXY] Nepodařilo se spustit na :{WHEP_PROXY_PORT} — {e}')
+        return
+    print(f'[WHEP-PROXY] Naslouchá na http://127.0.0.1:{WHEP_PROXY_PORT} → MediaMTX :{MEDIAMTX_WEBRTC_PORT} (obchází CORS)')
+    srv.serve_forever()
+
 
 async def handler(websocket):
     connected_clients.add(websocket)
@@ -275,6 +369,10 @@ if __name__ == '__main__':
     # WebSocket server — v samostatném vlákně
     ws_thread = threading.Thread(target=run_server, daemon=True)
     ws_thread.start()
+
+    # CORS proxy pro WHEP handshake — v samostatném vlákně
+    whep_thread = threading.Thread(target=run_whep_proxy, daemon=True)
+    whep_thread.start()
 
     # pystray MUSÍ běžet v hlavním vlákně (požadavek Windows)
     try:

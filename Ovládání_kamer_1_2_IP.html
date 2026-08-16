@@ -4519,7 +4519,12 @@ async function _initVideo() {
 
   if (rtspUrl) {
     overlay.style.display = 'none';
-    await _startStream('http://localhost:8889/cam2', 'whep');
+    // WHEP jde přes CORS proxy v ptz_server.py (:8890), ne přímo na MediaMTX (:8889).
+    // MediaMTX 1.20 neposílá CORS hlavičky na preflight OPTIONS, takže přímý fetch
+    // z file:// (Origin: null) skončí na "Failed to fetch". Proxy handshake přepošle
+    // na MediaMTX (server↔server, bez CORS) a doplní Access-Control-* hlavičky.
+    // Samotné video pak teče WebRTC/UDP napřímo browser↔MediaMTX (proxy se ho netýká).
+    await _startStream('http://localhost:8890/cam2', 'whep');
   } else {
     overlay.style.display = 'flex';
     const msg = document.getElementById('scanVideoMsg');

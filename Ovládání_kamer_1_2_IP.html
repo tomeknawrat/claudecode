@@ -4746,22 +4746,14 @@ function _nextPresetNum() {
 async function startScan() {
   if (_scan.active) return;
 
-  // Validace
-  if (_scanSectors.length === 0) {
-    _sLog('Nejsou definované žádné sektory!', 'err'); return;
-  }
-  const unset = _scanSectors.filter(s => s.presetNum === undefined);
-  if (unset.length > 0) {
-    _sLog(`${unset.length} sektor(y) nemají uloženou pozici — namiřte kameru a klikněte "Namiřit"`, 'err'); return;
-  }
+  // Validace — musí být kalibrované aspoň jedno sedadlo (preset kamery pro slot)
   if (!slotPresets || slotPresets.every(v => v === null)) {
     _sLog('Žádná sedadla nejsou kalibrována! Nejprve nastavte presety sedadel v "Editace presetů sedadel".', 'err'); return;
   }
 
   _scan.active = true; _scan.aborting = false;
   _scan.seatsDone = 0; _scan.extraDone = 0; _scan.skipDone = 0;
-  _scanSectors.forEach(s => { s.done = false; });
-  _renderSectors(); _sUpdateStats();
+  _sUpdateStats();
 
   const startBtn = document.getElementById('scanStartBtn');
   const cancelBtn = document.getElementById('scanCancelBtn');

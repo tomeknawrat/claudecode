@@ -7,24 +7,23 @@
 ## TL;DR — kde to stojí
 
 - ✅ **Face recognition opraveno** — appka už nezamrzá na „Počítám embedding".
-- ✅ **Zastavování kamery — opraveno v kódu, ale NEOVĚŘENO naostro** u reálné kamery. Toto je hlavní otevřený bod.
+- ✅ **Zastavování kamery — VYŘEŠENO a ověřeno naostro** — pan/tilt stop je `ptzstop`, ne `stop`.
+- ✅ **Video náhled (WHEP) — VYŘEŠENO** — CORS proxy v `ptz_server.py` (:8890) obchází CORS MediaMTX.
 - ✅ **Prostředí zprovozněno** — Python, server, GitHub.
 - ✅ **Celý projekt přeložen do češtiny.**
-- ⏳ **Zbývá:** živě otestovat stop kamery u reálných kamer.
 
 ---
 
 ## Co se v této session udělalo (chronologicky)
 
-### 1. Oprava zastavování kamery (v kódu, NEOVĚŘENO naostro)
-Problém: kamera se po puštění šipky nezastaví („jede dál nekonečně").
-Dvě změny:
-- **`ptz_server.py`** — přidán per-camera `asyncio.Lock` (`cam_locks`). Každý PTZ příkaz pro danou kameru se serializuje, aby stop na síti nepředběhl move (dřív běžely paralelně na různých spojeních a mohly se prohodit).
-- **`SL Meeting_Ovládání PTZ kamer.html`** (`startCmd`/`stopCmd`) — přepsáno na skutečný **hold/release**: krátký klik jede ~350 ms a sám zastaví; držení jede dokud pustíš. Stop se posílá 2× (hned + po 150 ms).
+### 1. Oprava zastavování kamery (VYŘEŠENO, ověřeno naostro)
+Problém: kamera se po kliknutí/puštění šipky nezastaví („jede dál nekonečně").
+**Kořen:** pan/tilt stop CGI příkaz byl `?ptzcmd&stop`, ale VHD kamera (firmware PTZOptics/HuddleCam) chce **`?ptzcmd&ptzstop`**. Zjištěno přímým CGI testem `stop_test.py` (obešel appku i server, zkoušel varianty stop příkazu). Oprava v `build_cgi_path` (`ptz_server.py`): mapování `'stop' → 'ptzstop'`.
+Doplňkové úpravy (zůstávají v platnosti):
+- **`ptz_server.py`** — per-camera `asyncio.Lock` (`cam_locks`), aby stop na síti nepředběhl move.
+- **`SL Meeting_Ovládání PTZ kamer.html`** (`startCmd`/`stopCmd`) — skutečný **hold/release**: krátký klik jede ~350 ms a sám zastaví; držení jede dokud pustíš. Stop se posílá 3× (0/150/400 ms).
 
-**Stav:** uživatel hlásí, že to *stále* nezastavuje. Podezření se přesouvá na samotný **stop CGI příkaz** kamery — teď se posílá `?ptzcmd&stop` (bez rychlosti). Možná VHD kamera chce jiný formát.
-**Další krok:** přímý CGI test z Pythonu (obejít appku i server): poslat move → `sleep 1.5 s` → stop, pozorovat kameru. Když nezastaví, zkusit alternativní stop příkazy. **Potřeba heslo ke kameře** (default admin/admin, ale reálné je nastavené v appce).
-⚠️ **Toto jde otestovat JEN lokálně** na PC v sále — vyžaduje LAN ke kamerám.
+**Stav:** ověřeno uživatelem naostro — `ptzstop` kameru zastaví. Hotovo.
 
 ### 2. Oprava face recognition (VYŘEŠENO)
 Problém: přidání osoby zamrzlo na „Počítám embedding…".

@@ -147,7 +147,7 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 | Problém | Řešení |
 |---------|----------|
-| Kamera nejde zastavit | PTZ příkazy jsou async tasks, stop se posílá 2× (po 350ms + 150ms později), stop URL bez rychlosti, per-camera serializace přes `cam_locks` |
+| Kamera nejde zastavit | **VYŘEŠENO:** pan/tilt stop je `?ptzcmd&ptzstop` (ne `stop`) — konvence PTZOptics/VHD, ověřeno `stop_test.py`. K tomu: PTZ příkazy jsou async tasks, stop se posílá 3× (0/150/400 ms), stop URL bez rychlosti, per-camera serializace přes `cam_locks`. |
 | Duplikát presetů při přidání | `type="button"` na modal buttons, `state._saving` guard, kontrola duplicitního num |
 | WebRTC stream nefungoval ve scan modalu | `ontrack` se nastavuje PŘED `createOffer`, čekání na ICE gathering, CORS v mediamtx.yml |
 | face-api zaseknutí | Modely se načítají sériově s 30s timeoutem, progress feedback |
@@ -161,11 +161,9 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 Tato sekce je novější než zbytek dokumentu — zachycuje práci z posledních chatů.
 
-### Opravy udělané (v kódu), ale ještě NEOVĚŘENÉ naostro u kamery
-- **Zastavování kamery — 2 změny:**
-  1. `ptz_server.py` — per-camera `asyncio.Lock` (`cam_locks`), aby se stop na síti nepředběhl před move (příkazy pro danou kameru jdou striktně v pořadí).
-  2. `SL Meeting_Ovládání PTZ kamer.html` (`startCmd`/`stopCmd`) — skutečný **hold/release**: krátký klik jede ~350ms a sám zastaví; držení jede dokud pustíš. Stop se posílá vícekrát (0/150/400 ms).
-  → **Stále hlášeno jako nefunkční** (30.7.). Podezření se přesouvá na samotný **stop CGI příkaz** kamery (`?ptzcmd&stop`) — možná VHD chce jiný formát. **Další krok:** přímý CGI test z Pythonu (move → sleep 1.5s → stop), pozorovat kameru. Potřeba heslo ke kameře.
+### Zastavování kamery — VYŘEŠENO
+- **Kořen problému:** pan/tilt stop CGI příkaz byl `?ptzcmd&stop`, ale VHD kamera (firmware PTZOptics/HuddleCam) chce **`?ptzcmd&ptzstop`**. Ověřeno přímým CGI testem (`stop_test.py`). Oprava v `build_cgi_path` (`ptz_server.py`): `'stop' → 'ptzstop'`.
+- Doplňkové úpravy (zůstávají): per-camera `asyncio.Lock` (`cam_locks`) v serveru; v HTML skutečný **hold/release** (krátký klik ~350 ms a sám zastaví, držení jede dokud pustíš), stop se posílá 3× (0/150/400 ms).
 
 ### Face recognition — VYŘEŠENO
 - Swap na `@vladmandic/face-api@1.7.15` (viz tabulka výše). Testovací tváře procházejí.

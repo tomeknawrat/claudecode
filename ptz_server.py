@@ -127,7 +127,7 @@ def build_cgi_path(cmd, speed=5, preset=None):
         'ur':        'rightup',
         'dl':        'leftdown',
         'dr':        'rightdown',
-        'stop':      'stop',
+        'stop':      'ptzstop',   # pan/tilt stop je 'ptzstop' (konvence PTZOptics/VHD), ne 'stop' — ověřeno stop_test.py
         'zoomin':    'zoomin',
         'zoomout':   'zoomout',
         'zoomstop':  'zoomstop',

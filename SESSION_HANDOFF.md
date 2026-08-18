@@ -20,7 +20,7 @@
 Problém: kamera se po puštění šipky nezastaví („jede dál nekonečně").
 Dvě změny:
 - **`ptz_server.py`** — přidán per-camera `asyncio.Lock` (`cam_locks`). Každý PTZ příkaz pro danou kameru se serializuje, aby stop na síti nepředběhl move (dřív běžely paralelně na různých spojeních a mohly se prohodit).
-- **`Ovládání_kamer_1_2_IP.html`** (`startCmd`/`stopCmd`, ~ř. 2358) — přepsáno na skutečný **hold/release**: krátký klik jede ~350 ms a sám zastaví; držení jede dokud pustíš. Stop se posílá 2× (hned + po 150 ms).
+- **`SL Meeting_Ovládání PTZ kamer.html`** (`startCmd`/`stopCmd`) — přepsáno na skutečný **hold/release**: krátký klik jede ~350 ms a sám zastaví; držení jede dokud pustíš. Stop se posílá 2× (hned + po 150 ms).
 
 **Stav:** uživatel hlásí, že to *stále* nezastavuje. Podezření se přesouvá na samotný **stop CGI příkaz** kamery — teď se posílá `?ptzcmd&stop` (bez rychlosti). Možná VHD kamera chce jiný formát.
 **Další krok:** přímý CGI test z Pythonu (obejít appku i server): poslat move → `sleep 1.5 s` → stop, pozorovat kameru. Když nezastaví, zkusit alternativní stop příkazy. **Potřeba heslo ke kameře** (default admin/admin, ale reálné je nastavené v appce).

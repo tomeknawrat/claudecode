@@ -350,7 +350,7 @@ def run_server():
 
 def _find_html_file():
     """Najde HTML soubor appky v BASE_DIR."""
-    for name in ['Ovládání_kamer_1_2_IP.html', 'Ovládání_kamer_1_1_IP.html']:
+    for name in ['SL Meeting_Ovládání PTZ kamer.html', 'Ovládání_kamer_1_2_IP.html', 'Ovládání_kamer_1_1_IP.html']:
         if os.path.exists(os.path.join(BASE_DIR, name)):
             return name
     for f in os.listdir(BASE_DIR):

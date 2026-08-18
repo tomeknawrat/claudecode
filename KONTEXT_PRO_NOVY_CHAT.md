@@ -9,7 +9,7 @@ Webová aplikace pro ovládání dvou PTZ kamer v konferenční/jednací sále. 
 ## Architektura
 
 ```
-Ovládání_kamer_1_2_IP.html   (UI, běží v Edge/Chrome)
+SL Meeting_Ovládání PTZ kamer.html   (UI, běží v Edge/Chrome)
         │
         │ WebSocket ws://localhost:8765
         ▼
@@ -36,7 +36,7 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 
 | Soubor | Popis |
 |-------|-------|
-| `Ovládání_kamer_1_2_IP.html` | Hlavní appka (~5300 řádků), standalone HTML |
+| `SL Meeting_Ovládání PTZ kamer.html` | Hlavní appka (~5300 řádků), standalone HTML |
 | `ptz_server.py` | Python WebSocket server + MediaMTX manager |
 | `mediamtx.exe` + `mediamtx.yml` | RTSP→WebRTC konvertor (vedle ptz_server.py) |
 
@@ -164,7 +164,7 @@ Tato sekce je novější než zbytek dokumentu — zachycuje práci z posledníc
 ### Opravy udělané (v kódu), ale ještě NEOVĚŘENÉ naostro u kamery
 - **Zastavování kamery — 2 změny:**
   1. `ptz_server.py` — per-camera `asyncio.Lock` (`cam_locks`), aby se stop na síti nepředběhl před move (příkazy pro danou kameru jdou striktně v pořadí).
-  2. `Ovládání_kamer_1_2_IP.html` (`startCmd`/`stopCmd`, ~ř. 2358) — skutečný **hold/release**: krátký klik jede ~350ms a sám zastaví; držení jede dokud pustíš. Stop se posílá 2× (hned + po 150ms).
+  2. `SL Meeting_Ovládání PTZ kamer.html` (`startCmd`/`stopCmd`) — skutečný **hold/release**: krátký klik jede ~350ms a sám zastaví; držení jede dokud pustíš. Stop se posílá vícekrát (0/150/400 ms).
   → **Stále hlášeno jako nefunkční** (30.7.). Podezření se přesouvá na samotný **stop CGI příkaz** kamery (`?ptzcmd&stop`) — možná VHD chce jiný formát. **Další krok:** přímý CGI test z Pythonu (move → sleep 1.5s → stop), pozorovat kameru. Potřeba heslo ke kameře.
 
 ### Face recognition — VYŘEŠENO
@@ -190,7 +190,7 @@ Tento projekt reálně potřebuje **lokální síť ke kamerám + `ptz_server.py
 
 Projekt je nyní **git repozitář** na GitHubu:
 - Remote: `https://github.com/tomeknawrat/claudecode.git`, větev **`ptzcameracontroller`**
-- `Ovládání_kamer_1_2_IP.html` — hlavní appka
+- `SL Meeting_Ovládání PTZ kamer.html` — hlavní appka
 - `ptz_server.py` — WS server
 - `mediamtx.yml` je v `.gitignore` (auto-generovaný serverem)
 

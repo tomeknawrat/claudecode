@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>Dorovnávaná 501</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #181c24; --panel2: #1f2430; --line: #2c3340;
+    --text: #e9edf3; --muted: #94a0b4; --accent: #f5b301; --green: #2ecc71;
+    --red: #e74c3c; --blue: #3b82f6; --radius: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  header { display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+  header h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
+  header h1 span { color: var(--accent); }
+  main { max-width: 760px; margin: 0 auto; padding: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+  .card h2 { margin: 0 0 10px; font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+  input[type=text], input[type=number], select {
+    width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel2); color: var(--text); font-size: 16px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > * { flex: 1; }
+  button { border: 0; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-weight: 600;
+    background: var(--panel2); color: var(--text); cursor: pointer; user-select: none; }
+  button:active { transform: scale(.98); filter: brightness(1.15); }
+  button.primary { background: var(--accent); color: #1a1400; }
+  button.danger { background: var(--red); color: #fff; }
+  button.ok { background: var(--green); color: #052e16; }
+  button.ghost { background: transparent; border: 1px solid var(--line); }
+  button:disabled { opacity: .45; cursor: default; }
+  .small { font-size: 13px; color: var(--muted); }
+  .players-count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .players-count button.active { background: var(--accent); color: #1a1400; }
+  .toggle { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--line); }
+  .toggle:first-of-type { border-top: 0; }
+  .switch { position: relative; width: 48px; height: 28px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch span { position: absolute; inset: 0; background: var(--line); border-radius: 28px; transition: .2s; }
+  .switch span::before { content: ""; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+  .switch input:checked + span { background: var(--green); }
+  .switch input:checked + span::before { transform: translateX(20px); }
+
+  /* scoreboard */
+  .board { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .pcard { background: var(--panel2); border: 2px solid var(--line); border-radius: 12px; padding: 10px; position: relative; transition: border-color .2s; }
+  .pcard.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245,179,1,.15); }
+  .pcard.winner { border-color: var(--green); }
+  .pcard.flash { animation: flash .8s ease; }
+  @keyframes flash { 0% { background: #5a1d1d; } 100% { background: var(--panel2); } }
+  .pcard .name { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pcard .score { font-size: 34px; font-weight: 800; line-height: 1.1; margin: 2px 0; }
+  .pcard .rest { font-size: 12px; color: var(--muted); }
+  .pcard .eq { font-size: 11px; color: var(--accent); margin-top: 4px; min-height: 14px; }
+  .pcard .darts { display: flex; gap: 4px; margin-top: 6px; min-height: 18px; }
+  .pcard .darts span { background: var(--panel); border-radius: 6px; padding: 1px 6px; font-size: 12px; font-weight: 700; }
+  .pcard .legs { position: absolute; top: 8px; right: 8px; font-size: 11px; color: var(--muted); }
+
+  .turnbar { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; gap: 8px; }
+  .turnbar .who { font-size: 16px; font-weight: 700; }
+  .turnbar .who b { color: var(--accent); }
+
+  /* tabs */
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tabs button { flex: 1; padding: 10px; }
+  .tabs button.active { background: var(--accent); color: #1a1400; }
+  .tabpanel[hidden] { display: none; }
+
+  /* dartboard */
+  #dartboard { width: 100%; max-width: 440px; margin: 0 auto; display: block; touch-action: manipulation; }
+  #dartboard path, #dartboard circle { stroke: #333; stroke-width: .6; }
+  #dartboard path:active { filter: brightness(1.6); }
+  #dartboard text { font-size: 15px; font-weight: 700; fill: #dfe6f0; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .hitmark { fill: none; stroke: var(--accent); stroke-width: 2.5; pointer-events: none; }
+
+  /* keypad */
+  .mult { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+  .mult button.active { background: var(--blue); color: #fff; }
+  .numgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .numgrid button { padding: 14px 0; font-size: 18px; }
+  .numgrid .wide { grid-column: span 2; }
+
+  /* camera */
+  .camwrap { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; }
+  .camwrap video, .camwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .camwrap canvas { touch-action: none; }
+  .camwrap .placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
+  .status { margin: 8px 0; padding: 10px 12px; border-radius: 10px; background: var(--panel2); font-size: 14px; }
+  .status.warn { background: #3b2a06; color: #ffd66b; }
+  .status.good { background: #0b3a22; color: #9ff3c4; }
+  .proposal { border: 2px solid var(--accent); border-radius: 12px; padding: 12px; margin-top: 10px; background: #2a2410; }
+  .proposal .big { font-size: 26px; font-weight: 800; }
+  .camctl { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+  .camctl button { padding: 10px; font-size: 14px; }
+  .slider { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .slider input { flex: 1; }
+
+  /* log */
+  .log { max-height: 180px; overflow: auto; font-size: 13px; }
+  .log div { padding: 5px 0; border-bottom: 1px solid var(--line); }
+  .log .reset { color: var(--accent); font-weight: 700; }
+  .log .bust { color: var(--red); }
+  .log .win { color: var(--green); font-weight: 700; }
+
+  /* modal */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal[hidden] { display: none; }
+  .modal .box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; max-width: 420px; width: 100%; text-align: center; }
+  .modal .box h2 { font-size: 26px; margin: 0 0 6px; color: var(--green); }
+  details summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  details p, details li { font-size: 14px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎯 <span>Dorovnávaná</span> 501</h1>
+  <button id="btn-settings" class="ghost" style="padding:8px 12px;font-size:13px" hidden>Nastavení</button>
+</header>
+
+<main>
+  <!-- ============ SETUP ============ -->
+  <section id="screen-setup">
+    <div class="card">
+      <h2>Hráči</h2>
+      <label>Počet hráčů</label>
+      <div class="players-count" id="players-count">
+        <button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button><button data-n="5">5</button>
+      </div>
+      <div id="names"></div>
+    </div>
+
+    <div class="card">
+      <h2>Pravidla</h2>
+      <label>Cílové skóre</label>
+      <input type="number" id="target" value="501" min="50" max="2001" step="1">
+      <div class="toggle" style="margin-top:8px">
+        <div>Dorovnání = soupeř na nulu<br><span class="small">Když trefíš přesně soupeřovo skóre, spadne mu na 0</span></div>
+        <label class="switch"><input type="checkbox" id="opt-equalize" checked><span></span></label>
+      </div>
+      <div class="toggle">
+        <div>Vyhodnocovat dorovnání<br><span class="small">Po každé šipce, nebo až po celém kole</span></div>
+        <select id="opt-eqmode" style="width:auto">
+          <option value="dart">po každé šipce</option>
+          <option value="turn">po kole</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="btn-start" class="primary" style="width:100%;padding:16px;font-size:18px">Začít hru</button>
+    <button id="btn-resume" class="ghost" style="width:100%;margin-top:10px" hidden>Pokračovat v rozehrané hře</button>
+
+    <details class="card" style="margin-top:14px">
+      <summary>Pravidla hry</summary>
+      <ul>
+        <li>Všichni začínají na <b>0</b> a sčítají body. Vyhrává, kdo se první dostane <b>přesně</b> na cílové skóre (výchozí 501). Zavírá se jakýmkoli polem (single, double, triple i bull).</li>
+        <li>Když hráč hodí víc, než potřebuje (přetáhne), <b>celé kolo neplatí</b> – všechna skóre se vrátí na stav před jeho kolem.</li>
+        <li><b>Dorovnání:</b> když se tvoje skóre přesně shoduje se skóre soupeře (a je větší než 0), soupeř jde <b>zpátky na 0</b>. Pokud má víc soupeřů stejné skóre, jdou na nulu všichni.</li>
+        <li>Každý hráč hází v kole 3 šipkami. Chybnou šipku vrátíš tlačítkem <b>Zpět</b>.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section id="screen-game" hidden>
+    <div class="board" id="scoreboard"></div>
+
+    <div class="turnbar">
+      <div class="who" id="turn-info"></div>
+      <div class="row" style="flex:0 0 auto;gap:6px">
+        <button id="btn-undo" class="ghost" style="padding:8px 12px">↶ Zpět</button>
+        <button id="btn-endturn" class="ghost" style="padding:8px 12px">Konec kola</button>
+      </div>
+    </div>
+
+    <!-- Camera panel -->
+    <div class="card" id="cam-card">
+      <details id="cam-details">
+        <summary>📷 Kamera – automatické snímání (experimentální)</summary>
+        <div style="margin-top:10px">
+          <div class="camwrap" id="camwrap">
+            <video id="video" playsinline muted autoplay></video>
+            <canvas id="overlay"></canvas>
+            <div class="placeholder" id="cam-placeholder">Spusť kameru, namiř ji zpředu na terč a nech telefon v klidu (ideálně stojánek).</div>
+          </div>
+          <div class="status" id="cam-status">Kamera je vypnutá.</div>
+          <div class="proposal" id="proposal" hidden>
+            <div class="small">Detekován zásah</div>
+            <div class="big" id="proposal-text">T20</div>
+            <div class="small" id="proposal-sub"></div>
+            <div class="row" style="margin-top:10px">
+              <button class="ok" id="btn-accept">✓ Potvrdit</button>
+              <button class="ghost" id="btn-reject">Ignorovat</button>
+            </div>
+            <div class="small" style="margin-top:8px">Špatně? Klepni správné pole na terči níže – kamera se opraví sama.</div>
+          </div>
+          <div class="camctl">
+            <button id="btn-cam-start">Spustit kameru</button>
+            <button id="btn-cam-stop" disabled>Vypnout</button>
+            <button id="btn-calib" disabled>Kalibrovat terč</button>
+            <button id="btn-ref" disabled>Terč je prázdný</button>
+          </div>
+          <div class="slider">
+            <span>Citlivost</span>
+            <input type="range" id="sens" min="20" max="90" value="45">
+            <span id="sens-val">45</span>
+          </div>
+          <div class="slider">
+            <span>Hrot šipky =</span>
+            <select id="tipmode" style="width:auto;padding:6px">
+              <option value="bull">bod nejblíž středu</option>
+              <option value="centroid">těžiště změny</option>
+            </select>
+          </div>
+          <p class="small">Jak na to: 1) Spustit kameru, 2) Kalibrovat – klepneš na 4 body na vnějším okraji double kruhu (u 20, 6, 3 a 11), 3) s prázdným terčem stiskni „Terč je prázdný“. Pak házej – appka každou novou šipku navrhne a ty ji potvrdíš. Po kole šipky vyndej; appka to pozná (nebo stiskni „Terč je prázdný“).</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Input -->
+    <div class="card">
+      <div class="tabs">
+        <button data-tab="board" class="active">Terč</button>
+        <button data-tab="keypad">Klávesnice</button>
+      </div>
+
+      <div class="tabpanel" id="tab-board">
+        <svg id="dartboard" viewBox="-215 -215 430 430" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="row" style="margin-top:10px">
+          <button id="btn-miss" class="ghost">Mimo terč (0)</button>
+        </div>
+      </div>
+
+      <div class="tabpanel" id="tab-keypad" hidden>
+        <div class="mult">
+          <button data-m="1" class="active">Single</button>
+          <button data-m="2">Double</button>
+          <button data-m="3">Triple</button>
+        </div>
+        <div class="numgrid" id="numgrid"></div>
+        <label style="margin-top:12px">Nebo zadej součet celého kola (3 šipky)</label>
+        <div class="row">
+          <input type="number" id="turn-total" min="0" max="180" placeholder="např. 61">
+          <button id="btn-turn-total" style="flex:0 0 auto">Zapsat kolo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Průběh</h2>
+      <div class="log" id="log"></div>
+    </div>
+
+    <button id="btn-newgame" class="danger" style="width:100%">Ukončit hru a vrátit se na nastavení</button>
+  </section>
+</main>
+
+<div class="modal" id="modal-win" hidden>
+  <div class="box">
+    <div style="font-size:44px">🏆</div>
+    <h2 id="win-name">Hráč</h2>
+    <p id="win-sub" class="small"></p>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="btn-rematch">Odveta</button>
+      <button class="ghost" id="btn-win-setup">Nastavení</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============================== GAME ENGINE =============================== -->
+<script id="engine">
+const Game = (() => {
+  function create(opts) {
+    const players = opts.names.map(n => ({ name: n, score: 0, legs: 0 }));
+    return {
+      players, target: opts.target || 501, current: 0,
+      equalize: opts.equalize !== false, equalizeMode: opts.equalizeMode || 'dart',
+      darts: [], turnStart: players.map(p => p.score),
+      history: [], log: [], winner: null, round: 1,
+    };
+  }
+  const KEYS = ['players', 'current', 'darts', 'turnStart', 'log', 'winner', 'round'];
+  function snapshot(g) { const o = {}; KEYS.forEach(k => o[k] = g[k]); return JSON.stringify(o); }
+  function restore(g, s) { Object.assign(g, JSON.parse(s)); }
+  function pushHistory(g) { g.history.push(snapshot(g)); if (g.history.length > 300) g.history.shift(); }
+  function undo(g) { if (!g.history.length) return false; restore(g, g.history.pop()); return true; }
+  function addLog(g, type, text) { g.log.unshift({ type, text }); if (g.log.length > 80) g.log.pop(); }
+
+  function checkEqualize(g, pi) {
+    const resets = [];
+    if (!g.equalize) return resets;
+    const p = g.players[pi];
+    if (p.score <= 0) return resets;
+    g.players.forEach((q, qi) => {
+      if (qi !== pi && q.score === p.score) {
+        q.score = 0; resets.push(qi);
+        addLog(g, 'reset', `💥 ${p.name} dorovnal ${q.name} na ${p.score} → ${q.name} jde na 0!`);
+      }
+    });
+    return resets;
+  }
+  function nextTurn(g) {
+    g.darts = [];
+    g.current = (g.current + 1) % g.players.length;
+    if (g.current === 0) g.round++;
+    g.turnStart = g.players.map(p => p.score);
+  }
+  // value: points of the dart, label: e.g. "T20"
+  function throwDart(g, value, label) {
+    if (g.winner !== null) return { ok: false, reason: 'finished' };
+    pushHistory(g);
+    const pi = g.current, p = g.players[pi];
+    const before = p.score, after = before + value;
+    const res = { ok: true, player: pi, value, label, before, after, bust: false, resets: [], win: false, turnEnded: false };
+    if (after > g.target) {
+      res.bust = true;
+      g.players.forEach((q, i) => q.score = g.turnStart[i]);
+      addLog(g, 'bust', `✖ ${p.name}: ${label} (+${value}) = ${after} > ${g.target} – přetažení, kolo neplatí, zpět na ${g.turnStart[pi]}`);
+      nextTurn(g); res.turnEnded = true;
+      return res;
+    }
+    p.score = after;
+    g.darts.push({ value, label });
+    addLog(g, 'dart', `${p.name}: ${label} (+${value}) → ${after}`);
+    if (g.equalizeMode === 'dart') res.resets = checkEqualize(g, pi);
+    if (after === g.target) {
+      g.winner = pi; p.legs++; res.win = true;
+      addLog(g, 'win', `🏆 ${p.name} vyhrál v ${g.round}. kole!`);
+      return res;
+    }
+    if (g.darts.length >= 3) {
+      if (g.equalizeMode === 'turn') res.resets = checkEqualize(g, pi);
+      nextTurn(g); res.turnEnded = true;
+    }
+    return res;
+  }
+  // end the turn before all 3 darts were thrown
+  function endTurnEarly(g) {
+    if (g.winner !== null) return { ok: false };
+    pushHistory(g);
+    const pi = g.current, resets = g.equalizeMode === 'turn' ? checkEqualize(g, pi) : [];
+    addLog(g, 'dart', `${g.players[pi].name}: konec kola`);
+    nextTurn(g);
+    return { ok: true, resets, turnEnded: true };
+  }
+  // whole turn entered as one number
+  function turnTotal(g, total) {
+    if (g.winner !== null) return { ok: false };
+    const res = throwDart(g, total, `kolo ${total}`);
+    if (res.ok && !res.turnEnded && !res.win) {
+      const pi = g.current;
+      if (g.equalizeMode === 'turn') res.resets = res.resets.concat(checkEqualize(g, pi));
+      nextTurn(g); res.turnEnded = true;
+    }
+    return res;
+  }
+  function rematch(g) {
+    const legs = g.players.map(p => p.legs);
+    const ng = create({ names: g.players.map(p => p.name), target: g.target, equalize: g.equalize, equalizeMode: g.equalizeMode });
+    ng.players.forEach((p, i) => p.legs = legs[i]);
+    ng.current = (g.winner !== null ? g.winner + 1 : 0) % ng.players.length; // loser of last leg... next after winner starts
+    return ng;
+  }
+  return { create, throwDart, undo, endTurnEarly, turnTotal, rematch };
+})();
+
+// ---- dartboard geometry (mm, standard board) ----
+const Board = (() => {
+  const SEGS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+  const R = { bullIn: 6.35, bullOut: 15.9, trIn: 99, trOut: 107, dbIn: 162, dbOut: 170 };
+  // x,y in mm, y pointing DOWN, origin at bull, 20 on top
+  function hit(x, y) {
+    const r = Math.hypot(x, y);
+    if (r <= R.bullIn) return { value: 50, label: 'Bull', n: 50, m: 1 };
+    if (r <= R.bullOut) return { value: 25, label: '25', n: 25, m: 1 };
+    if (r > R.dbOut) return { value: 0, label: 'Mimo', n: 0, m: 0 };
+    let a = Math.atan2(y, x) * 180 / Math.PI; // -180..180, 0 = right, clockwise positive
+    const idx = Math.floor((((a + 90 + 9) % 360) + 360) % 360 / 18);
+    const n = SEGS[idx];
+    let m = 1;
+    if (r >= R.trIn && r <= R.trOut) m = 3;
+    else if (r >= R.dbIn && r <= R.dbOut) m = 2;
+    return { value: n * m, label: ['', 'S', 'D', 'T'][m] + n, n, m };
+  }
+  return { SEGS, R, hit };
+})();
+</script>
+
+<!-- =============================== UI =============================== -->
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const LS_GAME = 'dorovnavana.game', LS_SETUP = 'dorovnavana.setup', LS_CALIB = 'dorovnavana.calib';
+
+  let game = null;
+
+  // ---------------- SETUP ----------------
+  let playerCount = 2;
+  const setup = JSON.parse(localStorage.getItem(LS_SETUP) || 'null') || { names: ['Hráč 1', 'Hráč 2'], target: 501, equalize: true, equalizeMode: 'dart' };
+  playerCount = Math.min(5, Math.max(2, setup.names.length));
+
+  function renderNames() {
+    const wrap = $('#names'); wrap.innerHTML = '';
+    for (let i = 0; i < playerCount; i++) {
+      const l = document.createElement('label'); l.textContent = `Jméno hráče ${i + 1}`;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 16;
+      inp.value = setup.names[i] || `Hráč ${i + 1}`; inp.dataset.i = i;
+      inp.addEventListener('input', () => setup.names[i] = inp.value);
+      wrap.append(l, inp);
+    }
+    $$('#players-count button').forEach(b => b.classList.toggle('active', +b.dataset.n === playerCount));
+  }
+  $$('#players-count button').forEach(b => b.addEventListener('click', () => { playerCount = +b.dataset.n; renderNames(); }));
+  $('#target').value = setup.target; $('#opt-equalize').checked = setup.equalize; $('#opt-eqmode').value = setup.equalizeMode;
+  renderNames();
+
+  function readSetup() {
+    setup.names = $$('#names input').map((i, k) => i.value.trim() || `Hráč ${k + 1}`);
+    setup.target = Math.max(50, parseInt($('#target').value, 10) || 501);
+    setup.equalize = $('#opt-equalize').checked;
+    setup.equalizeMode = $('#opt-eqmode').value;
+    localStorage.setItem(LS_SETUP, JSON.stringify(setup));
+    return setup;
+  }
+  $('#btn-start').addEventListener('click', () => { const s = readSetup(); game = Game.create(s); startGame(); });
+
+  const saved = localStorage.getItem(LS_GAME);
+  if (saved) { $('#btn-resume').hidden = false; $('#btn-resume').addEventListener('click', () => { game = JSON.parse(saved); startGame(); }); }
+
+  function showScreen(name) {
+    $('#screen-setup').hidden = name !== 'setup';
+    $('#screen-game').hidden = name !== 'game';
+    $('#btn-settings').hidden = name !== 'game';
+    window.scrollTo(0, 0);
+  }
+  $('#btn-settings').addEventListener('click', () => showScreen('setup'));
+  $('#btn-newgame').addEventListener('click', () => {
+    if (confirm('Opravdu ukončit rozehranou hru?')) { localStorage.removeItem(LS_GAME); game = null; $('#btn-resume').hidden = true; showScreen('setup'); }
+  });
+
+  function startGame() { showScreen('game'); render(); persist(); }
+  function persist() { if (game) localStorage.setItem(LS_GAME, JSON.stringify(game)); }
+
+  // ---------------- RENDER ----------------
+  function render(res) {
+    const sb = $('#scoreboard'); sb.innerHTML = '';
+    const cur = game.players[game.current];
+    game.players.forEach((p, i) => {
+      const d = document.createElement('div');
+      d.className = 'pcard' + (i === game.current && game.winner === null ? ' active' : '') + (game.winner === i ? ' winner' : '');
+      if (res && res.resets && res.resets.includes(i)) d.classList.add('flash');
+      let eq = '';
+      if (game.equalize && i !== game.current && game.winner === null) {
+        const diff = p.score - cur.score;
+        if (diff > 0 && diff <= 180) eq = `dorovnáš za ${diff}`;
+      }
+      const darts = i === game.current ? game.darts.map(x => `<span>${x.label}</span>`).join('') : '';
+      d.innerHTML = `<div class="legs">${p.legs ? '🏆'.repeat(Math.min(p.legs, 5)) : ''}</div>
+        <div class="name">${esc(p.name)}</div>
+        <div class="score">${p.score}</div>
+        <div class="rest">zbývá ${game.target - p.score}</div>
+        <div class="eq">${eq}</div>
+        <div class="darts">${darts}</div>`;
+      sb.append(d);
+    });
+    const thrown = game.darts.reduce((a, x) => a + x.value, 0);
+    $('#turn-info').innerHTML = game.winner === null
+      ? `Hází <b>${esc(cur.name)}</b> · ${game.round}. kolo · šipka ${game.darts.length + 1}/3${thrown ? ` · v kole +${thrown}` : ''}`
+      : `🏆 ${esc(game.players[game.winner].name)} vyhrál`;
+    $('#btn-undo').disabled = !game.history.length;
+    $('#btn-endturn').disabled = game.winner !== null;
+    $('#log').innerHTML = game.log.map(l => `<div class="${l.type}">${esc(l.text)}</div>`).join('');
+    if (game.winner !== null && !$('#modal-win').dataset.shown) {
+      $('#modal-win').dataset.shown = '1';
+      $('#win-name').textContent = game.players[game.winner].name;
+      $('#win-sub').textContent = `Dosáhl ${game.target} v ${game.round}. kole.`;
+      $('#modal-win').hidden = false;
+    }
+    if (game.winner === null) delete $('#modal-win').dataset.shown;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  function applyDart(value, label, fromCamera) {
+    if (!game || game.winner !== null) return;
+    const res = Game.throwDart(game, value, label);
+    afterAction(res, fromCamera);
+  }
+  function afterAction(res, fromCamera) {
+    render(res); persist();
+    if (res && res.ok && !fromCamera) Cam.onManualEntry(res);
+    if (res && res.turnEnded) Cam.onTurnEnded();
+    if (navigator.vibrate && res && res.resets && res.resets.length) navigator.vibrate([60, 40, 60]);
+  }
+  $('#btn-undo').addEventListener('click', () => { if (Game.undo(game)) { render(); persist(); Cam.onUndo(); } });
+  $('#btn-endturn').addEventListener('click', () => { const r = Game.endTurnEarly(game); if (r.ok) afterAction(r); });
+  $('#btn-rematch').addEventListener('click', () => { game = Game.rematch(game); $('#modal-win').hidden = true; render(); persist(); Cam.onTurnEnded(); });
+  $('#btn-win-setup').addEventListener('click', () => { $('#modal-win').hidden = true; localStorage.removeItem(LS_GAME); game = null; showScreen('setup'); });
+
+  // ---------------- TABS ----------------
+  $$('.tabs button').forEach(b => b.addEventListener('click', () => {
+    $$('.tabs button').forEach(x => x.classList.toggle('active', x === b));
+    $('#tab-board').hidden = b.dataset.tab !== 'board';
+    $('#tab-keypad').hidden = b.dataset.tab !== 'keypad';
+  }));
+
+  // ---------------- SVG DARTBOARD ----------------
+  (function buildBoard() {
+    const svg = $('#dartboard'); const NS = 'http://www.w3.org/2000/svg';
+    const R = Board.R;
+    const pt = (r, a) => [r * Math.cos(a), r * Math.sin(a)];
+    const ann = (r1, r2, a1, a2) => {
+      const [x1, y1] = pt(r2, a1), [x2, y2] = pt(r2, a2), [x3, y3] = pt(r1, a2), [x4, y4] = pt(r1, a1);
+      return `M${x1.toFixed(2)} ${y1.toFixed(2)} A${r2} ${r2} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)} L${x3.toFixed(2)} ${y3.toFixed(2)} A${r1} ${r1} 0 0 0 ${x4.toFixed(2)} ${y4.toFixed(2)} Z`;
+    };
+    const add = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.append(e); return e; };
+    for (let i = 0; i < 20; i++) {
+      const c = (-90 + i * 18) * Math.PI / 180, a1 = c - 9 * Math.PI / 180, a2 = c + 9 * Math.PI / 180;
+      const dark = i % 2 === 0;
+      const single = dark ? '#202020' : '#e9dfc4', ring = dark ? '#c62828' : '#2e7d32';
+      add('path', { d: ann(R.bullOut, R.trIn, a1, a2), fill: single });
+      add('path', { d: ann(R.trIn, R.trOut, a1, a2), fill: ring });
+      add('path', { d: ann(R.trOut, R.dbIn, a1, a2), fill: single });
+      add('path', { d: ann(R.dbIn, R.dbOut, a1, a2), fill: ring });
+      const [tx, ty] = pt(192, c);
+      const t = add('text', { x: tx.toFixed(1), y: ty.toFixed(1) }); t.textContent = Board.SEGS[i];
+    }
+    add('circle', { r: R.bullOut, fill: '#2e7d32' });
+    add('circle', { r: R.bullIn, fill: '#c62828' });
+    const mark = add('circle', { r: 7, class: 'hitmark', cx: 0, cy: 0, opacity: 0 });
+    const toSvg = (ev) => { const p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+    svg.addEventListener('pointerdown', ev => {
+      ev.preventDefault();
+      const p = toSvg(ev);
+      const h = Board.hit(p.x, p.y);
+      mark.setAttribute('cx', p.x); mark.setAttribute('cy', p.y); mark.setAttribute('opacity', 1);
+      setTimeout(() => mark.setAttribute('opacity', 0), 600);
+      applyDart(h.value, h.label);
+    });
+  })();
+  $('#btn-miss').addEventListener('click', () => applyDart(0, 'Mimo'));
+
+  // ---------------- KEYPAD ----------------
+  let mult = 1;
+  $$('.mult button').forEach(b => b.addEventListener('click', () => { mult = +b.dataset.m; $$('.mult button').forEach(x => x.classList.toggle('active', x === b)); }));
+  (function buildKeypad() {
+    const g = $('#numgrid');
+    for (let n = 1; n <= 20; n++) { const b = document.createElement('button'); b.textContent = n; b.addEventListener('click', () => key(n)); g.append(b); }
+    const b25 = document.createElement('button'); b25.textContent = '25'; b25.addEventListener('click', () => { applyDart(25, '25'); resetMult(); }); g.append(b25);
+    const bb = document.createElement('button'); bb.textContent = 'Bull'; bb.className = 'wide'; bb.addEventListener('click', () => { applyDart(50, 'Bull'); resetMult(); }); g.append(bb);
+    const bm = document.createElement('button'); bm.textContent = 'Mimo'; bm.className = 'wide ghost'; bm.addEventListener('click', () => { applyDart(0, 'Mimo'); resetMult(); }); g.append(bm);
+  })();
+  function key(n) { applyDart(n * mult, ['', 'S', 'D', 'T'][mult] + n); resetMult(); }
+  function resetMult() { mult = 1; $$('.mult button').forEach(x => x.classList.toggle('active', x.dataset.m === '1')); }
+  $('#btn-turn-total').addEventListener('click', () => {
+    const v = parseInt($('#turn-total').value, 10);
+    if (isNaN(v) || v < 0 || v > 180) return alert('Zadej součet 0–180.');
+    const r = Game.turnTotal(game, v); $('#turn-total').value = ''; afterAction(r);
+  });
+
+  // =============================== CAMERA ===============================
+  const Cam = (() => {
+    const video = $('#video'), overlay = $('#overlay'), octx = overlay.getContext('2d');
+    const PW = 320; let PH = 240;
+    const proc = document.createElement('canvas'); const pctx = proc.getContext('2d', { willReadFrequently: true });
+    const S = {
+      stream: null, running: false, timer: null,
+      pts: [],            // 4 normalized calibration points (20-top, 6-right, 3-bottom, 11-left)
+      H: null, Hinv: null, mask: null, maskCount: 0,
+      ref: null, emptyRef: null, prev: null, lastStable: null,
+      awaitClear: false, proposal: null, cand: null, candCount: 0,
+      calibrating: false, sens: 45, tipMode: 'bull',
+    };
+    const savedCal = JSON.parse(localStorage.getItem(LS_CALIB) || 'null');
+    if (savedCal) { S.pts = savedCal.pts || []; S.sens = savedCal.sens || 45; S.tipMode = savedCal.tipMode || 'bull'; }
+    $('#sens').value = S.sens; $('#sens-val').textContent = S.sens; $('#tipmode').value = S.tipMode;
+    $('#sens').addEventListener('input', e => { S.sens = +e.target.value; $('#sens-val').textContent = S.sens; saveCal(); });
+    $('#tipmode').addEventListener('change', e => { S.tipMode = e.target.value; saveCal(); });
+    function saveCal() { localStorage.setItem(LS_CALIB, JSON.stringify({ pts: S.pts, sens: S.sens, tipMode: S.tipMode })); }
+
+    function status(text, cls) { const el = $('#cam-status'); el.textContent = text; el.className = 'status' + (cls ? ' ' + cls : ''); }
+
+    // ---- linear algebra: homography from 4 point pairs (DLT) ----
+    function solve(A, b) { // gaussian elimination, A: n×n array of arrays
+      const n = b.length;
+      for (let i = 0; i < n; i++) {
+        let piv = i; for (let r = i + 1; r < n; r++) if (Math.abs(A[r][i]) > Math.abs(A[piv][i])) piv = r;
+        [A[i], A[piv]] = [A[piv], A[i]]; [b[i], b[piv]] = [b[piv], b[i]];
+        if (Math.abs(A[i][i]) < 1e-12) return null;
+        for (let r = i + 1; r < n; r++) { const f = A[r][i] / A[i][i]; for (let c = i; c < n; c++) A[r][c] -= f * A[i][c]; b[r] -= f * b[i]; }
+      }
+      const x = new Array(n).fill(0);
+      for (let i = n - 1; i >= 0; i--) { let s = b[i]; for (let c = i + 1; c < n; c++) s -= A[i][c] * x[c]; x[i] = s / A[i][i]; }
+      return x;
+    }
+    function homography(src, dst) { // src/dst: [[x,y],...] ×4 ; returns 3x3 flat mapping src→dst
+      const A = [], b = [];
+      for (let i = 0; i < 4; i++) {
+        const [x, y] = src[i], [u, v] = dst[i];
+        A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); b.push(u);
+        A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); b.push(v);
+      }
+      const h = solve(A, b); return h ? [...h, 1] : null;
+    }
+    function apply(H, x, y) { const w = H[6] * x + H[7] * y + H[8]; return [(H[0] * x + H[1] * y + H[2]) / w, (H[3] * x + H[4] * y + H[5]) / w]; }
+    function inv3(m) {
+      const [a, b, c, d, e, f, g, h, i] = m;
+      const A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g;
+      const det = a * A + b * B + c * C; if (Math.abs(det) < 1e-12) return null;
+      return [A / det, -(b * i - c * h) / det, (b * f - c * e) / det, B / det, (a * i - c * g) / det, -(a * f - c * d) / det, C / det, -(a * h - b * g) / det, (a * e - b * d) / det];
+    }
+    const BOARD_PTS = [[0, -170], [170, 0], [0, 170], [-170, 0]]; // 20 top, 6 right, 3 bottom, 11 left (mm)
+
+    function buildCalibration() {
+      if (S.pts.length !== 4) { S.H = S.Hinv = S.mask = null; return false; }
+      const src = S.pts.map(p => [p[0] * PW, p[1] * PH]);
+      S.H = homography(src, BOARD_PTS); if (!S.H) return false;
+      S.Hinv = inv3(S.H);
+      S.mask = new Uint8Array(PW * PH); S.maskCount = 0;
+      for (let y = 0; y < PH; y++) for (let x = 0; x < PW; x++) {
+        const [u, v] = apply(S.H, x, y);
+        if (Math.hypot(u, v) <= 185) { S.mask[y * PW + x] = 1; S.maskCount++; }
+      }
+      return S.maskCount > 200;
+    }
+
+    // ---- camera lifecycle ----
+    async function start() {
+      try {
+        S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
+      } catch (e) { status('Kameru se nepodařilo spustit: ' + e.message + ' (stránka musí běžet přes HTTPS nebo localhost)', 'warn'); return; }
+      video.srcObject = S.stream;
+      await new Promise(r => video.onloadedmetadata = r);
+      await video.play();
+      $('#camwrap').style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+      overlay.width = video.videoWidth; overlay.height = video.videoHeight;
+      PH = Math.round(PW * video.videoHeight / video.videoWidth); proc.width = PW; proc.height = PH;
+      $('#cam-placeholder').hidden = true;
+      $('#btn-cam-start').disabled = true; $('#btn-cam-stop').disabled = false; $('#btn-calib').disabled = false;
+      S.running = true; S.prev = S.ref = S.emptyRef = null; S.proposal = null;
+      if (buildCalibration()) { $('#btn-ref').disabled = false; status('Kalibrace načtena. Zkontroluj obrys na obrazu; s prázdným terčem stiskni „Terč je prázdný“.'); }
+      else status('Kamera běží. Stiskni „Kalibrovat terč“.');
+      S.timer = setInterval(tick, 260);
+      drawOverlay();
+    }
+    function stop() {
+      S.running = false; clearInterval(S.timer);
+      if (S.stream) S.stream.getTracks().forEach(t => t.stop()); S.stream = null; video.srcObject = null;
+      $('#cam-placeholder').hidden = false; $('#btn-cam-start').disabled = false; $('#btn-cam-stop').disabled = true;
+      $('#btn-calib').disabled = true; $('#btn-ref').disabled = true; hideProposal(); octx.clearRect(0, 0, overlay.width, overlay.height);
+      status('Kamera je vypnutá.');
+    }
+    $('#btn-cam-start').addEventListener('click', start);
+    $('#btn-cam-stop').addEventListener('click', stop);
+    $('#cam-details').addEventListener('toggle', e => { if (!e.target.open && S.running) stop(); });
+
+    // ---- calibration by tapping ----
+    const CAL_STEPS = ['vnější okraj DOUBLE kruhu nahoře u čísla 20', 'vnější okraj DOUBLE kruhu vpravo u čísla 6', 'vnější okraj DOUBLE kruhu dole u čísla 3', 'vnější okraj DOUBLE kruhu vlevo u čísla 11'];
+    function beginCalib() { S.calibrating = true; S.pts = []; S.H = null; S.mask = null; hideProposal(); calibStatus(); drawOverlay(); }
+    function calibStatus() { status(`Kalibrace ${S.pts.length + 1}/4 – klepni na: ${CAL_STEPS[S.pts.length]}. (Klepni dlouze pro krok zpět.)`, 'warn'); }
+    $('#btn-calib').addEventListener('click', beginCalib);
+    let pressTimer = null;
+    overlay.addEventListener('pointerdown', ev => {
+      if (!S.calibrating) return;
+      ev.preventDefault();
+      pressTimer = setTimeout(() => { pressTimer = null; if (S.pts.length) { S.pts.pop(); calibStatus(); drawOverlay(); } }, 550);
+    });
+    overlay.addEventListener('pointerup', ev => {
+      if (!S.calibrating || !pressTimer) return;
+      clearTimeout(pressTimer); pressTimer = null;
+      const r = overlay.getBoundingClientRect();
+      S.pts.push([(ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height]);
+      if (S.pts.length === 4) {
+        S.calibrating = false;
+        if (buildCalibration()) { saveCal(); $('#btn-ref').disabled = false; S.ref = S.emptyRef = null; status('Kalibrace hotová – zelený obrys má sedět na terči (jinak kalibruj znovu). Teď s prázdným terčem stiskni „Terč je prázdný“.', 'good'); }
+        else { status('Kalibrace se nepovedla (body jsou moc blízko / v jedné čáře). Zkus znovu.', 'warn'); }
+      } else calibStatus();
+      drawOverlay();
+    });
+    overlay.addEventListener('pointercancel', () => { clearTimeout(pressTimer); pressTimer = null; });
+
+    $('#btn-ref').addEventListener('click', () => {
+      if (!S.mask) return;
+      const g = grab(); S.ref = g; S.emptyRef = g; S.prev = g; S.awaitClear = false; S.cand = null; S.candCount = 0; hideProposal();
+      status('Reference nastavena. Házej – čekám na šipku.', 'good');
+    });
+
+    // ---- frame processing ----
+    function grab() {
+      pctx.drawImage(video, 0, 0, PW, PH);
+      const d = pctx.getImageData(0, 0, PW, PH).data, g = new Uint8Array(PW * PH);
+      for (let i = 0, j = 0; i < g.length; i++, j += 4) g[i] = (d[j] * 77 + d[j + 1] * 151 + d[j + 2] * 28) >> 8;
+      return g;
+    }
+    function countDiff(a, b, thr) { let c = 0; const m = S.mask; for (let i = 0; i < a.length; i++) if (m[i] && Math.abs(a[i] - b[i]) > thr) c++; return c; }
+    function largestComponent(changed) {
+      const seen = new Uint8Array(changed.length); let best = [];
+      const stack = new Int32Array(changed.length);
+      for (let s = 0; s < changed.length; s++) {
+        if (!changed[s] || seen[s]) continue;
+        let sp = 0, comp = []; stack[sp++] = s; seen[s] = 1;
+        while (sp) {
+          const i = stack[--sp]; comp.push(i);
+          const x = i % PW, y = (i / PW) | 0;
+          const nb = [i - 1, i + 1, i - PW, i + PW];
+          if (x === 0) nb[0] = -1; if (x === PW - 1) nb[1] = -1; if (y === 0) nb[2] = -1; if (y === PH - 1) nb[3] = -1;
+          for (const n of nb) if (n >= 0 && changed[n] && !seen[n]) { seen[n] = 1; stack[sp++] = n; }
+        }
+        if (comp.length > best.length) best = comp;
+      }
+      return best;
+    }
+    function estimateTip(comp) {
+      if (S.tipMode === 'centroid') {
+        let sx = 0, sy = 0; for (const i of comp) { sx += i % PW; sy += (i / PW) | 0; }
+        const x = sx / comp.length, y = sy / comp.length; const [u, v] = apply(S.H, x, y); return { x, y, u, v };
+      }
+      let best = null, br = Infinity;
+      for (const i of comp) { const x = i % PW, y = (i / PW) | 0; const [u, v] = apply(S.H, x, y); const r = Math.hypot(u, v); if (r < br) { br = r; best = { x, y, u, v }; } }
+      return best;
+    }
+    function bbox(comp) { let x0 = PW, y0 = PH, x1 = 0, y1 = 0; for (const i of comp) { const x = i % PW, y = (i / PW) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } return [x0, y0, x1, y1]; }
+
+    function tick() {
+      if (!S.running || S.calibrating || !S.mask || video.readyState < 2) return;
+      const g = grab();
+      const MIN_PX = 18;
+      // 1) motion gate – compare with previous frame
+      if (S.prev) {
+        const motion = countDiff(g, S.prev, 28); S.prev = g;
+        if (motion > S.maskCount * 0.015) { if (!S.proposal) status('Pohyb v obraze…'); return; }
+      } else { S.prev = g; return; }
+      S.lastStable = g;
+      if (!S.ref) { status('S prázdným terčem stiskni „Terč je prázdný“.', 'warn'); return; }
+      if (S.proposal || (game && game.winner !== null)) return;
+      // 2) waiting for darts to be pulled out between turns
+      if (S.awaitClear) {
+        const c = countDiff(g, S.emptyRef, S.sens);
+        if (c < MIN_PX * 2) { S.ref = g; S.emptyRef = g; S.awaitClear = false; status('Terč prázdný – čekám na šipku.', 'good'); }
+        else status(`Vyndej šipky z terče (nebo stiskni „Terč je prázdný“).`, 'warn');
+        return;
+      }
+      // 3) new dart = difference against reference
+      const changed = new Uint8Array(g.length); let cnt = 0;
+      for (let i = 0; i < g.length; i++) if (S.mask[i] && Math.abs(g[i] - S.ref[i]) > S.sens) { changed[i] = 1; cnt++; }
+      if (cnt < MIN_PX) { S.cand = null; S.candCount = 0; status('Čekám na šipku…'); return; }
+      if (cnt > S.maskCount * 0.3) { status('Velká změna obrazu (světlo / pohnutý telefon). Obnov referenci tlačítkem „Terč je prázdný“.', 'warn'); return; }
+      const comp = largestComponent(changed);
+      if (comp.length < MIN_PX) { status('Čekám na šipku…'); return; }
+      const tip = estimateTip(comp);
+      const hit = Board.hit(tip.u, tip.v);
+      if (S.cand && Math.hypot(S.cand.tip.x - tip.x, S.cand.tip.y - tip.y) < 5) S.candCount++;
+      else { S.cand = { tip, hit, comp }; S.candCount = 1; }
+      status(`Něco je v terči (${hit.label})… ověřuji`);
+      if (S.candCount >= 2) { S.proposal = { ...S.cand, frame: g }; showProposal(); }
+    }
+
+    // ---- proposal handling ----
+    function showProposal() {
+      const p = S.proposal; if (!p || !game) return;
+      const cur = game.players[game.current];
+      $('#proposal-text').textContent = `${p.hit.label} (+${p.hit.value})`;
+      $('#proposal-sub').textContent = `${cur.name}: ${cur.score} → ${cur.score + p.hit.value}${cur.score + p.hit.value > game.target ? ' (přetažení!)' : ''}`;
+      $('#proposal').hidden = false; status('Potvrď nebo oprav detekovaný zásah.', 'good');
+      if (navigator.vibrate) navigator.vibrate(30);
+      drawOverlay();
+    }
+    function hideProposal() { S.proposal = null; S.cand = null; S.candCount = 0; $('#proposal').hidden = true; drawOverlay(); }
+    $('#btn-accept').addEventListener('click', () => {
+      const p = S.proposal; if (!p) return;
+      S.ref = p.frame; hideProposal();
+      applyDart(p.hit.value, p.hit.label, true);
+    });
+    $('#btn-reject').addEventListener('click', () => { const p = S.proposal; if (!p) return; S.ref = p.frame; hideProposal(); status('Ignorováno. Čekám na šipku…'); });
+
+    // called from the game UI
+    function onManualEntry() {
+      if (!S.running || !S.mask) return;
+      // the dart entered manually is now in the board → whatever the camera sees is the new reference
+      if (S.proposal) { S.ref = S.proposal.frame; hideProposal(); }
+      else if (S.lastStable) S.ref = S.lastStable;
+    }
+    function onTurnEnded() { if (S.running && S.mask && S.emptyRef) { S.awaitClear = true; hideProposal(); status('Konec kola – vyndej šipky z terče.', 'warn'); } }
+    function onUndo() { if (S.running) { hideProposal(); S.awaitClear = false; if (S.lastStable) S.ref = S.lastStable; } }
+
+    // ---- overlay drawing ----
+    function drawOverlay() {
+      if (!S.running) return;
+      const W = overlay.width, Hh = overlay.height; octx.clearRect(0, 0, W, Hh);
+      const sx = W / PW, sy = Hh / PH;
+      octx.lineWidth = 3; octx.strokeStyle = '#ffd200'; octx.fillStyle = '#ffd200';
+      S.pts.forEach((p, i) => { octx.beginPath(); octx.arc(p[0] * W, p[1] * Hh, 8, 0, Math.PI * 2); octx.stroke(); octx.fillText(['20', '6', '3', '11'][i], p[0] * W + 12, p[1] * Hh - 8); });
+      if (S.Hinv) {
+        octx.strokeStyle = 'rgba(46,204,113,.9)'; octx.lineWidth = 2;
+        const circle = r => { octx.beginPath(); for (let k = 0; k <= 72; k++) { const a = k / 72 * Math.PI * 2; const [x, y] = apply(S.Hinv, r * Math.cos(a), r * Math.sin(a)); k ? octx.lineTo(x * sx, y * sy) : octx.moveTo(x * sx, y * sy); } octx.stroke(); };
+        [170, 162, 107, 99, 15.9].forEach(circle);
+        octx.lineWidth = 1;
+        for (let i = 0; i < 20; i++) { const a = (-99 + i * 18) * Math.PI / 180; const [x1, y1] = apply(S.Hinv, 15.9 * Math.cos(a), 15.9 * Math.sin(a)); const [x2, y2] = apply(S.Hinv, 170 * Math.cos(a), 170 * Math.sin(a)); octx.beginPath(); octx.moveTo(x1 * sx, y1 * sy); octx.lineTo(x2 * sx, y2 * sy); octx.stroke(); }
+      }
+      if (S.proposal) {
+        const p = S.proposal, [x0, y0, x1, y1] = bbox(p.comp);
+        octx.strokeStyle = 'rgba(255,210,0,.9)'; octx.lineWidth = 2; octx.strokeRect(x0 * sx, y0 * sy, (x1 - x0 + 1) * sx, (y1 - y0 + 1) * sy);
+        octx.strokeStyle = '#ff3b3b'; octx.lineWidth = 3; const cx = p.tip.x * sx, cy = p.tip.y * sy;
+        octx.beginPath(); octx.moveTo(cx - 18, cy); octx.lineTo(cx + 18, cy); octx.moveTo(cx, cy - 18); octx.lineTo(cx, cy + 18); octx.stroke();
+        octx.beginPath(); octx.arc(cx, cy, 10, 0, Math.PI * 2); octx.stroke();
+      }
+    }
+    return { onManualEntry, onTurnEnded, onUndo };
+  })();
+
+  // restore in-progress game automatically
+  if (saved && !game) { game = JSON.parse(saved); startGame(); }
+})();
+</script>
+</body>
+</html>

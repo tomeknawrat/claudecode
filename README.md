@@ -1,4 +1,4 @@
-# 🎯 Dorovnávaná 501 – šipkové počítadlo
+# 🎯 Killer 501 – šipkové počítadlo
 
 Webová appka (jeden soubor `index.html`, bez závislostí) na počítání skóre pro šipkovou hru
 **„od nuly do 501 s dorovnáním“** pro 2–5 hráčů. Funguje v mobilu i na počítači.

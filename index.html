@@ -12,6 +12,7 @@
     --red: #e74c3c; --blue: #3b82f6; --radius: 14px;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body { padding-bottom: env(safe-area-inset-bottom); }
@@ -205,6 +206,8 @@
             <button id="btn-cam-stop" disabled>Vypnout</button>
             <button id="btn-calib" disabled>Kalibrovat terč</button>
             <button id="btn-ref" disabled>Terč je prázdný</button>
+            <button id="btn-calib-back" hidden>↶ Bod zpět</button>
+            <button id="btn-calib-cancel" hidden class="ghost">Zrušit kalibraci</button>
           </div>
           <div class="slider">
             <span>Citlivost</span>
@@ -218,7 +221,7 @@
               <option value="centroid">těžiště změny</option>
             </select>
           </div>
-          <p class="small">Jak na to: 1) Spustit kameru, 2) Kalibrovat – klepneš na 4 body na vnějším okraji double kruhu (u 20, 6, 3 a 11), 3) s prázdným terčem stiskni „Terč je prázdný“. Pak házej – appka každou novou šipku navrhne a ty ji potvrdíš. Po kole šipky vyndej; appka to pozná (nebo stiskni „Terč je prázdný“).</p>
+          <p class="small">Jak na to: 1) Spustit kameru, 2) Kalibrovat – klepneš přímo do obrazu kamery na 4 body na vnějším okraji double kruhu (u 20, 6, 3 a 11), 3) s prázdným terčem stiskni „Terč je prázdný“. Pak házej – appka každou novou šipku navrhne a ty ji potvrdíš. Po kole šipky vyndej; appka to pozná (nebo stiskni „Terč je prázdný“).</p>
         </div>
       </details>
     </div>
@@ -577,12 +580,12 @@ const Board = (() => {
       awaitClear: false, proposal: null, cand: null, candCount: 0,
       calibrating: false, sens: 45, tipMode: 'bull',
     };
-    const savedCal = JSON.parse(localStorage.getItem(LS_CALIB) || 'null');
-    if (savedCal) { S.pts = savedCal.pts || []; S.sens = savedCal.sens || 45; S.tipMode = savedCal.tipMode || 'bull'; }
+    const savedCal = JSON.parse(localStorage.getItem(LS_CALIB) || 'null') || { pts: [] };
+    S.pts = (savedCal.pts || []).slice(); S.sens = savedCal.sens || 45; S.tipMode = savedCal.tipMode || 'bull';
     $('#sens').value = S.sens; $('#sens-val').textContent = S.sens; $('#tipmode').value = S.tipMode;
     $('#sens').addEventListener('input', e => { S.sens = +e.target.value; $('#sens-val').textContent = S.sens; saveCal(); });
     $('#tipmode').addEventListener('change', e => { S.tipMode = e.target.value; saveCal(); });
-    function saveCal() { localStorage.setItem(LS_CALIB, JSON.stringify({ pts: S.pts, sens: S.sens, tipMode: S.tipMode })); }
+    function saveCal() { if (savedCal) savedCal.pts = S.pts.slice(); localStorage.setItem(LS_CALIB, JSON.stringify({ pts: S.pts, sens: S.sens, tipMode: S.tipMode })); }
 
     function status(text, cls) { const el = $('#cam-status'); el.textContent = text; el.className = 'status' + (cls ? ' ' + cls : ''); }
 
@@ -636,7 +639,7 @@ const Board = (() => {
         S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
       } catch (e) { status('Kameru se nepodařilo spustit: ' + e.message + ' (stránka musí běžet přes HTTPS nebo localhost)', 'warn'); return; }
       video.srcObject = S.stream;
-      await new Promise(r => video.onloadedmetadata = r);
+      if (video.readyState < 1) await new Promise(r => video.onloadedmetadata = r);
       await video.play();
       $('#camwrap').style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
       overlay.width = video.videoWidth; overlay.height = video.videoHeight;
@@ -662,28 +665,25 @@ const Board = (() => {
 
     // ---- calibration by tapping ----
     const CAL_STEPS = ['vnější okraj DOUBLE kruhu nahoře u čísla 20', 'vnější okraj DOUBLE kruhu vpravo u čísla 6', 'vnější okraj DOUBLE kruhu dole u čísla 3', 'vnější okraj DOUBLE kruhu vlevo u čísla 11'];
-    function beginCalib() { S.calibrating = true; S.pts = []; S.H = null; S.mask = null; hideProposal(); calibStatus(); drawOverlay(); }
-    function calibStatus() { status(`Kalibrace ${S.pts.length + 1}/4 – klepni na: ${CAL_STEPS[S.pts.length]}. (Klepni dlouze pro krok zpět.)`, 'warn'); }
+    function beginCalib() { S.calibrating = true; S.pts = []; S.H = null; S.mask = null; hideProposal(); setCalibButtons(true); calibStatus(); drawOverlay(); }
+    function setCalibButtons(on) { $('#btn-calib-back').hidden = !on; $('#btn-calib-cancel').hidden = !on; $('#btn-calib').hidden = on; $('#btn-ref').hidden = on; }
+    function calibStatus() { status(`Kalibrace ${S.pts.length + 1}/4 – klepni v obraze na: ${CAL_STEPS[S.pts.length]}.`, 'warn'); }
     $('#btn-calib').addEventListener('click', beginCalib);
-    let pressTimer = null;
+    $('#btn-calib-back').addEventListener('click', () => { if (S.pts.length) S.pts.pop(); calibStatus(); drawOverlay(); });
+    $('#btn-calib-cancel').addEventListener('click', () => { S.calibrating = false; setCalibButtons(false); S.pts = savedCal && savedCal.pts && savedCal.pts.length === 4 ? savedCal.pts.slice() : []; buildCalibration(); status(S.mask ? 'Kalibrace zrušena, platí předchozí.' : 'Kalibrace zrušena.'); drawOverlay(); });
+    overlay.addEventListener('contextmenu', ev => ev.preventDefault());
     overlay.addEventListener('pointerdown', ev => {
       if (!S.calibrating) return;
       ev.preventDefault();
-      pressTimer = setTimeout(() => { pressTimer = null; if (S.pts.length) { S.pts.pop(); calibStatus(); drawOverlay(); } }, 550);
-    });
-    overlay.addEventListener('pointerup', ev => {
-      if (!S.calibrating || !pressTimer) return;
-      clearTimeout(pressTimer); pressTimer = null;
       const r = overlay.getBoundingClientRect();
       S.pts.push([(ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height]);
       if (S.pts.length === 4) {
-        S.calibrating = false;
+        S.calibrating = false; setCalibButtons(false);
         if (buildCalibration()) { saveCal(); $('#btn-ref').disabled = false; S.ref = S.emptyRef = null; status('Kalibrace hotová – zelený obrys má sedět na terči (jinak kalibruj znovu). Teď s prázdným terčem stiskni „Terč je prázdný“.', 'good'); }
         else { status('Kalibrace se nepovedla (body jsou moc blízko / v jedné čáře). Zkus znovu.', 'warn'); }
       } else calibStatus();
       drawOverlay();
     });
-    overlay.addEventListener('pointercancel', () => { clearTimeout(pressTimer); pressTimer = null; });
 
     $('#btn-ref').addEventListener('click', () => {
       if (!S.mask) return;

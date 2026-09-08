@@ -31,7 +31,7 @@ Appka umí snímat terč kamerou telefonu a **navrhovat** zásahy, které jední
 2. Telefon postav do stojánku **zpředu proti terči** tak, aby byl celý terč v záběru, a už s ním nehýbej.
 3. Rozbal sekci *Kamera* → **Spustit kameru**.
 4. **Kalibrovat terč** – klepni postupně na vnější okraj double kruhu u čísel **20, 6, 3 a 11**.
-   Zelený obrys se musí krýt s terčem (dlouhé klepnutí = krok zpět). Kalibrace se pamatuje.
+   Zelený obrys se musí krýt s terčem (tlačítko „Bod zpět“ vrátí poslední bod). Kalibrace se pamatuje.
 5. S prázdným terčem stiskni **Terč je prázdný** (referenční snímek).
 6. Házej. Po každé šipce, jakmile je obraz v klidu, appka navrhne pole → **Potvrdit** / **Ignorovat** /
    klepnout správné pole na terči.

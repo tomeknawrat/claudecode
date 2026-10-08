@@ -4472,8 +4472,10 @@ const _scan = {
   extraDone: 0,
   skipDone: 0,
   settleMs: 1800,        // ms čekání po pohybu kamery
-  centerThreshold: 0.25, // tvář musí být ve středu ±25% šířky/výšky
-  anchorYFrac: 0.35,     // cílový bod výběru/centrování tváře — top-center (0=nahoře, 1=dole)
+  // Výběr tváře sedící osoby + brána obsazenosti sedadla (laditelné):
+  selectBand: 0.30,      // horizontální pásmo u středu; z něj se bere NEJVĚTŠÍ tvář (= osoba vepředu)
+  maxDx: 0.28,           // max horizontální odchylka vybrané tváře od středu (víc = mimo cíl → skip)
+  minFaceFrac: 0.07,     // min výška tváře vůči výšce obrazu (míň = jen pozadí/prázdné → skip)
   recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
 };
 
@@ -4702,13 +4704,23 @@ async function _detectAndDraw() {
   } catch(e) { return []; }
 }
 
-// Zkontroluje jestli je tvář vycentrovaná v obraze (±threshold)
-function _isFaceCentered(face, canvasW, canvasH) {
-  const [x1,y1] = face.topLeft, [x2,y2] = face.bottomRight;
-  const cx = (x1+x2)/2, cy = (y1+y2)/2;
-  const dx = Math.abs(cx - canvasW/2) / canvasW;
-  const dy = Math.abs(cy - canvasH*_scan.anchorYFrac) / canvasH; // kotva top-center
-  return dx < _scan.centerThreshold && dy < _scan.centerThreshold;
+// Vybere tvář osoby sedící na místě: z horizontálně centrálních kandidátů (uvnitř
+// _scan.selectBand) ten NEJVĚTŠÍ rámeček — osoba na místě je nejblíž kameře, takže
+// má největší tvář; lidi v pozadí jsou menší. Vrací i metriky (dx, dy, hFrac) pro
+// logování a bránu obsazenosti.
+function _pickSeatFace(faces, canvasW, canvasH) {
+  const scored = faces.map(f => {
+    const [x1,y1] = f.topLeft, [x2,y2] = f.bottomRight;
+    const cx = (x1+x2)/2, cy = (y1+y2)/2;
+    const w = x2-x1, h = y2-y1;
+    return { f, area: w*h, hFrac: h/canvasH,
+             dx: Math.abs(cx - canvasW/2) / canvasW,
+             dy: Math.abs(cy - canvasH/2) / canvasH };
+  });
+  const inBand = scored.filter(s => s.dx < _scan.selectBand);
+  const pool = inBand.length ? inBand : scored;
+  pool.sort((a, b) => b.area - a.area); // největší rámeček první
+  return pool[0];
 }
 
 // Screenshot z aktuálního video frame
@@ -4807,20 +4819,15 @@ async function startScan() {
       continue;
     }
 
-    // Vyber tvář nejblíže top-center bodu obrazu (rámeček „nejvíc nahoře a uprostřed")
-    const ax = W/2, ay = H * _scan.anchorYFrac;
-    let bestFace = faces[0];
-    let bestDist = Infinity;
-    faces.forEach(f => {
-      const [x1,y1] = f.topLeft, [x2,y2] = f.bottomRight;
-      const cx = (x1+x2)/2, cy = (y1+y2)/2;
-      const dist = Math.sqrt((cx-ax)**2 + (cy-ay)**2);
-      if (dist < bestDist) { bestDist = dist; bestFace = f; }
-    });
+    // Vyber tvář osoby sedící na místě (horizontálně u středu + největší = nejblíž kameře)
+    const pick = _pickSeatFace(faces, W, H);
+    const bestFace = pick.f;
+    _sLog(`  Sedadlo ${seatNum}: ${faces.length} tvář(í) · vybraná dx=${pick.dx.toFixed(2)} dy=${pick.dy.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}%`);
 
-    // Zkontroluj centrování
-    if (!_isFaceCentered(bestFace, W, H)) {
-      _sLog(`  Sedadlo ${seatNum}: tvář mimo centrum → přeskočeno`, 'warn');
+    // Brána obsazenosti: tvář musí být horizontálně u středu (dx) a dost velká (hFrac),
+    // jinak jde nejspíš o souseda/pozadí nebo prázdné místo → přeskočit.
+    if (pick.dx > _scan.maxDx || pick.hFrac < _scan.minFaceFrac) {
+      _sLog(`  Sedadlo ${seatNum}: mimo cíl (dx=${pick.dx.toFixed(2)}, vel=${(pick.hFrac*100).toFixed(0)}%) → přeskočeno`, 'warn');
       _scan.skipDone++;
       _sUpdateStats();
       continue;

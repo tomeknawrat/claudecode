@@ -2053,6 +2053,10 @@ console.warn = (...args) => {
           <div class="scan-stat">Extra: <span class="scan-stat-val" id="scanStatExtra">0</span></div>
           <div class="scan-stat">Přeskočeno: <span class="scan-stat-val" id="scanStatSkip">0</span></div>
         </div>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:12px;color:var(--text-2);cursor:pointer">
+          <input type="checkbox" id="zoomScanToggle" onchange="_scan.zoomScan = this.checked">
+          🔍 Zoom-in sken (experimentální) — na každém sedadle přiblíží a hledá hlavní obličej
+        </label>
       </div>
 
       <!-- Log -->
@@ -4500,6 +4504,13 @@ const _scan = {
   selectBand: 0.30,      // horizontální pásmo u středu; z něj se bere NEJVĚTŠÍ tvář (= osoba vepředu)
   maxDx: 0.28,           // max horizontální odchylka vybrané tváře od středu (víc = mimo cíl → skip)
   minFaceFrac: 0.07,     // min výška tváře vůči výšce obrazu (míň = jen pozadí/prázdné → skip)
+  // Zoom-in sken (opt-in, experimentální): na sedadle přiblíží a od nejtěsnějšího
+  // oddaluje, dokud nenajde centrální dost velkou tvář = osoba sedící na místě.
+  zoomScan: false,       // zapíná zaškrtávátko ve scan modalu
+  zoomSteps: 3,          // kolik kroků přiblížení od base presetu sedadla
+  zoomStepMs: 600,       // délka jednoho zoom kroku (ms) — laditelné podle rychlosti kamery
+  zoomSettleMs: 700,     // ustálení po zoom kroku (ms)
+  zoomFracBonus: 0.05,   // o kolik roste min. velikost tváře na každé těsnější úrovni
   recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
 };
 
@@ -4747,6 +4758,44 @@ function _pickSeatFace(faces, canvasW, canvasH) {
   return pool[0];
 }
 
+// Jeden krok zoomu: spustí zoom daným směrem na ms a zastaví.
+async function _zoomStep(cam, dir, ms) {
+  sendCmd(cam, dir);            // 'zoomin' | 'zoomout'
+  await _sleep(ms);
+  sendCmd(cam, 'zoomstop');
+}
+
+// Iterativní zoom-in → out hledání osoby na sedadle. Předpokládá, že kamera už
+// najela na preset sedadla. Přiblíží na nejtěsnější úroveň a postupně oddaluje;
+// vrátí první (nejtěsnější) úroveň, kde je centrální dost velká tvář = osoba na místě.
+// Vrací { pick, zoomLevel } nebo null (prázdné). Po návratu je kamera přiblížená —
+// screenshot/rozpoznání se udělá na té úrovni, další gotopreset zoom resetuje.
+async function _zoomFindOccupant(seatNum, W, H) {
+  // Přibliž na nejtěsnější úroveň
+  for (let i = 0; i < _scan.zoomSteps; i++) {
+    if (_scan.aborting) return null;
+    await _zoomStep(2, 'zoomin', _scan.zoomStepMs);
+  }
+  await _sleep(_scan.zoomSettleMs);
+  // Od nejtěsnějšího postupně oddaluj a hledej centrální velkou tvář
+  for (let lvl = _scan.zoomSteps; lvl >= 0; lvl--) {
+    if (_scan.aborting) return null;
+    const faces = await _detectAndDraw();
+    if (faces.length) {
+      const pick = _pickSeatFace(faces, W, H);
+      const minFrac = _scan.minFaceFrac + lvl * _scan.zoomFracBonus; // těsnější úroveň → větší tvář
+      _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: ${faces.length} tvář(í) dx=${pick.dx.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}% (práh ${(minFrac*100).toFixed(0)}%)`);
+      if (pick.dx <= _scan.maxDx && pick.hFrac >= minFrac) {
+        return { pick, zoomLevel: lvl };
+      }
+    } else {
+      _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: žádná tvář`);
+    }
+    if (lvl > 0) { await _zoomStep(2, 'zoomout', _scan.zoomStepMs); await _sleep(_scan.zoomSettleMs); }
+  }
+  return null; // na žádné úrovni nebyla centrální dost velká tvář → prázdné
+}
+
 // Screenshot z aktuálního video frame
 function _screenshot() {
   const src = _scan._mjpegImg || document.getElementById('scanVideo');
@@ -4834,27 +4883,37 @@ async function startScan() {
     await _sleep(_scan.settleMs);
     if (_scan.aborting) break;
 
-    // Detekuj tváře
-    const faces = await _detectAndDraw();
-
-    if (faces.length === 0) {
-      _scan.skipDone++;
-      _sUpdateStats();
-      continue;
-    }
-
-    // Vyber tvář osoby sedící na místě (horizontálně u středu + největší = nejblíž kameře)
-    const pick = _pickSeatFace(faces, W, H);
-    const bestFace = pick.f;
-    _sLog(`  Sedadlo ${seatNum}: ${faces.length} tvář(í) · vybraná dx=${pick.dx.toFixed(2)} dy=${pick.dy.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}%`);
-
-    // Brána obsazenosti: tvář musí být horizontálně u středu (dx) a dost velká (hFrac),
-    // jinak jde nejspíš o souseda/pozadí nebo prázdné místo → přeskočit.
-    if (pick.dx > _scan.maxDx || pick.hFrac < _scan.minFaceFrac) {
-      _sLog(`  Sedadlo ${seatNum}: mimo cíl (dx=${pick.dx.toFixed(2)}, vel=${(pick.hFrac*100).toFixed(0)}%) → přeskočeno`, 'warn');
-      _scan.skipDone++;
-      _sUpdateStats();
-      continue;
+    // Zjisti osobu na sedadle — buď zoom-in režimem, nebo klasickou detekcí na širokém presetu.
+    let bestFace;
+    if (_scan.zoomScan) {
+      const found = await _zoomFindOccupant(seatNum, W, H);
+      if (_scan.aborting) break;
+      if (!found) {
+        _sLog(`  Sedadlo ${seatNum}: prázdné (zoom sken) → přeskočeno`, 'warn');
+        _scan.skipDone++;
+        _sUpdateStats();
+        continue;
+      }
+      bestFace = found.pick.f;
+    } else {
+      // Detekuj tváře na základním (širokém) presetu
+      const faces = await _detectAndDraw();
+      if (faces.length === 0) {
+        _scan.skipDone++;
+        _sUpdateStats();
+        continue;
+      }
+      // Vyber tvář osoby sedící na místě (horizontálně u středu + největší = nejblíž kameře)
+      const pick = _pickSeatFace(faces, W, H);
+      _sLog(`  Sedadlo ${seatNum}: ${faces.length} tvář(í) · vybraná dx=${pick.dx.toFixed(2)} dy=${pick.dy.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}%`);
+      // Brána obsazenosti: tvář u středu (dx) a dost velká (hFrac), jinak soused/pozadí/prázdné → skip.
+      if (pick.dx > _scan.maxDx || pick.hFrac < _scan.minFaceFrac) {
+        _sLog(`  Sedadlo ${seatNum}: mimo cíl (dx=${pick.dx.toFixed(2)}, vel=${(pick.hFrac*100).toFixed(0)}%) → přeskočeno`, 'warn');
+        _scan.skipDone++;
+        _sUpdateStats();
+        continue;
+      }
+      bestFace = pick.f;
     }
 
     // Osoba na sedadle — uložíme

@@ -4546,6 +4546,7 @@ const _scan = {
   selectBand: 0.30,      // horizontální pásmo u středu; z něj se bere NEJVĚTŠÍ tvář (= osoba vepředu)
   maxDx: 0.28,           // max horizontální odchylka vybrané tváře od středu (víc = mimo cíl → skip)
   minFaceFrac: 0.07,     // min výška tváře vůči výšce obrazu (míň = jen pozadí/prázdné → skip)
+  facePhotoVPad: 0.6,    // padding kolem obličeje v uložené fotce (0.6 = obličej + 60% nahoru/dolů → celá hlava)
   // Zoom-in sken (opt-in, experimentální): na sedadle přiblíží a od nejtěsnějšího
   // oddaluje, dokud nenajde centrální dost velkou tvář = osoba sedící na místě.
   zoomScan: false,       // zapíná zaškrtávátko ve scan modalu
@@ -4849,6 +4850,27 @@ function _screenshot() {
   return tmp.toDataURL('image/jpeg', 0.82);
 }
 
+// Ořízne fotku vycentrovanou na detekovaný obličej s paddingem (celá hlava: vlasy,
+// brada), v poměru 4:3 jako karta. Když obličej chybí, vrátí celý snímek.
+function _faceCropPhoto(face) {
+  const cv = document.getElementById('scanCanvas');
+  if (!cv || !cv.width || !face || !face.topLeft) return _screenshot();
+  const vPad = _scan.facePhotoVPad;
+  const [x1, y1] = face.topLeft, [x2, y2] = face.bottomRight;
+  const fw = Math.max(1, x2 - x1), fh = Math.max(1, y2 - y1);
+  const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+  let cropH = fh * (1 + 2 * vPad);   // výška = obličej + padding nahoře/dole
+  let cropW = cropH * 4 / 3;         // poměr karty 4:3
+  cropW = Math.min(cropW, cv.width);
+  cropH = Math.min(cropH, cv.height);
+  const sx = Math.max(0, Math.min(cx - cropW / 2, cv.width  - cropW));
+  const sy = Math.max(0, Math.min(cy - cropH / 2, cv.height - cropH));
+  const tmp = document.createElement('canvas');
+  tmp.width = Math.round(cropW); tmp.height = Math.round(cropH);
+  tmp.getContext('2d').drawImage(cv, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
+  return tmp.toDataURL('image/jpeg', 0.85);
+}
+
 function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // Další volné číslo presetu pro CAM2 (rozsah 175–239)
@@ -4959,8 +4981,8 @@ async function startScan() {
       bestFace = pick.f;
     }
 
-    // Osoba na sedadle — uložíme
-    const screenshot = _screenshot();
+    // Osoba na sedadle — uložíme (fotka = ořez vycentrovaný na obličej, ne celý snímek)
+    const facePhoto = _faceCropPhoto(bestFace);
     const newPresetNum = _nextPresetNum();
     if (!newPresetNum) {
       _sLog('  Nejsou volná čísla presetů (175–239)!', 'err');
@@ -4968,7 +4990,7 @@ async function startScan() {
     }
 
     // Rozpoznávání tváře
-    let finalPhoto = screenshot;
+    let finalPhoto = facePhoto;
     let finalName  = `Sedadlo ${seatNum}`;
     if (_persons.length > 0 && _faceApiLoaded) {
       const res = await _recognizeFace(bestFace);

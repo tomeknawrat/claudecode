@@ -499,8 +499,10 @@ console.warn = (...args) => {
   /* ── POSE BUTTONS (sedí/stojí) ── */
   .pose-btns { display: flex; flex-direction: column; gap: 4px; }
   /* Přesunuté pose ikonky pod tlačítko Skenovat (vlevo nad seat layoutem) */
-  .seat-pose-holder { position: absolute; left: 6px; top: 52px; z-index: 5; }
+  .seat-pose-holder { position: absolute; left: 20px; top: 52px; z-index: 5; }
   .seat-pose-holder:empty { display: none; }
+  /* Vedle sebe, zleva stojící → sedící (DOM pořadí je sit, stand → row-reverse) */
+  .seat-pose-holder .pose-btns { flex-direction: row-reverse; }
   /* V kompaktním zobrazení skryj (překrývalo by první kartu) */
   .panel--cam2:not(.seat-layout-active) .seat-pose-holder { display: none; }
   .pose-btn {

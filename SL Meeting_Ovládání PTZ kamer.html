@@ -4507,7 +4507,7 @@ const _scan = {
   zoomSteps: 3,          // kolik kroků přiblížení od base presetu sedadla
   zoomStepMs: 600,       // délka jednoho zoom kroku (ms) — laditelné podle rychlosti kamery
   zoomSettleMs: 700,     // ustálení po zoom kroku (ms)
-  zoomFracBonus: 0.05,   // o kolik roste min. velikost tváře na každé těsnější úrovni
+  zoomMinAcceptFrac: 0.20, // min. výška tváře pro PŘIJETÍ — jen „přizoomovaná" (velká) tvář = osoba na místě; malé/oddálené se zahodí
   recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
 };
 
@@ -4774,17 +4774,18 @@ async function _zoomFindOccupant(seatNum, W, H) {
     await _zoomStep(2, 'zoomin', _scan.zoomStepMs);
   }
   await _sleep(_scan.zoomSettleMs);
-  // Od nejtěsnějšího postupně oddaluj a hledej centrální velkou tvář
+  // Od nejtěsnějšího postupně oddaluj a hledej centrální VELKOU tvář (= přizoomovaný
+  // obsazený záběr). Malé/oddálené tváře (pozadí, sousedé) se zahodí → prázdné sedadlo.
   for (let lvl = _scan.zoomSteps; lvl >= 0; lvl--) {
     if (_scan.aborting) return null;
     const faces = await _detectAndDraw();
     if (faces.length) {
       const pick = _pickSeatFace(faces, W, H);
-      const minFrac = _scan.minFaceFrac + lvl * _scan.zoomFracBonus; // těsnější úroveň → větší tvář
-      _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: ${faces.length} tvář(í) dx=${pick.dx.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}% (práh ${(minFrac*100).toFixed(0)}%)`);
-      if (pick.dx <= _scan.maxDx && pick.hFrac >= minFrac) {
-        return { pick, zoomLevel: lvl };
-      }
+      const centered = pick.dx <= _scan.maxDx;
+      const big      = pick.hFrac >= _scan.zoomMinAcceptFrac;
+      const verdict  = (centered && big) ? '✓ přijato' : (big ? '✗ ne u středu' : '✗ moc malá/oddálená');
+      _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: ${faces.length} tvář(í) dx=${pick.dx.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}% (práh ${(_scan.zoomMinAcceptFrac*100).toFixed(0)}%) ${verdict}`);
+      if (centered && big) return { pick, zoomLevel: lvl };
     } else {
       _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: žádná tvář`);
     }

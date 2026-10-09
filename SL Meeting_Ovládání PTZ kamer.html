@@ -498,6 +498,11 @@ console.warn = (...args) => {
 
   /* ── POSE BUTTONS (sedí/stojí) ── */
   .pose-btns { display: flex; flex-direction: column; gap: 4px; }
+  /* Přesunuté pose ikonky pod tlačítko Skenovat (vlevo nad seat layoutem) */
+  .seat-pose-holder { position: absolute; left: 6px; top: 52px; z-index: 5; }
+  .seat-pose-holder:empty { display: none; }
+  /* V kompaktním zobrazení skryj (překrývalo by první kartu) */
+  .panel--cam2:not(.seat-layout-active) .seat-pose-holder { display: none; }
   .pose-btn {
     width: 42px; height: 42px;
     display: flex; align-items: center; justify-content: center;
@@ -1896,9 +1901,9 @@ console.warn = (...args) => {
     </div><!-- cam2-controls-collapsible -->
     </div><!-- cam2-controls-wrap -->
     </div><!-- /panel-body -->
-    <div class="cam-presets-section">
+    <div class="cam-presets-section" style="position:relative;">
       <div class="cam-presets-header">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
           <button class="scan-btn" id="scanBtn" onclick="openScanModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
             Skenovat hlediště
@@ -1920,6 +1925,7 @@ console.warn = (...args) => {
           </button>
         </div>
       </div>
+      <div id="seatPoseHolder" class="seat-pose-holder"></div>
       <div class="presets-grid" id="presetsGrid2"></div>
       <div class="seat-layout-grid" id="seatLayoutGrid2" style="display:none"></div>
       <div class="seat-layout-grid" id="slotEditGrid2" style="display:none"></div>
@@ -2581,6 +2587,24 @@ function resetPose(cam) {
   document.getElementById(`pose${cam}-sit`).classList.remove('active');
   document.getElementById(`pose${cam}-stand`).classList.remove('active');
 }
+
+// Přesune pose ikonky (sedí/stojí) z ovládacích prvků CAM2 pod tlačítko Skenovat
+// (vlevo nad seat layout). Skryje původní skupinu „Pozice" v ovládacích prvcích.
+(function relocateCam2Pose() {
+  try {
+    const sit = document.getElementById('pose2-sit');
+    const holder = document.getElementById('seatPoseHolder');
+    if (!sit || !holder) return;
+    const poseBtns = sit.closest('.pose-btns');
+    const ctrlGroup = sit.closest('.ctrl-group');
+    if (poseBtns) holder.appendChild(poseBtns);      // přesuň obě ikonky (bez labelu)
+    if (ctrlGroup) {                                  // skryj zbylou skupinu „Pozice" + její oddělovač
+      const prev = ctrlGroup.previousElementSibling;
+      if (prev && prev.classList.contains('ctrl-divider')) prev.style.display = 'none';
+      ctrlGroup.style.display = 'none';
+    }
+  } catch (e) {}
+})();
 
 
 // ══════════════════════════════════════════════════

@@ -3248,7 +3248,7 @@ function renderSeatLayout() {
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
   const blockL = document.createElement('div');
-  blockL.style.cssText = `display:flex;flex-direction:column;gap:${_lgap}px;`;
+  blockL.style.cssText = `display:flex;flex-direction:column;gap:var(--seat-gap);`;
   SEAT_LAYOUT.left.forEach((row, ri) => {
     const rowEl = document.createElement('div');
     rowEl.style.cssText = 'display:flex;gap:var(--seat-gap);';
@@ -3418,7 +3418,7 @@ function renderSlotEditGrid() {
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
   const blockL = document.createElement('div');
-  blockL.style.cssText = `display:flex;flex-direction:column;gap:${_lgap}px;`;
+  blockL.style.cssText = `display:flex;flex-direction:column;gap:var(--seat-gap);`;
 
   SEAT_LAYOUT.left.forEach((row, ri) => {
     const rowEl = document.createElement('div');

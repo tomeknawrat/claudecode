@@ -1506,10 +1506,6 @@ console.warn = (...args) => {
       <span id="headerStatusText">Server odpojen</span>
     </div>
     <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()" style="font-size:12px;padding:6px 14px">Připojit server</button>
-    <button class="scan-btn" id="scanBtn" onclick="openScanModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
-      Skenovat
-    </button>
     <button class="settings-btn" id="settingsBtn" onclick="toggleDrawer()">
       <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
         <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
@@ -1903,21 +1899,13 @@ console.warn = (...args) => {
     <div class="cam-presets-section">
       <div class="cam-presets-header">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="10" y="4" width="4" height="4" rx="1"/><rect x="17" y="4" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="10" y="11" width="4" height="4" rx="1"/><rect x="17" y="11" width="4" height="4" rx="1"/><rect x="3" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="17" y="18" width="4" height="4" rx="1"/></svg>
-            <span id="seatLayoutBtnLabel">Detailní</span>
+          <button class="scan-btn" id="scanBtn" onclick="openScanModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
+            Skenovat hlediště
           </button>
           <div class="cam-header-divider" id="camHeaderDivider2"></div>
           <button class="add-preset-btn" id="addPresetBtn2" onclick="openAddPreset(2)">＋ Přidat</button>
           <button class="edit-order-btn" id="editOrderBtn2" onclick="toggleEditOrder(2)">⇅ Přesunout</button>
-          <button class="hide-presets-btn" id="hidePresetsBtn2" onclick="toggleHideMode(2)" title="Skrýt / zobrazit presety">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-            Skryté presety
-          </button>
-          <button class="hide-presets-btn" id="hideGuestsBtn2" onclick="toggleHideGuests()" style="display:none">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Skrýt hosty
-          </button>
           <button class="seat-layout-btn" id="slotEditBtn2" onclick="toggleSlotEditMode()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="6" y="2" width="12" height="9" rx="2"/><path d="M4 11h16"/><path d="M4 11v8"/><path d="M20 11v8"/><path d="M6 19v3"/><path d="M18 19v3"/><path d="M4 15h3"/><path d="M17 15h3"/></svg>
             Editace presetů sedadel
@@ -1925,6 +1913,10 @@ console.warn = (...args) => {
           <button class="hide-presets-btn" id="clearAllBtn2" onclick="clearAllPresets(2)" title="Smazat všechny uložené fotky/karty na CAM2 (pozice presetů v kameře zůstanou)" style="color:var(--red);border-color:var(--red)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
             Smazat všechny fotky
+          </button>
+          <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()" style="margin-left:auto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="10" y="4" width="4" height="4" rx="1"/><rect x="17" y="4" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="10" y="11" width="4" height="4" rx="1"/><rect x="17" y="11" width="4" height="4" rx="1"/><rect x="3" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="17" y="18" width="4" height="4" rx="1"/></svg>
+            <span id="seatLayoutBtnLabel">Detailní zobrazení</span>
           </button>
         </div>
       </div>
@@ -4002,7 +3994,7 @@ function toggleSeatLayout() {
   const empty    = document.getElementById('presetsEmpty2');
 
   btn.classList.toggle('active', seatLayoutActive);
-  document.getElementById('seatLayoutBtnLabel').textContent = seatLayoutActive ? 'Kompaktní' : 'Detailní';
+  document.getElementById('seatLayoutBtnLabel').textContent = seatLayoutActive ? 'Kompaktní zobrazení' : 'Detailní zobrazení';
   document.querySelector('.panel--cam2').classList.toggle('seat-layout-active', seatLayoutActive);
 
   if (seatLayoutActive) {

@@ -659,6 +659,19 @@ console.warn = (...args) => {
   /* Spodní lišta schovaná — úprava přes pravý klik */
   .preset-actions { display: none; }
 
+  /* Seat-layout karta: číslo vpravo nahoře, bez názvu „Sedadlo XX", koš vlevo nahoře */
+  .slot-card .preset-number { left: auto; right: calc(var(--card-w) * 0.05); }
+  .slot-card .preset-name { display: none; }
+  .slot-del-btn {
+    position: absolute; top: calc(var(--card-w) * 0.04); left: calc(var(--card-w) * 0.05); z-index: 4;
+    width: calc(var(--card-w) * 0.2); height: calc(var(--card-w) * 0.2); min-width: 17px; min-height: 17px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.9); border: 1px solid var(--red); border-radius: calc(var(--card-w) * 0.05);
+    color: var(--red); cursor: pointer; opacity: 0; transition: opacity .15s;
+  }
+  .slot-card:hover .slot-del-btn { opacity: 1; }
+  .slot-del-btn svg { width: 64%; height: 64%; }
+
   /* ── LOG ── */
   .log-entry { padding: 1px 0; }
   .log-entry.tx   { color: #60a5fa; }
@@ -2765,6 +2778,26 @@ async function clearAllPresets(cam) {
   logMsg('info', `CAM${cam}: smazáno ${n} fotek/karet (pozice v kameře zachovány)`);
 }
 
+// Smaže fotku/kartu přiřazenou k jednomu sedadlu (slotu). NECHÁVÁ pozici presetu
+// v kameře i kalibraci slotu (slotPresets) — maže jen zobrazenou fotku.
+async function deleteSlotPhoto(slotIdx) {
+  const presetIdx = slotAssignments ? slotAssignments[slotIdx] : null;
+  if (presetIdx === null || presetIdx === undefined) return;
+  const seatNum = SEAT_NUMBERS[slotIdx] ?? '';
+  const ok = await showConfirm(`Smazat fotku ze sedadla <strong style="color:var(--text)">${seatNum}</strong>?<br>Pozice presetu v kameře zůstane zachovaná.`);
+  if (!ok) return;
+  // Odeber kartu ze state.presets[2] a přepočítej indexy v slotAssignments
+  state.presets[2].splice(presetIdx, 1);
+  for (let i = 0; i < slotAssignments.length; i++) {
+    if (slotAssignments[i] === presetIdx) slotAssignments[i] = null;
+    else if (slotAssignments[i] > presetIdx) slotAssignments[i]--;
+  }
+  await savePresetsStorage();
+  renderPresets();
+  if (seatLayoutActive) renderSeatLayout();
+  logMsg('info', `Sedadlo ${seatNum}: fotka smazána (preset v kameře zachován)`);
+}
+
 function editPreset(cam,idx) {
   cam = parseInt(cam); idx = parseInt(idx);
   state.editingPreset={cam,idx}; state.modalCam=cam;
@@ -4098,6 +4131,17 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
   } else {
     imgSlot.innerHTML = '<div class="preset-img-placeholder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>';
   }
+
+  // Koš vlevo nahoře — smaže JEN fotku na tomto sedadle (preset v kameře zůstane)
+  const delBtn = document.createElement('div');
+  delBtn.className = 'slot-del-btn';
+  delBtn.title = 'Smazat fotku z tohoto sedadla (preset v kameře zůstane)';
+  delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>';
+  const _stopDel = e => { e.preventDefault(); e.stopPropagation(); };
+  delBtn.addEventListener('pointerdown', _stopDel);
+  delBtn.addEventListener('pointerup', _stopDel);
+  delBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); deleteSlotPhoto(slotIdx); });
+  card.querySelector('.preset-img-area').appendChild(delBtn);
 
   // Pravý klik = upravit preset
   card.addEventListener('contextmenu', e => { e.preventDefault(); editPreset(cam, presetIdx); });

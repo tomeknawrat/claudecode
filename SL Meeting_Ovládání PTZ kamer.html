@@ -3245,7 +3245,7 @@ function renderSeatLayout() {
   hall.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
 
   // Levý blok
-  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 150, 0];
+  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 33, 0];
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
   const blockL = document.createElement('div');
@@ -3415,7 +3415,7 @@ function renderSlotEditGrid() {
   wrap.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
 
   // Levý blok
-  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 150, 0];
+  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 33, 0];
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
   const blockL = document.createElement('div');
@@ -5458,14 +5458,14 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
       card = calcCam2CardW(vw, vh);
     }
     const gap = Math.round(2 * card / 60);
-    const hall = Math.round(8 * card / 60);
+    const hall = Math.round(45 * card / 60);
     document.documentElement.style.setProperty('--card-w', Math.round(card * 0.75) + 'px');
     window._sedSlotW = Math.round(card * 0.75);
     window._sedSlotH = Math.round(card * 0.75 * 1.01);
     // Dynamická odsazení řad podle aktuální velikosti slotu
     const actualCard = Math.round(card * 0.75);
     const unit = actualCard + gap;
-    window._seatIndentsLeft  = [Math.round(1.5*unit), Math.round(0.5*unit), 0, Math.round(0.5*unit), Math.round(1.7*unit)+16, 0];
+    window._seatIndentsLeft  = [Math.round(1.5*unit), Math.round(0.5*unit), 0, Math.round(0.5*unit), Math.round(0.5*unit), 0];
     window._seatIndentsRight = [Math.round(1.5*unit), Math.round(1.0*unit), Math.round(0.5*unit), 0, 0, 0];
     window._seatNegMargin    = -Math.round(0.3 * unit);
     window._seatLeftGap      = (6*actualCard + 5*gap - 5*actualCard) / 4;

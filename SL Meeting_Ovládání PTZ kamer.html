@@ -3174,8 +3174,9 @@ const SEAT_LAYOUT = {
     [27, 26, 25, 24, 23, 22, 21],
     [38, 37, 36, 35, 34, 33, 32, 31],
     [47, 46, 45, 44, 43, 42, 41],
-    // Řada 5: [0,1] mezera [57..51]
-    { left: [0, 1], right: [57, 56, 55, 54, 53, 52, 51] },
+    [57, 56, 55, 54, 53, 52, 51],
+    // Řada 6: jen 0 a 1, vlevo pod 38/37
+    [0, 1],
   ],
   right: [
     [111, 112, 113, 114, 115],
@@ -3244,7 +3245,7 @@ function renderSeatLayout() {
   hall.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
 
   // Levý blok
-  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 0];
+  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 150, 0];
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
   const blockL = document.createElement('div');
@@ -3252,7 +3253,7 @@ function renderSeatLayout() {
   SEAT_LAYOUT.left.forEach((row, ri) => {
     const rowEl = document.createElement('div');
     rowEl.style.cssText = 'display:flex;gap:var(--seat-gap);';
-    rowEl.style.marginLeft = (ri === 4 ? _negM : (_leftInd[ri] || 0)) + 'px';
+    rowEl.style.marginLeft = (_leftInd[ri] || 0) + 'px';
     if (Array.isArray(row)) {
       row.forEach(sn => rowEl.appendChild(_makeViewSlotOld(sn)));
     } else {
@@ -3414,7 +3415,7 @@ function renderSlotEditGrid() {
   wrap.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
 
   // Levý blok
-  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 0];
+  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 150, 0];
   const _negM    = window._seatNegMargin   ?? -20;
   const _lgap    = window._seatLeftGap     ?? 22.5;
   const blockL = document.createElement('div');
@@ -3423,7 +3424,7 @@ function renderSlotEditGrid() {
   SEAT_LAYOUT.left.forEach((row, ri) => {
     const rowEl = document.createElement('div');
     rowEl.style.cssText = 'display:flex;gap:var(--seat-gap);align-items:center;';
-    rowEl.style.marginLeft = (ri === 4 ? _negM : (_leftInd[ri] || 0)) + 'px';
+    rowEl.style.marginLeft = (_leftInd[ri] || 0) + 'px';
     const nums = Array.isArray(row) ? row : [...row.left, ...row.right];
     if (Array.isArray(row)) {
       row.forEach(sn => rowEl.appendChild(makeSlotEditSlot(sn)));
@@ -5464,7 +5465,7 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     // Dynamická odsazení řad podle aktuální velikosti slotu
     const actualCard = Math.round(card * 0.75);
     const unit = actualCard + gap;
-    window._seatIndentsLeft  = [Math.round(1.5*unit), Math.round(0.5*unit), 0, Math.round(0.5*unit), 0];
+    window._seatIndentsLeft  = [Math.round(1.5*unit), Math.round(0.5*unit), 0, Math.round(0.5*unit), Math.round(1.7*unit)+16, 0];
     window._seatIndentsRight = [Math.round(1.5*unit), Math.round(1.0*unit), Math.round(0.5*unit), 0, 0, 0];
     window._seatNegMargin    = -Math.round(0.3 * unit);
     window._seatLeftGap      = (6*actualCard + 5*gap - 5*actualCard) / 4;

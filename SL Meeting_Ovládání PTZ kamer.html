@@ -4904,9 +4904,18 @@ function _faceCropPhoto(face) {
   cropH = Math.min(cropH, cv.height);
   const sx = Math.max(0, Math.min(cx - cropW / 2, cv.width  - cropW));
   const sy = Math.max(0, Math.min(cy - cropH * _scan.facePhotoFaceAt, cv.height - cropH)); // obličej výš = top-center
+  // Ořez bereme z ČISTÉHO video zdroje (ne z scanCanvas, kam se kreslí detekční rámečky)
+  const src = _scan._mjpegImg || document.getElementById('scanVideo');
+  const srcW = (src && (src.naturalWidth || src.videoWidth)) || cv.width;
+  const srcH = (src && (src.naturalHeight || src.videoHeight)) || cv.height;
+  const scaleX = srcW / cv.width, scaleY = srcH / cv.height;
   const tmp = document.createElement('canvas');
   tmp.width = Math.round(cropW); tmp.height = Math.round(cropH);
-  tmp.getContext('2d').drawImage(cv, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
+  try {
+    tmp.getContext('2d').drawImage(src, sx*scaleX, sy*scaleY, cropW*scaleX, cropH*scaleY, 0, 0, cropW, cropH);
+  } catch(e) {
+    tmp.getContext('2d').drawImage(cv, sx, sy, cropW, cropH, 0, 0, cropW, cropH); // fallback
+  }
   return tmp.toDataURL('image/jpeg', 0.85);
 }
 

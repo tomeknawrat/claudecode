@@ -4582,7 +4582,10 @@ const _scan = {
   selectBand: 0.30,      // horizontální pásmo u středu; z něj se bere NEJVĚTŠÍ tvář (= osoba vepředu)
   maxDx: 0.28,           // max horizontální odchylka vybrané tváře od středu (víc = mimo cíl → skip)
   minFaceFrac: 0.07,     // min výška tváře vůči výšce obrazu (míň = jen pozadí/prázdné → skip)
-  facePhotoVPad: 0.6,    // padding kolem obličeje v uložené fotce (0.6 = obličej + 60% nahoru/dolů → celá hlava)
+  facePhotoVPad: 0.6,    // padding kolem obličeje v uložené fotce (velikost ořezu)
+  facePhotoFaceAt: 0.4,  // kam dát střed obličeje odshora (0.5=střed, míň=obličej výš → top-center)
+  scanTiltMs: 0,         // volitelný tilt nudge po najetí (ms, 0=vypnuto) — framing obličeje do top-center
+  scanTiltDir: 'up',     // směr nudge ('up'/'down')
   // Zoom-in sken (opt-in, experimentální): na sedadle přiblíží a od nejtěsnějšího
   // oddaluje, dokud nenajde centrální dost velkou tvář = osoba sedící na místě.
   zoomScan: false,       // zapíná zaškrtávátko ve scan modalu
@@ -4900,7 +4903,7 @@ function _faceCropPhoto(face) {
   cropW = Math.min(cropW, cv.width);
   cropH = Math.min(cropH, cv.height);
   const sx = Math.max(0, Math.min(cx - cropW / 2, cv.width  - cropW));
-  const sy = Math.max(0, Math.min(cy - cropH / 2, cv.height - cropH));
+  const sy = Math.max(0, Math.min(cy - cropH * _scan.facePhotoFaceAt, cv.height - cropH)); // obličej výš = top-center
   const tmp = document.createElement('canvas');
   tmp.width = Math.round(cropW); tmp.height = Math.round(cropH);
   tmp.getContext('2d').drawImage(cv, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
@@ -4991,6 +4994,15 @@ async function startScan() {
     }
     await _sleep(_scan.settleMs);
     if (_scan.aborting) break;
+
+    // Volitelný tilt nudge — posune obličej do top-center (laditelné; 0 = vypnuto)
+    if (_scan.scanTiltMs > 0) {
+      sendCmd(2, _scan.scanTiltDir);
+      await _sleep(_scan.scanTiltMs);
+      sendCmd(2, 'stop');
+      await _sleep(400);
+      if (_scan.aborting) break;
+    }
 
     // Zjisti osobu na sedadle — buď zoom-in režimem, nebo klasickou detekcí na širokém presetu.
     let bestFace;

@@ -2123,6 +2123,8 @@ function _wsConnect() {
           res.style.color = msg.ok ? '#16a34a' : 'var(--red)';
         }
         logMsg(msg.ok ? 'info' : 'err', 'MediaMTX: ' + (msg.ok ? 'stream nakonfigurovaný' : msg.msg));
+      } else if (msg.type === 'pos') {
+        if (_posResolve) { _posResolve(msg.ok ? msg : null); _posResolve = null; }
       }
     } catch(e) {}
   };
@@ -2146,6 +2148,20 @@ function _wsSend(obj) {
     return true;
   }
   return false;
+}
+
+// ── Souřadnice (VISCA abs) ── dotaz na pozici (await) + absolutní najetí ──
+let _posResolve = null;
+function _wsGetPos(cam) {
+  return new Promise(resolve => {
+    _posResolve = resolve;
+    if (!_wsSend({ cmd: 'getpos', cam })) { _posResolve = null; resolve(null); return; }
+    setTimeout(() => { if (_posResolve === resolve) { _posResolve = null; resolve(null); } }, 3000);
+  });
+}
+function _wsAbsMove(cam, c) {
+  if (!c) return false;
+  return _wsSend({ cmd: 'absmove', cam, pan: c.pan, tilt: c.tilt, zoom: c.zoom });
 }
 
 function _sendCamConfigs() {
@@ -3150,6 +3166,9 @@ let slotEditActive = false;
 // slotPresets[i] = číslo presetu kamery pro slot i (null = nenastaveno)
 // Číslujeme od 255 dolů: židle 1 → preset 255, židle 2 → preset 254, ...
 let slotPresets = null; // inicializuje se při prvním otevření
+// slotCoords[i] = {pan,tilt,zoom} absolutní VISCA souřadnice sedadla (null = neuloženo).
+// Primární cesta pro sken „po souřadnicích" — nezávislá na preset paměti kamery.
+let slotCoords = null;
 let seatLayoutEditMode = false;
 let slotAssignments = null; // pole indexů do state.presets[2], nebo null
 
@@ -3289,11 +3308,17 @@ function _makeViewSlotOld(seatNum) {
   slot.addEventListener('pointerup', () => {
     if (t === null) return;
     if (Date.now() - t < 600) {
-      const presetNum = (slotPresets && slotPresets[si] !== null) ? slotPresets[si] : seatNum;
-      sendCmd(2, 'gotopreset', presetNum);
+      // Primárně po souřadnicích (VISCA abs), jinak preset
+      if (slotCoords && slotCoords[si]) {
+        _wsAbsMove(2, slotCoords[si]);
+        logMsg('info', `Sedadlo ${seatNum}: najeto na souřadnice`);
+      } else {
+        const presetNum = (slotPresets && slotPresets[si] !== null) ? slotPresets[si] : seatNum;
+        sendCmd(2, 'gotopreset', presetNum);
+        logMsg('info', `Sedadlo ${seatNum}: preset #${presetNum}`);
+      }
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
-      logMsg('info', `Sedadlo ${seatNum}: preset #${presetNum}`);
     }
     t = null;
   });
@@ -3347,6 +3372,7 @@ function makeSlotEditSlot(seatNum) {
       setTimeout(() => slot.classList.remove('recalled'), 600);
       logMsg('info', `Sedadlo ${seatNum}: uložena pozice #${presetNum}`);
       saveSlotPresetsStorage();
+      _captureSlotCoords(si, seatNum);
     }, HOLD_MS);
     slot.classList.add('saving');
   });
@@ -3357,7 +3383,8 @@ function makeSlotEditSlot(seatNum) {
     bar.style.transition = ''; bar.style.width = '0%';
     slot.classList.remove('saving');
     if (Date.now() - holdStart < 500) {
-      sendCmd(2, 'gotopreset', slotPresets[si] ?? presetNum);
+      if (slotCoords && slotCoords[si]) _wsAbsMove(2, slotCoords[si]);
+      else sendCmd(2, 'gotopreset', slotPresets[si] ?? presetNum);
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
     }
@@ -3597,6 +3624,7 @@ function _sedMakeSlotEl(seat, sec, si, canvas, canvasW, canvasH) {
       setTimeout(() => slot.classList.remove('recalled'), 600);
       logMsg('info', `Sedadlo ${seatNum}: uložena pozice #${presetNum}`);
       saveSlotPresetsStorage();
+      _captureSlotCoords(slotIdx, seatNum);
     }, HOLD_MS);
     slot.classList.add('saving');
     const startX = e.clientX, startY = e.clientY;
@@ -3625,7 +3653,8 @@ function _sedMakeSlotEl(seat, sec, si, canvas, canvasW, canvasH) {
     bar.style.transition = ''; bar.style.width = '0%';
     slot.classList.remove('saving');
     if (Date.now() - holdStart < 500) {
-      sendCmd(2, 'gotopreset', slotPresets[slotIdx] ?? presetNum);
+      if (slotCoords && slotCoords[slotIdx]) _wsAbsMove(2, slotCoords[slotIdx]);
+      else sendCmd(2, 'gotopreset', slotPresets[slotIdx] ?? presetNum);
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
     }
@@ -3985,6 +4014,23 @@ function saveSlotPresetsStorage() {
   try { localStorage.setItem('ptz_slot_presets', JSON.stringify(slotPresets)); } catch(e) {}
 }
 
+function saveSlotCoordsStorage() {
+  try { localStorage.setItem('ptz_slot_coords', JSON.stringify(slotCoords)); } catch(e) {}
+}
+
+// Přečte aktuální absolutní pozici kamery (VISCA) a uloží ji jako souřadnice sedadla.
+async function _captureSlotCoords(slotIdx, seatNum) {
+  const pos = await _wsGetPos(2);
+  if (pos && typeof pos.pan !== 'undefined') {
+    if (!slotCoords) slotCoords = new Array(TOTAL_SEATS).fill(null);
+    slotCoords[slotIdx] = { pan: pos.pan, tilt: pos.tilt, zoom: pos.zoom };
+    saveSlotCoordsStorage();
+    logMsg('info', `Sedadlo ${seatNum}: souřadnice uloženy (pan ${pos.pan}, tilt ${pos.tilt}, zoom ${pos.zoom}).`);
+  } else {
+    logMsg('err', `Sedadlo ${seatNum}: souřadnice se nepodařilo přečíst (VISCA 1259) — uložen jen preset.`);
+  }
+}
+
 function loadSlotPresetsStorage() {
   try {
     const raw = localStorage.getItem('ptz_slot_presets');
@@ -3995,6 +4041,17 @@ function loadSlotPresetsStorage() {
     const newArr = new Array(TOTAL_SEATS).fill(null);
     slotPresets.forEach((v,i)=>{ if(i<TOTAL_SEATS) newArr[i]=v; });
     slotPresets = newArr;
+  }
+  // Souřadnice sedadel (VISCA abs) — primární pro sken
+  try {
+    const rawC = localStorage.getItem('ptz_slot_coords');
+    if (rawC) { const arrC = JSON.parse(rawC); if (Array.isArray(arrC)) slotCoords = arrC; }
+  } catch(e) {}
+  if (!slotCoords) slotCoords = new Array(TOTAL_SEATS).fill(null);
+  else if (slotCoords.length !== TOTAL_SEATS) {
+    const nc = new Array(TOTAL_SEATS).fill(null);
+    slotCoords.forEach((v,i)=>{ if(i<TOTAL_SEATS) nc[i]=v; });
+    slotCoords = nc;
   }
   try {
     const raw2 = localStorage.getItem('ptz_slot_assignments');
@@ -4878,8 +4935,10 @@ async function startScan() {
   if (_scan.active) return;
 
   // Validace — musí být kalibrované aspoň jedno sedadlo (preset kamery pro slot)
-  if (!slotPresets || slotPresets.every(v => v === null)) {
-    _sLog('Žádná sedadla nejsou kalibrována! Nejprve nastavte presety sedadel v "Editace presetů sedadel".', 'err'); return;
+  const hasPresets = slotPresets && slotPresets.some(v => v !== null);
+  const hasCoords  = slotCoords  && slotCoords.some(v => v);
+  if (!hasPresets && !hasCoords) {
+    _sLog('Žádná sedadla nejsou kalibrována! Nejprve nastavte polohy sedadel v "Editace presetů sedadel".', 'err'); return;
   }
 
   _scan.active = true; _scan.aborting = false;
@@ -4908,11 +4967,13 @@ async function startScan() {
   const cv = document.getElementById('scanCanvas');
   const W = cv.width || 1920, H = cv.height || 1080;
 
-  // Zjisti kalibrovaná sedadla
+  // Zjisti kalibrovaná sedadla (souřadnice = primární, preset = fallback)
   const calibrated = [];
   for (let i = 0; i < TOTAL_SEATS; i++) {
-    if (slotPresets[i] !== null) {
-      calibrated.push({ slotIdx: i, seatNum: SEAT_NUMBERS[i], presetNum: slotPresets[i] });
+    const coords = (slotCoords && slotCoords[i]) ? slotCoords[i] : null;
+    const preset = slotPresets[i];
+    if (coords || preset !== null) {
+      calibrated.push({ slotIdx: i, seatNum: SEAT_NUMBERS[i], presetNum: preset, coords });
     }
   }
   _sLog(`Kalibrovaných sedadel: ${calibrated.length}`);
@@ -4920,10 +4981,14 @@ async function startScan() {
   // Projdi každé sedadlo
   for (let j = 0; j < calibrated.length; j++) {
     if (_scan.aborting) break;
-    const { slotIdx, seatNum, presetNum } = calibrated[j];
+    const { slotIdx, seatNum, presetNum, coords } = calibrated[j];
 
-    // Kamera na preset sedadla
-    sendCmd(2, 'gotopreset', presetNum);
+    // Najeď na sedadlo — primárně po souřadnicích (VISCA abs), jinak preset
+    if (coords) {
+      _wsAbsMove(2, coords);
+    } else {
+      sendCmd(2, 'gotopreset', presetNum);
+    }
     await _sleep(_scan.settleMs);
     if (_scan.aborting) break;
 

@@ -16,6 +16,7 @@ import webbrowser
 import subprocess
 import http.server
 import socketserver
+import socket
 
 WS_PORT  = 8765
 
@@ -150,6 +151,57 @@ def build_cgi_path(cmd, speed=5, preset=None):
     if cmd == 'home':
         return f'{base}?ptzcmd&poscall&0'
     return None
+
+# ── VISCA-over-IP (UDP, port 1259, raw) ──
+# Ověřeno na VHD kameře: dotaz na pan/tilt/zoom i absolutní najetí funguje přesně.
+# Použití pro sken „po souřadnicích" nezávisle na preset paměti kamery.
+VISCA_PORT = 1259
+
+def _visca_send(ip, payload, want_reply=True, timeout=1.5):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(timeout)
+        s.sendto(bytes(payload), (ip, VISCA_PORT))
+        if not want_reply:
+            s.close(); return b''
+        data, _ = s.recvfrom(64)
+        s.close()
+        return data
+    except Exception:
+        return None
+
+def _visca_signed16(v):
+    return v - 0x10000 if v >= 0x8000 else v
+
+def _visca_nib(data, start, count):
+    val = 0
+    for i in range(count):
+        val = (val << 4) | (data[start + i] & 0x0F)
+    return val
+
+def _visca_nibbles_of(v16):
+    v = v16 & 0xFFFF
+    return [(v >> 12) & 0xF, (v >> 8) & 0xF, (v >> 4) & 0xF, v & 0xF]
+
+def visca_get_pos(ip):
+    """Vrátí {'pan','tilt','zoom'} nebo None."""
+    r = _visca_send(ip, [0x81, 0x09, 0x06, 0x12, 0xFF])
+    if not r or len(r) < 11 or r[0] != 0x90:
+        return None
+    pan  = _visca_signed16(_visca_nib(r, 2, 4))
+    tilt = _visca_signed16(_visca_nib(r, 6, 4))
+    z = _visca_send(ip, [0x81, 0x09, 0x04, 0x47, 0xFF])
+    zoom = _visca_nib(z, 2, 4) if (z and len(z) >= 7 and z[0] == 0x90) else 0
+    return {'pan': pan, 'tilt': tilt, 'zoom': zoom}
+
+def visca_abs_move(ip, pan, tilt, zoom=None, pan_speed=0x10, tilt_speed=0x10):
+    """Absolutní najetí na pan/tilt (a volitelně zoom)."""
+    cmd = [0x81, 0x01, 0x06, 0x02, pan_speed, tilt_speed] + \
+          _visca_nibbles_of(pan) + _visca_nibbles_of(tilt) + [0xFF]
+    _visca_send(ip, cmd, timeout=2.0)
+    if zoom is not None:
+        _visca_send(ip, [0x81, 0x01, 0x04, 0x47] + _visca_nibbles_of(zoom) + [0xFF])
+    return True
 
 class _WhepProxyHandler(http.server.BaseHTTPRequestHandler):
     """Přeposílá WHEP požadavky (SDP handshake) na MediaMTX a doplňuje CORS hlavičky.
@@ -325,6 +377,36 @@ async def handler(websocket):
                         'cam1_ip': cameras[1]['ip'],
                         'cam2_ip': cameras[2]['ip'],
                     }))
+
+                elif cmd_type == 'getpos':
+                    # VISCA dotaz na aktuální pan/tilt/zoom (pro kalibraci „po souřadnicích")
+                    cam = msg.get('cam', 2)
+                    cfg = cameras[cam]
+                    if not cfg['ip']:
+                        await websocket.send(json.dumps({'type': 'pos', 'cam': cam, 'ok': False, 'msg': 'IP není nastavena'}))
+                        continue
+                    loop = asyncio.get_event_loop()
+                    pos = await loop.run_in_executor(None, visca_get_pos, cfg['ip'])
+                    if pos:
+                        await websocket.send(json.dumps({'type': 'pos', 'cam': cam, 'ok': True, **pos}))
+                    else:
+                        await websocket.send(json.dumps({'type': 'pos', 'cam': cam, 'ok': False, 'msg': 'VISCA dotaz selhal (port 1259?)'}))
+
+                elif cmd_type == 'absmove':
+                    # VISCA absolutní najetí na uložené souřadnice sedadla
+                    cam = msg.get('cam', 2)
+                    cfg = cameras[cam]
+                    if not cfg['ip']:
+                        continue
+                    try:
+                        pan  = int(msg.get('pan', 0))
+                        tilt = int(msg.get('tilt', 0))
+                        zoom = msg.get('zoom')
+                        zoom = int(zoom) if zoom is not None else None
+                    except (TypeError, ValueError):
+                        continue
+                    loop = asyncio.get_event_loop()
+                    asyncio.ensure_future(loop.run_in_executor(None, visca_abs_move, cfg['ip'], pan, tilt, zoom))
 
             except json.JSONDecodeError:
                 pass

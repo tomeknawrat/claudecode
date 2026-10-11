@@ -4579,9 +4579,10 @@ const _scan = {
   skipDone: 0,
   settleMs: 1800,        // ms čekání po pohybu kamery
   // Výběr tváře sedící osoby + brána obsazenosti sedadla (laditelné):
-  selectBand: 0.30,      // horizontální pásmo u středu; z něj se bere NEJVĚTŠÍ tvář (= osoba vepředu)
+  selectBand: 0.30,      // horizontální pásmo u středu; z něj se bere tvář nejblíž top-center
   maxDx: 0.28,           // max horizontální odchylka vybrané tváře od středu (víc = mimo cíl → skip)
   minFaceFrac: 0.07,     // min výška tváře vůči výšce obrazu (míň = jen pozadí/prázdné → skip)
+  pickAnchorY: 0.35,     // cílová výška obličeje (0=nahoře, 0.5=střed) — 0.35 = top-center
   facePhotoVPad: 0.6,    // padding kolem obličeje v uložené fotce (velikost ořezu)
   facePhotoFaceAt: 0.4,  // kam dát střed obličeje odshora (0.5=střed, míň=obličej výš → top-center)
   scanTiltMs: 0,         // volitelný tilt nudge po najetí (ms, 0=vypnuto) — framing obličeje do top-center
@@ -4589,7 +4590,7 @@ const _scan = {
   // Zoom-in sken (opt-in, experimentální): na sedadle přiblíží a od nejtěsnějšího
   // oddaluje, dokud nenajde centrální dost velkou tvář = osoba sedící na místě.
   zoomScan: false,       // zapíná zaškrtávátko ve scan modalu
-  zoomSteps: 3,          // kolik kroků přiblížení od base presetu sedadla
+  zoomSteps: 2,          // kolik kroků přiblížení od base presetu sedadla (míň = mírnější zoom)
   zoomStepMs: 600,       // délka jednoho zoom kroku (ms) — laditelné podle rychlosti kamery
   zoomSettleMs: 700,     // ustálení po zoom kroku (ms)
   zoomMinAcceptFrac: 0.20, // min. výška tváře pro PŘIJETÍ — jen „přizoomovaná" (velká) tvář = osoba na místě; malé/oddálené se zahodí
@@ -4826,17 +4827,22 @@ async function _detectAndDraw() {
 // má největší tvář; lidi v pozadí jsou menší. Vrací i metriky (dx, dy, hFrac) pro
 // logování a bránu obsazenosti.
 function _pickSeatFace(faces, canvasW, canvasH) {
+  const ax = canvasW / 2, ay = canvasH * _scan.pickAnchorY; // cílový bod: top-center
   const scored = faces.map(f => {
     const [x1,y1] = f.topLeft, [x2,y2] = f.bottomRight;
     const cx = (x1+x2)/2, cy = (y1+y2)/2;
     const w = x2-x1, h = y2-y1;
     return { f, area: w*h, hFrac: h/canvasH,
              dx: Math.abs(cx - canvasW/2) / canvasW,
-             dy: Math.abs(cy - canvasH/2) / canvasH };
+             dy: Math.abs(cy - canvasH/2) / canvasH,
+             distTop: Math.hypot((cx-ax)/canvasW, (cy-ay)/canvasH) };
   });
-  const inBand = scored.filter(s => s.dx < _scan.selectBand);
-  const pool = inBand.length ? inBand : scored;
-  pool.sort((a, b) => b.area - a.area); // největší rámeček první
+  // Z horizontálně centrálních a dost velkých tváří vyber tu NEJBLÍŽ top-center
+  // (= osoba sedící na místě, ne někdo z přední řady, co je v obraze níž).
+  const centered = scored.filter(s => s.dx < _scan.selectBand);
+  const sizable  = centered.filter(s => s.hFrac >= _scan.minFaceFrac);
+  const pool = sizable.length ? sizable : (centered.length ? centered : scored);
+  pool.sort((a, b) => a.distTop - b.distTop);
   return pool[0];
 }
 

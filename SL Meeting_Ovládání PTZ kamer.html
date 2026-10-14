@@ -532,16 +532,17 @@ console.warn = (...args) => {
   .panel--cam2 .pose-btn.active { background: var(--amber-soft); border-color: var(--amber); }
   .panel--cam2 .pose-btn.active svg { color: var(--amber-d); }
   /* Pose tlačítka u seat layoutu designově jako „Kompaktní zobrazení":
-     amber-soft výplň + amber-mid ohraničení + amber ikona už ve výchozím stavu */
+     výplň = výplň toho boxu (#fef3c7), rámeček i ikona = barva slov (#92400e) */
   .seat-pose-holder .pose-btn {
-    background: var(--amber-soft);
-    border-color: var(--amber-mid);
+    background: #fef3c7;
+    border-color: #92400e;
     box-shadow: none;
   }
   .seat-pose-holder .pose-btn img {
-    filter: brightness(0) saturate(100%) invert(71%) sepia(48%) saturate(700%) hue-rotate(5deg) brightness(103%) contrast(97%);
+    /* panáček/židle přebarvené na #92400e (shoda ověřená canvas samplingem) */
+    filter: brightness(0) saturate(100%) invert(25%) sepia(56%) saturate(1650%) hue-rotate(352deg) brightness(94%) contrast(94%);
   }
-  .seat-pose-holder .pose-btn.active { border-color: var(--amber); }
+  .seat-pose-holder .pose-btn.active { border-color: #92400e; }
   .drawer-sliders { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
   .slider-group label {
     display: flex; justify-content: space-between;

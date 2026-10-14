@@ -128,7 +128,10 @@ console.warn = (...args) => {
     background: var(--green); box-shadow: 0 0 0 2px rgba(34,197,94,.2);
     animation: dot-beat 2.2s ease-in-out infinite;
   }
-  .status-dot.err { background: var(--red); }
+  .status-dot.err { background: var(--red); box-shadow: 0 0 0 2px rgba(239,68,68,.2); }
+  /* Pill jen s tečkou (bez textu) — kompaktní kroužek, barva podle stavu */
+  .status-pill--dot { padding: 7px; justify-content: center; gap: 0; cursor: default; }
+  .status-pill--dot:not(.on) { background: var(--red-soft, rgba(239,68,68,.1)); border-color: #fca5a5; }
   @keyframes dot-beat {
     0%,100% { box-shadow: 0 0 0 2px rgba(34,197,94,.2); }
     50%      { box-shadow: 0 0 0 4px rgba(34,197,94,.08); }
@@ -1232,6 +1235,43 @@ console.warn = (...args) => {
   .scan-btn:hover { background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%); box-shadow: 0 3px 12px rgba(109,40,217,.45); }
   .scan-btn:disabled { opacity: .5; cursor: not-allowed; }
 
+  /* ── JEDNOTNÝ STYL 4 NÁSTROJOVÝCH TLAČÍTEK CAM2 ──
+     Každé má vlastní barvu přes --btn-color, ale stejný styl:
+     ohraničení v barvě, text/ikona v barvě, výplň barvou s průhledností 30 %. */
+  .panel--cam2 .cam2-tool-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: var(--r-xs);
+    font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .3px; white-space: nowrap;
+    cursor: pointer; transition: all .15s;
+    border: 1.5px solid var(--btn-color);
+    color: var(--btn-color);
+    background: color-mix(in srgb, var(--btn-color) 30%, transparent);
+    box-shadow: none;
+  }
+  .panel--cam2 .cam2-tool-btn svg { width: 16px; height: 16px; stroke: var(--btn-color); }
+  .panel--cam2 .cam2-tool-btn:hover {
+    background: color-mix(in srgb, var(--btn-color) 45%, transparent);
+    color: var(--btn-color);
+  }
+  .panel--cam2 .cam2-tool-btn:disabled { opacity: .5; cursor: not-allowed; }
+  /* Krátké potvrzení po uložení presetu */
+  .panel--cam2 .cam2-tool-btn.saved-flash { background: var(--btn-color); color: #fff; }
+  .panel--cam2 .cam2-tool-btn.saved-flash svg { stroke: #fff; }
+
+  /* Tlačítko „smazat jen fotku" v levém horním rohu karty sedadla */
+  .slot-card { position: relative; }
+  .slot-card .slot-del-photo {
+    position: absolute; top: 3px; left: 3px; z-index: 6;
+    width: 20px; height: 20px; padding: 0; border: none; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(239,68,68,.92); color: #fff; cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  .slot-card .slot-del-photo svg { width: 12px; height: 12px; }
+  .slot-card:hover .slot-del-photo { display: flex; }
+  .slot-card .slot-del-photo:hover { background: var(--red); }
+
   /* ── SCAN MODÁL ── */
   .scan-overlay {
     display: none; position: fixed; inset: 0;
@@ -1510,9 +1550,8 @@ console.warn = (...args) => {
     </div>
   </div>
   <div class="header-right">
-    <div class="status-pill" id="headerStatusPill">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="headerStatusText">Server odpojen</span>
+    <div class="status-pill status-pill--dot" id="headerStatusPill" title="Server nepřipojen">
+      <div class="status-dot err" id="statusDot"></div>
     </div>
     <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()" style="font-size:12px;padding:6px 14px">Připojit server</button>
     <button class="settings-btn" id="settingsBtn" onclick="toggleDrawer()">
@@ -1749,7 +1788,7 @@ console.warn = (...args) => {
   <div class="panel panel--cam1">
     <div class="panel-title" onclick="toggleCam1Controls()" id="cam1CtrlToggle" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
       <span>PÓDIUM</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text-3);text-transform:uppercase;">Ovládací prvky <span class="ctrl-collapse-arrow collapsed" id="cam1CtrlArrow">▼</span></span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text-3);text-transform:uppercase;">Manuální ovládání kamery <span class="ctrl-collapse-arrow collapsed" id="cam1CtrlArrow">▼</span></span>
     </div>
     <div class="panel-body">
     <div class="cam2-controls-wrap">
@@ -1834,7 +1873,7 @@ console.warn = (...args) => {
     <div class="panel-body">
     <div class="panel-title" onclick="toggleCam2Controls()" id="cam2CtrlToggle" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
       <span>KOMENTÁŘE</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text-3);text-transform:uppercase;">Ovládací prvky <span class="ctrl-collapse-arrow collapsed" id="cam2CtrlArrow">▼</span></span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text-3);text-transform:uppercase;">Manuální ovládání kamery <span class="ctrl-collapse-arrow collapsed" id="cam2CtrlArrow">▼</span></span>
     </div>
     <div class="cam2-controls-wrap">
     <div class="cam2-controls-collapsible collapsed" id="cam2CtrlBody">
@@ -1908,17 +1947,21 @@ console.warn = (...args) => {
     <div class="cam-presets-section" style="position:relative;">
       <div class="cam-presets-header">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
-          <button class="scan-btn" id="scanBtn" onclick="openScanModal()">
+          <button class="scan-btn cam2-tool-btn" id="scanBtn" onclick="openScanModal()" style="--btn-color:#7c3aed">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
             Skenovat hlediště
           </button>
-          <button class="add-preset-btn" id="addPresetBtn2" onclick="openAddPreset(2)">＋ Přidat</button>
+          <button class="add-preset-btn cam2-tool-btn" id="addPresetBtn2" onclick="openAddPreset(2)" style="--btn-color:var(--green)">＋ Přidat sedadlo</button>
           <button class="edit-order-btn" id="editOrderBtn2" onclick="toggleEditOrder(2)">⇅ Přesunout</button>
           <button class="seat-layout-btn" id="slotEditBtn2" onclick="toggleSlotEditMode()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="6" y="2" width="12" height="9" rx="2"/><path d="M4 11h16"/><path d="M4 11v8"/><path d="M20 11v8"/><path d="M6 19v3"/><path d="M18 19v3"/><path d="M4 15h3"/><path d="M17 15h3"/></svg>
             Editace presetů sedadel
           </button>
-          <button class="hide-presets-btn" id="clearAllBtn2" onclick="clearAllPresets(2)" title="Smazat všechny uložené fotky/karty na CAM2 (pozice presetů v kameře zůstanou)" style="color:var(--red);border-color:var(--red)">
+          <button class="cam2-tool-btn" id="savePresetBtn2" onclick="saveSeatPresetManual()" title="Uložit aktuální (ručně upravenou) pozici kamery do presetu posledního vyvolaného sedadla" style="--btn-color:var(--blue)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Uložit preset
+          </button>
+          <button class="hide-presets-btn cam2-tool-btn" id="clearAllBtn2" onclick="clearAllPresets(2)" title="Smazat všechny uložené fotky/karty na CAM2 (pozice presetů v kameře zůstanou)" style="--btn-color:var(--red)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
             Smazat všechny fotky
           </button>
@@ -2213,12 +2256,12 @@ function setConnUI(on) {
   if (on) {
     btn.textContent = 'Restartovat server'; btn.classList.add('connected');
     if(dot1){ dot1.classList.add('on'); dot1.classList.remove('err'); }
-    if(pill) pill.className = 'status-pill on';
+    if(pill){ pill.className = 'status-pill status-pill--dot on'; pill.title = 'Server připojen'; }
     if(htext) htext.textContent = 'Server připojen';
   } else {
     btn.textContent = 'Připojit server'; btn.classList.remove('connected');
-    if(dot1) dot1.classList.remove('on','err');
-    if(pill) pill.className = 'status-pill';
+    if(dot1){ dot1.classList.remove('on'); dot1.classList.add('err'); }
+    if(pill){ pill.className = 'status-pill status-pill--dot'; pill.title = 'Server nepřipojen'; }
     if(htext) htext.textContent = 'Server odpojen';
   }
 }
@@ -2752,6 +2795,37 @@ function savePresetNow(cam, idx) {
   logMsg('info', `CAM${cam}: Uložen preset „${p.name}" (#${p.num})`);
 }
 
+// Poslední vyvolané sedadlo — aby „Uložit preset" vědělo, kam uložit ručně doladěnou pozici
+let _lastRecalledSeat = null;
+
+// Uloží aktuální (ručně doladěnou) polohu kamery do presetu posledního vyvolaného sedadla.
+// Scénář: klik na sedadlo → kamera najede → dolaď joystickem → „Uložit preset".
+function saveSeatPresetManual() {
+  if (!_lastRecalledSeat) {
+    logMsg('err', 'Uložit preset: nejdřív klikni na sedadlo (kamera na něj najede), dolaď joystickem a pak ulož.');
+    return;
+  }
+  const { si, seatNum } = _lastRecalledSeat;
+  const presetNum = (slotPresets && slotPresets[si] !== null && slotPresets[si] !== undefined) ? slotPresets[si] : seatNum;
+  sendCmd(2, 'setpreset', presetNum);                 // přepíše pozici v preset paměti kamery
+  if (slotPresets) { slotPresets[si] = presetNum; saveSlotPresetsStorage(); }
+  _captureSlotCoords(si, seatNum);                    // uloží i VISCA souřadnice (sken po souřadnicích)
+  logMsg('info', `Sedadlo ${seatNum}: pozice přeuložena do presetu #${presetNum} (aktuální poloha kamery).`);
+  const b = document.getElementById('savePresetBtn2');
+  if (b) { b.classList.add('saved-flash'); setTimeout(() => b.classList.remove('saved-flash'), 700); }
+}
+
+// Smaže jen fotku karty sedadla — preset/pozice (číslo + souřadnice) zůstává.
+function deleteSlotPhoto(cam, presetIdx) {
+  const p = state.presets[cam][presetIdx];
+  if (!p) return;
+  p.img = null;
+  savePresetsStorage();
+  if (cam === 2 && seatLayoutActive) renderSeatLayout();
+  else renderPresets();
+  logMsg('info', 'Fotka smazána (preset zůstal).');
+}
+
 let _confirmResolve=null;
 function showConfirm(text) {
   document.getElementById('confirmText').innerHTML=text;
@@ -3075,13 +3149,13 @@ function _updateCam2BtnVisibility() {
   const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
 
   if (editing) {
-    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('slotEditBtn2'); hide('camHeaderDivider2');
+    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('slotEditBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
   } else if (hiding) {
-    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('slotEditBtn2'); hide('camHeaderDivider2');
+    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('slotEditBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
   } else if (slotEditing) {
-    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2');
+    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
   } else {
-    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('slotEditBtn2'); show('camHeaderDivider2');
+    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('slotEditBtn2'); show('camHeaderDivider2'); show('savePresetBtn2');
     // V seat layoutu je drag&drop vždy aktivní (bez režimu „Přesunout") → tlačítko skryj.
     // V klasickém (kompaktním) gridu zůstává pro přesouvání karet.
     if (seatLayoutActive) hide('editOrderBtn2'); else show('editOrderBtn2');
@@ -3322,6 +3396,7 @@ function _makeViewSlotOld(seatNum) {
       }
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
+      _lastRecalledSeat = { si, seatNum };
     }
     t = null;
   });
@@ -4183,6 +4258,20 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
     imgSlot.innerHTML = '<div class="preset-img-placeholder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>';
   }
 
+  // Tlačítko (levý horní roh) — smaže JEN fotku, preset/pozice zůstává. Jen když fotka je.
+  if (p.img) {
+    const delBtn = document.createElement('button');
+    delBtn.className = 'slot-del-photo';
+    delBtn.title = 'Smazat jen fotku (preset zůstane)';
+    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>';
+    // Nesmí spustit hold/recall ani tažení karty
+    delBtn.addEventListener('mousedown', e => e.stopPropagation());
+    delBtn.addEventListener('pointerdown', e => e.stopPropagation());
+    delBtn.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+    delBtn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); deleteSlotPhoto(cam, presetIdx); });
+    card.appendChild(delBtn);
+  }
+
   // Pravý klik = upravit preset
   card.addEventListener('contextmenu', e => { e.preventDefault(); editPreset(cam, presetIdx); });
 
@@ -4235,6 +4324,7 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
     const slotGrid = document.getElementById('seatLayoutGrid2');
     if (elapsed < 500 && e.type !== 'mouseleave' && !seatLayoutEditMode && !slotGrid.classList.contains('hide-mode')) {
       recallPreset(cam, presetIdx);
+      _lastRecalledSeat = { si: slotIdx, seatNum };
     }
   };
   card.addEventListener('mousedown', startHold);

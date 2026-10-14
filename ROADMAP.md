@@ -37,6 +37,13 @@
 - Tlačítko „Přesunout" je v seat layoutu skryté (v klasickém/kompaktním gridu zůstává).
 - Ověřeno simulací v Playwrightu (přesun přiřazení + nulový posun při kliku).
 
+## ✅ UI lišta CAM2 + „Uložit preset" (hotovo)
+
+- 4 nástrojová tlačítka sladěná do jednoho stylu (ohraničení + text v barvě, výplň barvou 30 %), každé vlastní barva: **Skenovat hlediště** (fialová), **Přidat sedadlo** (zelená), **Uložit preset** (modrá), **Smazat všechny fotky** (červená).
+- **Uložit preset** (`saveSeatPresetManual`) — po kliku na sedadlo a ručním doladění joystickem uloží **aktuální polohu** kamery do presetu posledního vyvolaného sedadla (setpreset + VISCA souřadnice).
+- Mazání **jen fotky** vráceno do levého horního rohu karty sedadla (`deleteSlotPhoto`) — preset/pozice zůstává.
+- Status serveru = jen tečka (zelená/červená), hláška připojeno/nepřipojeno jako tooltip. „Manuální ovládání kamery" místo „Ovládací prvky".
+
 ## ✅ UI přepracování (hotovo, čistě vizuální)
 
 - Karta sedadla: číslo vpravo nahoře, bez „Sedadlo XX", jednotná velikost, úprava/smazání přes pravý klik (`8cc5e28`, `bc4dad7`, `958a319`).

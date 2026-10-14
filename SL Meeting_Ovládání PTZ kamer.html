@@ -3081,7 +3081,10 @@ function _updateCam2BtnVisibility() {
   } else if (slotEditing) {
     hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2');
   } else {
-    show('addPresetBtn2'); show('editOrderBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('slotEditBtn2'); show('camHeaderDivider2');
+    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('slotEditBtn2'); show('camHeaderDivider2');
+    // V seat layoutu je drag&drop vždy aktivní (bez režimu „Přesunout") → tlačítko skryj.
+    // V klasickém (kompaktním) gridu zůstává pro přesouvání karet.
+    if (seatLayoutActive) hide('editOrderBtn2'); else show('editOrderBtn2');
   }
 }
 
@@ -4196,6 +4199,13 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
   let holdTimer = null, holdStart = null, barTimer = null;
   const HOLD_MS = 2000;
   const DELAY_MS = 400;
+  // Zruší probíhající hold (progress bar + timery) — volá se když se klik změní v tažení
+  const cancelHold = () => {
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    if (barTimer)  { clearTimeout(barTimer);  barTimer  = null; }
+    bar.style.transition = ''; bar.style.width = '0%';
+    card.classList.remove('saving');
+  };
   const startHold = e => {
     if (seatLayoutEditMode) return;
     if (e.button !== undefined && e.button !== 0) return;
@@ -4233,15 +4243,47 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
   card.addEventListener('touchstart', startHold, { passive: false });
   card.addEventListener('touchend',  endHold);
 
-  // Drag (jen v edit-mode) — pointer-event systém s live preview
+  // Drag&drop vždy aktivní v seat layoutu (bez režimu „Přesunout").
+  // „Ozbrojí" tažení — skutečný drag se spustí až po pohybu nad práh,
+  // takže krátký klik = vyvolat preset a hold = uložit zůstávají funkční.
   card.addEventListener('pointerdown', e => {
-    if (!seatLayoutEditMode) return;
     if (e.button !== 0) return;
-    e.preventDefault();
-    startSlotDrag(card, slotIdx, e);
+    const slotGrid = document.getElementById('seatLayoutGrid2');
+    if (slotGrid.classList.contains('hide-mode')) return;
+    _armSlotDrag(card, slotIdx, e, cancelHold);
   });
 
   return card;
+}
+
+// ── „Ozbrojení" tažení sedadla: drag se spustí až po pohybu nad práh ──
+let _dragArm = null;
+const _DRAG_THRESHOLD = 6; // px
+
+function _armSlotDrag(card, slotIdx, e, cancelHold) {
+  _dragArm = { card, slotIdx, cancelHold, startX: e.clientX, startY: e.clientY };
+  document.addEventListener('pointermove', _onArmMove, { passive: true });
+  document.addEventListener('pointerup', _disarmSlotDrag);
+  document.addEventListener('pointercancel', _disarmSlotDrag);
+}
+
+function _onArmMove(e) {
+  if (!_dragArm) return;
+  const dx = e.clientX - _dragArm.startX;
+  const dy = e.clientY - _dragArm.startY;
+  if (Math.hypot(dx, dy) < _DRAG_THRESHOLD) return;
+  // Práh překročen → povýšit na skutečné tažení
+  const { card, slotIdx, cancelHold } = _dragArm;
+  _disarmSlotDrag();
+  if (cancelHold) cancelHold(); // zruš hold-to-save; endHold pak nevyvolá preset (holdTimer === null)
+  startSlotDrag(card, slotIdx, e);
+}
+
+function _disarmSlotDrag() {
+  document.removeEventListener('pointermove', _onArmMove);
+  document.removeEventListener('pointerup', _disarmSlotDrag);
+  document.removeEventListener('pointercancel', _disarmSlotDrag);
+  _dragArm = null;
 }
 
 // ── POINTER DRAG PRO SEAT LAYOUT ──

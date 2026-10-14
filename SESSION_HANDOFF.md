@@ -12,7 +12,7 @@
 - ✅ **UI přepracování hotové** — karty sedadel, seat layout, hlavička CAM2, pose ikonky.
 - ⏳ **Sken „po souřadnicích" (VISCA-over-IP) hotový v kódu** — čeká na živý test ve čtvrtek (restart serveru + překalibrace sedadel). Vznikl proto, že hardware joystick (AVMatrix PKC3500) přepsal sdílenou preset paměť kamery.
 - ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro.
-- 🔜 **Teď se řeší bez kamery:** drag&drop fotek mezi sedadly ve výchozím zobrazení.
+- ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
 
 > Detailní přehled stavu a dalšího směru je v `ROADMAP.md`.
 
@@ -85,4 +85,3 @@ Tento projekt reálně potřebuje **lokální síť ke kamerám + `ptz_server.py
 1. **Restart `ptz_server.py` + překalibrace sedadel** → sken po souřadnicích (VISCA). Priorita — vyřeší posun a cizí obličeje.
 2. **Doladit zoom sken** (top-center, mírnější zoom) a **fotky** (top-center, bez rámečku) — `pickAnchorY`, `zoomSteps`, `zoomMinAcceptFrac`, `facePhotoFaceAt`, případně `scanTiltMs`.
 3. **Rozpoznávání** — nahrát osoby, doladit práh z `dist:` hodnot v logu.
-4. **Drag&drop fotek mezi sedadly** ve výchozím zobrazení — řeší se teď bez kamery.

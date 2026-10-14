@@ -30,6 +30,13 @@
 | Fotka sedadla | Ořez vycentrovaný na obličej (4:3), **top-center** framing, bez detekčního rámečku | `2f75614`, `c43b025`, `c062d98` |
 | Volitelný tilt nudge | `_scan.scanTiltMs` (default off) — framing obličeje výš | `c43b025` |
 
+## ✅ Drag & drop fotek mezi sedadly (hotovo)
+
+- Ve výchozím (detailním) zobrazení lze fotku **chytit myší a přetáhnout** na jiné sedadlo **bez přepínání do režimu „Přesunout"**.
+- Tažení se spustí až po pohybu nad práh (6 px) — krátký klik (vyvolat preset) i hold (uložit pozici) zůstávají funkční.
+- Tlačítko „Přesunout" je v seat layoutu skryté (v klasickém/kompaktním gridu zůstává).
+- Ověřeno simulací v Playwrightu (přesun přiřazení + nulový posun při kliku).
+
 ## ✅ UI přepracování (hotovo, čistě vizuální)
 
 - Karta sedadla: číslo vpravo nahoře, bez „Sedadlo XX", jednotná velikost, úprava/smazání přes pravý klik (`8cc5e28`, `bc4dad7`, `958a319`).
@@ -51,7 +58,6 @@
 
 ## 🧩 Zaparkované / otevřené nápady
 
-- **Drag&drop ve výchozím zobrazení** — chytit fotku a přetáhnout na jiné sedadlo bez „Přesunout" módu. *(řešíme teď, bez kamery)*
 - **Přidat/smazat sedadlo + přečíslování** — dynamický layout místo pevného `SEAT_LAYOUT`. Architektonické, k rozmyšlení.
 - **Export/import osob** (vč. embeddingů) — ať se neztrácí lidé při přesunu složky / nové instanci (IndexedDB je per-origin).
 - **Víc referenčních fotek na osobu** — robustnější rozpoznávání.

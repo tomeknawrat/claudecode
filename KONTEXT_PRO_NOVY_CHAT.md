@@ -23,12 +23,22 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
                 └──▶ Live náhled ve scan modalu
 ```
 
-**Kamery:** VHD V600 (nebo podobné), CGI protokol:
+**Kamery:** VHD V600 (nebo podobné), **CGI protokol** (port 80):
 - Pohyb: `GET /cgi-bin/ptzctrl.cgi?ptzcmd&up&5`
-- Stop: `GET /cgi-bin/ptzctrl.cgi?ptzcmd&stop` (bez rychlosti)
+- Stop pan/tilt: `GET /cgi-bin/ptzctrl.cgi?ptzcmd&ptzstop` ⭐ (NE `stop` — konvence PTZOptics/VHD)
+- Stop zoom/focus: `zoomstop` / `focusstop`
 - Preset uložit: `GET /cgi-bin/ptzctrl.cgi?ptzcmd&posset&N`
 - Preset vyvolat: `GET /cgi-bin/ptzctrl.cgi?ptzcmd&poscall&N`
 - Preset smazat: `GET /cgi-bin/ptzctrl.cgi?ptzcmd&posdel&N`
+
+**VISCA-over-IP** (raw, bez Sony hlavičky, UDP **1259**) — pro sken „po souřadnicích":
+- Dotaz pan/tilt: `81 09 06 12 FF` → `90 50 <pan 4 nib> <tilt 4 nib> FF` (signed 16-bit)
+- Dotaz zoom: `81 09 04 47 FF`
+- Abs pan/tilt: `81 01 06 02 VV WW <pan 4 nib> <tilt 4 nib> FF`
+- Abs zoom: `81 01 04 47 <zoom 4 nib> FF`
+- Ověřeno naostro `coords_test.py` (round-trip, odchylka 0).
+
+> ⚠️ **Hardware joystick AVMatrix PKC3500** (RS485/Pelco-D) **sdílí preset paměť kamery** s appkou — přepíše uložené presety. Proto sken „po souřadnicích" přes VISCA místo presetů.
 
 ---
 
@@ -87,7 +97,10 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 ### Scan modal (skenování hlediště)
 - Otevře se z panelu CAM2
 - Zobrazí live WebRTC stream z CAM2 (přes MediaMTX WHEP endpoint `http://localhost:8889/cam2/whep`)
-- Kamera projíždí kalibrovanými sedadly a fotí tváře
+- Kamera projíždí kalibrovanými sedadly (**po VISCA souřadnicích** `slotCoords`, fallback preset) a fotí tváře
+- Výběr tváře: nejblíž **top-center** (`_pickSeatFace`), brána obsazenosti
+- Fotka sedadla: 4:3 ořez vycentrovaný na obličej, top-center, **bez detekčního rámečku** (`_faceCropPhoto`)
+- Opt-in **zoom-in sken** (`_scan.zoomScan`) — přiblíží a od nejtěsnějšího oddaluje
 - Rozpoznávání tváří přes face-api.js (ssdMobilenetv1 + faceLandmark68Net + faceRecognitionNet)
 - Modely se stáhnou z CDN při prvním použití (~12MB)
 - Rozpoznané osoby = presety (fotka + jméno), uložené v IndexedDB
@@ -126,6 +139,7 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 | Osoby + embeddingy | IndexedDB `ptz_persons` |
 | Slot assignments (sedadlo→preset) | localStorage `ptz_slot_assignments` |
 | Slot presets (sedadlo→číslo presetu) | localStorage `ptz_slot_presets` |
+| **Slot coords (sedadlo→VISCA pan/tilt/zoom)** | localStorage `ptz_slot_coords` |
 | Nastavení (IP, pass atd.) | localStorage `ptz_settings` |
 
 ---
@@ -135,7 +149,9 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - Naslouchá na `ws://localhost:8765`
 - Každý PTZ příkaz běží jako samostatný `asyncio.ensure_future` task (aby stop nečekal za pomalým HTTP requestem)
 - Příkazy pro danou kameru se serializují přes `cam_locks` (per-camera `asyncio.Lock`), aby stop nepředběhl move na síti
-- Stop příkazy se posílají **bez parametru rychlosti** (`?ptzcmd&stop` ne `?ptzcmd&stop&5`)
+- `build_cgi_path`: pan/tilt stop → **`ptzstop`** (ne `stop`), bez parametru rychlosti
+- **WHEP CORS proxy** (`_WhepProxyHandler`, `run_whep_proxy`, port **8890**) — obchází CORS MediaMTX pro `file://` náhled
+- **VISCA-over-IP** (`visca_get_pos`, `visca_abs_move`, UDP 1259) + WS příkazy `getpos` / `absmove` pro sken po souřadnicích
 - MediaMTX: auto-start při spuštění pokud existuje `mediamtx.yml`, auto-stop při ukončení
 - `set_rtsp` WS příkaz: přepíše `mediamtx.yml` + restartuje MediaMTX
 - `mediamtx.yml` obsahuje `webrtcAllowOrigin: '*'` (CORS pro file://)
@@ -149,7 +165,9 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 |---------|----------|
 | Kamera nejde zastavit | **VYŘEŠENO:** pan/tilt stop je `?ptzcmd&ptzstop` (ne `stop`) — konvence PTZOptics/VHD, ověřeno `stop_test.py`. K tomu: PTZ příkazy jsou async tasks, stop se posílá 3× (0/150/400 ms), stop URL bez rychlosti, per-camera serializace přes `cam_locks`. |
 | Duplikát presetů při přidání | `type="button"` na modal buttons, `state._saving` guard, kontrola duplicitního num |
-| WebRTC stream nefungoval ve scan modalu | `ontrack` se nastavuje PŘED `createOffer`, čekání na ICE gathering, CORS v mediamtx.yml |
+| WebRTC stream nefungoval ve scan modalu | `ontrack` se nastavuje PŘED `createOffer`, čekání na ICE gathering, CORS v mediamtx.yml. **Navíc:** MediaMTX 1.20 neodpovídá na preflight OPTIONS z `file://` → přidán WHEP CORS proxy v serveru (port 8890). |
+| Sken najížděl mimo sedadla | Joystick AVMatrix PKC3500 přepsal preset paměť kamery → přechod na sken „po souřadnicích" přes VISCA-over-IP (slotCoords, abs move). |
+| Fotka sedadla měla detekční rámeček | Ořez `_faceCropPhoto` z čistého video zdroje, framing top-center. |
 | face-api zaseknutí | Modely se načítají sériově s 30s timeoutem, progress feedback |
 | Seat layout sloty neklikatelné | Click handler na všech slotech (i occupied) |
 | Duplikáty console warnings (TF.js) | Potlačené přes console.warn override |
@@ -157,9 +175,9 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 ---
 
-## Aktuální stav (aktualizace 30.7.2026)
+## Aktuální stav
 
-Tato sekce je novější než zbytek dokumentu — zachycuje práci z posledních chatů.
+> Nejaktuálnější přehled stavu, čeká-na-čtvrtek bodů a dalšího směru je v **`ROADMAP.md`** a **`SESSION_HANDOFF.md`**. Tato sekce drží základní dořešené problémy.
 
 ### Zastavování kamery — VYŘEŠENO
 - **Kořen problému:** pan/tilt stop CGI příkaz byl `?ptzcmd&stop`, ale VHD kamera (firmware PTZOptics/HuddleCam) chce **`?ptzcmd&ptzstop`**. Ověřeno přímým CGI testem (`stop_test.py`). Oprava v `build_cgi_path` (`ptz_server.py`): `'stop' → 'ptzstop'`.

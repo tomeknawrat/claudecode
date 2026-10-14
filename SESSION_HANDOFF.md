@@ -4,13 +4,17 @@
 > **Není to doslovný přepis chatu** — je to kontext pro pokračování v nové (i remote) session.
 > Doplňuje `KONTEXT_PRO_NOVY_CHAT.md`, který popisuje celý projekt. Tento soubor popisuje, co se dělo naposledy a co zbývá.
 
-## TL;DR — kde to stojí
+## TL;DR — kde to stojí (aktualizace 14. 10. 2026)
 
-- ✅ **Face recognition opraveno** — appka už nezamrzá na „Počítám embedding".
 - ✅ **Zastavování kamery — VYŘEŠENO a ověřeno naostro** — pan/tilt stop je `ptzstop`, ne `stop`.
 - ✅ **Video náhled (WHEP) — VYŘEŠENO** — CORS proxy v `ptz_server.py` (:8890) obchází CORS MediaMTX.
-- ✅ **Prostředí zprovozněno** — Python, server, GitHub.
-- ✅ **Celý projekt přeložen do češtiny.**
+- ✅ **Face recognition opraveno** — appka už nezamrzá na „Počítám embedding".
+- ✅ **UI přepracování hotové** — karty sedadel, seat layout, hlavička CAM2, pose ikonky.
+- ⏳ **Sken „po souřadnicích" (VISCA-over-IP) hotový v kódu** — čeká na živý test ve čtvrtek (restart serveru + překalibrace sedadel). Vznikl proto, že hardware joystick (AVMatrix PKC3500) přepsal sdílenou preset paměť kamery.
+- ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro.
+- 🔜 **Teď se řeší bez kamery:** drag&drop fotek mezi sedadly ve výchozím zobrazení.
+
+> Detailní přehled stavu a dalšího směru je v `ROADMAP.md`.
 
 ---
 
@@ -48,6 +52,25 @@ Oprava: swap na udržovaný fork **`@vladmandic/face-api@1.7.15`** (kompatibiln�
 - `KONTEXT_PRE_NOVY_CHAT.md` přejmenován → `KONTEXT_PRO_NOVY_CHAT.md`.
 - Ověřeno přes lokální http.server + prohlížeč (žádné chyby v konzoli), `py_compile` OK. Commit `c778a15`.
 
+### 6. Práce po překladu (srpen–říjen 2026)
+
+**Video náhled (WHEP) — VYŘEŠENO.** MediaMTX 1.20 neodpovídá na preflight OPTIONS z `file://` (Origin: null). Přidán malý CORS proxy do `ptz_server.py` (port 8890, `_WhepProxyHandler`/`run_whep_proxy`), přes který appka volá WHEP. Stream naskočil, ověřeno naostro.
+
+**Sken hlediště — zacílení a fotky.**
+- Oprava tlačítka „Spustit skenování" (ReferenceError).
+- Výběr tváře: `_pickSeatFace` bere obličej nejblíž **top-center** (ne největší uprostřed), brána obsazenosti (dx/hFrac/minFaceFrac).
+- Fotka sedadla: `_faceCropPhoto` — 4:3 ořez vycentrovaný na obličej, framing top-center, **z čistého video zdroje bez detekčního rámečku**.
+- Opt-in **zoom-in sken** (`_scan.zoomScan`): na sedadle přiblíží a od nejtěsnějšího oddaluje, bere jen velkou centrální tvář.
+- „Smazat všechny fotky" — maže jen fotky karet, **ne** presety v kameře.
+
+**Sken „po souřadnicích" (VISCA-over-IP) — nová architektura, čeká na živý test.**
+- Důvod: hardware joystick **AVMatrix PKC3500** (RS485/Pelco-D) sdílí preset paměť kamery s appkou → přepsal uložené presety, sken najížděl mimo sedadla.
+- Řešení: číst a nastavovat **absolutní polohu** přes VISCA-over-IP (raw, UDP **1259**), nezávisle na presetech. Kalibrace sedadla uloží pan/tilt/zoom do `slotCoords` (localStorage `ptz_slot_coords`); sken i recall najíždějí přímo na souřadnice (`_wsAbsMove`), s fallbackem na preset.
+- Server: `visca_get_pos`, `visca_abs_move`, WS příkazy `getpos`/`absmove`. HTML: `_wsGetPos`/`_wsAbsMove`, `_captureSlotCoords`.
+- Ověřeno round-tripem (`coords_test.py`) na kameře uživatele: odchylka 0 (pan=-266, tilt=212, zoom=16384). **Zbývá naostro:** restart serveru (VISCA) + překalibrace všech sedadel.
+
+**UI přepracování (čistě vizuální, hotové).** Karty sedadel (číslo vpravo nahoře, bez „Sedadlo XX", jednotná velikost, edit/delete přes pravý klik), seat layout (0/1 v 6. řadě, zarovnané řady, větší mezera mezi sektory), hlavička CAM2 („SKENOVAT HLEDIŠTĚ" vlevo, „KOMPAKTNÍ ZOBRAZENÍ" vpravo, bez Skrytých presetů, pose ikonky 🧍🪑 pod Skenovat), modal presetu (image box 4:3 na plnou šířku).
+
 ---
 
 ## ⚠️ Důležité pro REMOTE / cloud session
@@ -58,6 +81,8 @@ Tento projekt reálně potřebuje **lokální síť ke kamerám + `ptz_server.py
 
 ---
 
-## Nedořešené body
-1. **Zastavování kamery** — viz bod 1 výše. Hlavní priorita, čeká na živý CGI test.
-2. **Duplikát preset karet** (starší) — pravděpodobně staré duplikáty v IndexedDB; doporučené řešení: smazat databázi `ptz_controller` v DevTools a zkusit znovu.
+## Nedořešené body / čeká na čtvrtek (živý test u kamer)
+1. **Restart `ptz_server.py` + překalibrace sedadel** → sken po souřadnicích (VISCA). Priorita — vyřeší posun a cizí obličeje.
+2. **Doladit zoom sken** (top-center, mírnější zoom) a **fotky** (top-center, bez rámečku) — `pickAnchorY`, `zoomSteps`, `zoomMinAcceptFrac`, `facePhotoFaceAt`, případně `scanTiltMs`.
+3. **Rozpoznávání** — nahrát osoby, doladit práh z `dist:` hodnot v logu.
+4. **Drag&drop fotek mezi sedadly** ve výchozím zobrazení — řeší se teď bez kamery.

@@ -30,6 +30,11 @@
 | Fotka sedadla | Ořez vycentrovaný na obličej (4:3), **top-center** framing, bez detekčního rámečku | `2f75614`, `c43b025`, `c062d98` |
 | Volitelný tilt nudge | `_scan.scanTiltMs` (default off) — framing obličeje výš | `c43b025` |
 
+## ✅ Spuštění jedním krokem (hotovo)
+
+- **`start_ptz.bat`** (+ `start_ptz_bez_okna.vbs` pro běh bez okna) spustí `ptz_server.py`; server při startu **sám otevře appku v prohlížeči** (`_open_app`).
+- Prohlížeč (sandbox) server spustit neumí → startuje se server, ten otevře stránku; tlačítko „Připojit server" slouží na (re)connect.
+
 ## ✅ Drag & drop fotek mezi sedadly (hotovo)
 
 - Ve výchozím (detailním) zobrazení lze fotku **chytit myší a přetáhnout** na jiné sedadlo **bez přepínání do režimu „Přesunout"**.

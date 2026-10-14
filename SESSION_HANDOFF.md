@@ -14,6 +14,7 @@
 - ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro.
 - ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
 - ✅ **Zrušen mód „Editace presetů sedadel" + pravý klik na sedadle** — workflow bez módů (Uložit preset / drag&drop / ikona koše). Funkce módu zůstávají v kódu uspané.
+- ✅ **Spuštění jedním krokem** — `start_ptz.bat` / `start_ptz_bez_okna.vbs`; server při startu sám otevře appku v prohlížeči.
 
 > Detailní přehled stavu a dalšího směru je v `ROADMAP.md`.
 

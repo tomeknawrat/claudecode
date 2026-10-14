@@ -440,6 +440,15 @@ def _find_html_file():
             return f
     return None
 
+def _open_app():
+    """Otevře appku (HTML) v prohlížeči. Vrací True, pokud soubor našel."""
+    html_file = _find_html_file()
+    if html_file:
+        webbrowser.open(f'file:///{os.path.join(BASE_DIR, html_file).replace(os.sep, "/")}')
+        return True
+    print('[INFO] HTML appky nenalezeno v adresáři serveru — otevři ji ručně')
+    return False
+
 if __name__ == '__main__':
     # Pokud existuje mediamtx.yml, spusť MediaMTX hned při startu
     if os.path.exists(MEDIAMTX_CONF) and os.path.exists(MEDIAMTX_EXE):
@@ -455,6 +464,10 @@ if __name__ == '__main__':
     # CORS proxy pro WHEP handshake — v samostatném vlákně
     whep_thread = threading.Thread(target=run_whep_proxy, daemon=True)
     whep_thread.start()
+
+    # Automaticky otevři appku v prohlížeči (po krátké prodlevě, ať WS server naběhne).
+    # Díky tomu stačí spustit server (dvojklik na start_ptz.bat) a appka naskočí sama.
+    threading.Timer(1.0, _open_app).start()
 
     # pystray MUSÍ běžet v hlavním vlákně (požadavek Windows)
     try:
@@ -473,9 +486,7 @@ if __name__ == '__main__':
             os._exit(0)
 
         def on_open_browser(icon, item):
-            html_file = _find_html_file()
-            if html_file:
-                webbrowser.open(f'file:///{os.path.join(BASE_DIR, html_file).replace(os.sep, "/")}')
+            _open_app()
 
         icon = pystray.Icon(
             'PTZ IP Server',

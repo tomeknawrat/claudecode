@@ -50,7 +50,9 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 | `ptz_server.py` | Python WebSocket server + MediaMTX manager |
 | `mediamtx.exe` + `mediamtx.yml` | RTSP→WebRTC konvertor (vedle ptz_server.py) |
 
-**Instalace:** `pip install websockets pillow pystray`, spusť `ptz_server.py` (zobrazí se v systray), otevři HTML v prohlížeči.
+**Instalace:** `pip install websockets pillow pystray`.
+
+**Spuštění (jeden krok):** dvojklik na **`start_ptz.bat`** (nebo `start_ptz_bez_okna.vbs` pro běh bez černého okna). Server naběhne, zobrazí se v systray a **sám otevře appku v prohlížeči** (po ~1 s, ať stihne naběhnout WS). Prohlížeč nedokáže server spustit sám (sandbox), proto se startuje server a ten otevře stránku; tlačítko „Připojit server" v appce slouží na (re)connect.
 
 ---
 
@@ -155,7 +157,9 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - MediaMTX: auto-start při spuštění pokud existuje `mediamtx.yml`, auto-stop při ukončení
 - `set_rtsp` WS příkaz: přepíše `mediamtx.yml` + restartuje MediaMTX
 - `mediamtx.yml` obsahuje `webrtcAllowOrigin: '*'` (CORS pro file://)
+- Při startu **sám otevře appku v prohlížeči** (`_open_app`, `threading.Timer(1.0,…)`) — stačí spustit server
 - Systray menu: „Otevřít v prohlížeči", „Ukončit"
+- Launchery: `start_ptz.bat` (s konzolí/logy), `start_ptz_bez_okna.vbs` (skrytě přes `pythonw`)
 
 ---
 

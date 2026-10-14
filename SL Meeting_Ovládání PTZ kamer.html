@@ -197,24 +197,8 @@ console.warn = (...args) => {
     background: var(--border);
     margin: 16px 0;
   }
-  /* Záloha presetů — jemne odlíšená */
+  /* Záloha presetů — modrý box (dřív zelený) */
   .drawer-section.backup-section {
-    background: linear-gradient(145deg, #DFF9ED, #caf5e3);
-    border: 1px solid #a4eecd;
-    border-radius: var(--r-sm);
-    padding: 14px 14px 12px;
-    margin-bottom: 0;
-    box-shadow: 0 2px 8px rgba(73,203,153,.1);
-  }
-  .drawer-section.backup-section .drawer-section-title {
-    color: #1a7a52;
-    opacity: .85;
-    font-size: 13px;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-  }
-  /* Server — stejná kompozice jako záloha, modrý akcent; tlačítko nese stav barvou */
-  .drawer-section.server-section {
     background: linear-gradient(145deg, #eff6ff, #e0edff);
     border: 1px solid #bfdbfe;
     border-radius: var(--r-sm);
@@ -222,15 +206,12 @@ console.warn = (...args) => {
     margin-bottom: 0;
     box-shadow: 0 2px 8px rgba(59,130,246,.1);
   }
-  .drawer-section.server-section .drawer-section-title {
+  .drawer-section.backup-section .drawer-section-title {
     color: #1e40af;
     opacity: .85;
     font-size: 13px;
     margin-bottom: 10px;
     letter-spacing: 1px;
-  }
-  .drawer-section.server-section .btn-connect {
-    width: 100%; font-size: 16px; font-weight: 700;
   }
   }
 
@@ -550,6 +531,17 @@ console.warn = (...args) => {
   .panel--cam2 .pose-btn:hover svg { color: var(--amber-d); }
   .panel--cam2 .pose-btn.active { background: var(--amber-soft); border-color: var(--amber); }
   .panel--cam2 .pose-btn.active svg { color: var(--amber-d); }
+  /* Pose tlačítka u seat layoutu designově jako „Kompaktní zobrazení":
+     amber-soft výplň + amber-mid ohraničení + amber ikona už ve výchozím stavu */
+  .seat-pose-holder .pose-btn {
+    background: var(--amber-soft);
+    border-color: var(--amber-mid);
+    box-shadow: none;
+  }
+  .seat-pose-holder .pose-btn img {
+    filter: brightness(0) saturate(100%) invert(71%) sepia(48%) saturate(700%) hue-rotate(5deg) brightness(103%) contrast(97%);
+  }
+  .seat-pose-holder .pose-btn.active { border-color: var(--amber); }
   .drawer-sliders { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
   .slider-group label {
     display: flex; justify-content: space-between;
@@ -1107,37 +1099,37 @@ console.warn = (...args) => {
 
   .btn-backup-export {
     flex: 1;
-    background: linear-gradient(145deg, #A4EECD, #8de6bc);
-    color: #0f5c38;
-    border: 1.5px solid #7ddcae;
+    background: linear-gradient(145deg, #bfdbfe, #93c5fd);
+    color: #1e3a8a;
+    border: 1.5px solid #93c5fd;
     transition: filter .15s, box-shadow .15s, transform .1s;
     font-size: 16px;
     font-weight: 700;
   }
   .btn-backup-export:hover {
-    filter: brightness(.95);
-    box-shadow: 0 3px 10px rgba(73,203,153,.25);
+    filter: brightness(.97);
+    box-shadow: 0 3px 10px rgba(59,130,246,.25);
   }
   .btn-backup-export:active {
-    filter: brightness(.88);
+    filter: brightness(.9);
     transform: scale(.97);
     box-shadow: none;
   }
   .btn-backup-import {
     flex: 1;
-    background: linear-gradient(145deg, #A4EECD, #8de6bc);
-    color: #0f5c38;
-    border: 1.5px solid #7ddcae;
+    background: linear-gradient(145deg, #bfdbfe, #93c5fd);
+    color: #1e3a8a;
+    border: 1.5px solid #93c5fd;
     transition: filter .15s, box-shadow .15s, transform .1s;
     font-size: 16px;
     font-weight: 700;
   }
   .btn-backup-import:hover {
-    filter: brightness(.95);
-    box-shadow: 0 3px 10px rgba(73,203,153,.25);
+    filter: brightness(.97);
+    box-shadow: 0 3px 10px rgba(59,130,246,.25);
   }
   .btn-backup-import:active {
-    filter: brightness(.88);
+    filter: brightness(.9);
     transform: scale(.97);
     box-shadow: none;
   }
@@ -1591,11 +1583,8 @@ console.warn = (...args) => {
     <button class="drawer-close" onclick="toggleDrawer()">✕</button>
   </div>
   <div class="drawer-body">
-    <!-- SERVER — úplně nahoře -->
-    <div class="drawer-section server-section">
-      <div class="drawer-section-title">Server</div>
-      <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()">Připojit server</button>
-    </div>
+    <!-- SERVER — jen tlačítko, úplně nahoře (bez boxu) -->
+    <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()" style="width:100%;font-size:16px;font-weight:700;margin-bottom:8px">Připojit server</button>
 
     <div class="drawer-section-divider"></div>
 

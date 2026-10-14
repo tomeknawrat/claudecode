@@ -114,6 +114,7 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - Osoby uložené v IndexedDB (`ptz_persons`)
 
 ### Nastavení (boční panel)
+- **Server** (úplně nahoře) — tlačítko „Připojit server" / „Restartovat server" (`connectBtn`, `toggleConnect`); přesunuto z hlavičky. V hlavičce zůstala jen stavová tečka.
 - Záloha presetů (export/import JSON)
 - Kamera 1 – IP, user, pass, rychlosti, test připojení
 - Kamera 2 – IP, user, pass, rychlosti, test, RTSP URL, „✓ Použít RTSP URL" (spustí MediaMTX)

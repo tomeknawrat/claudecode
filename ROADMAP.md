@@ -48,6 +48,7 @@
 - **Uložit preset** (`saveSeatPresetManual`) — po kliku na sedadlo a ručním doladění joystickem uloží **aktuální polohu** kamery do presetu posledního vyvolaného sedadla (setpreset + VISCA souřadnice).
 - Mazání **jen fotky** vráceno do levého horního rohu karty sedadla (`deleteSlotPhoto`) — preset/pozice zůstává.
 - Status serveru = jen tečka (zelená/červená), hláška připojeno/nepřipojeno jako tooltip. „Manuální ovládání kamery" místo „Ovládací prvky".
+- Tlačítko **Připojit / Restartovat server** přesunuto z hlavičky do **Nastavení úplně nahoru** (sekce „Server", modrý box ladící se zálohou presetů).
 - **Zrušen mód „Editace presetů sedadel" i pravý klik (kontext menu) na sedadle.** Workflow bez módů: kalibrace/úprava polohy = **Uložit preset**, přesun = drag&drop, smazání fotky = ikona koše. Funkce módu zůstávají v kódu „uspané" (nevolatelné) — snadný návrat, kdyby chyběly. V kompaktním gridu pravý klik (editace presetu) zůstává.
 
 ## ✅ UI přepracování (hotovo, čistě vizuální)

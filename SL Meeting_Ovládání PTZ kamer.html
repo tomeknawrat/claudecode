@@ -198,7 +198,7 @@ console.warn = (...args) => {
     margin: 16px 0;
   }
   /* Záloha presetů — jemne odlíšená */
-  .drawer-section:first-child {
+  .drawer-section.backup-section {
     background: linear-gradient(145deg, #DFF9ED, #caf5e3);
     border: 1px solid #a4eecd;
     border-radius: var(--r-sm);
@@ -206,12 +206,31 @@ console.warn = (...args) => {
     margin-bottom: 0;
     box-shadow: 0 2px 8px rgba(73,203,153,.1);
   }
-  .drawer-section:first-child .drawer-section-title {
+  .drawer-section.backup-section .drawer-section-title {
     color: #1a7a52;
     opacity: .85;
     font-size: 13px;
     margin-bottom: 10px;
     letter-spacing: 1px;
+  }
+  /* Server — stejná kompozice jako záloha, modrý akcent; tlačítko nese stav barvou */
+  .drawer-section.server-section {
+    background: linear-gradient(145deg, #eff6ff, #e0edff);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--r-sm);
+    padding: 14px 14px 12px;
+    margin-bottom: 0;
+    box-shadow: 0 2px 8px rgba(59,130,246,.1);
+  }
+  .drawer-section.server-section .drawer-section-title {
+    color: #1e40af;
+    opacity: .85;
+    font-size: 13px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .drawer-section.server-section .btn-connect {
+    width: 100%; font-size: 16px; font-weight: 700;
   }
   }
 
@@ -1555,7 +1574,6 @@ console.warn = (...args) => {
     <div class="status-pill status-pill--dot" id="headerStatusPill" title="Server nepřipojen">
       <div class="status-dot err" id="statusDot"></div>
     </div>
-    <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()" style="font-size:12px;padding:6px 14px">Připojit server</button>
     <button class="settings-btn" id="settingsBtn" onclick="toggleDrawer()">
       <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
         <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
@@ -1573,8 +1591,16 @@ console.warn = (...args) => {
     <button class="drawer-close" onclick="toggleDrawer()">✕</button>
   </div>
   <div class="drawer-body">
+    <!-- SERVER — úplně nahoře -->
+    <div class="drawer-section server-section">
+      <div class="drawer-section-title">Server</div>
+      <button class="btn btn-connect" id="connectBtn" onclick="toggleConnect()">Připojit server</button>
+    </div>
+
+    <div class="drawer-section-divider"></div>
+
     <!-- ZÁLOHA PRESETŮ — vždy viditelná, bez collapse -->
-    <div class="drawer-section">
+    <div class="drawer-section backup-section">
       <div class="drawer-section-title">Záloha presetů</div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-backup-import" onclick="document.getElementById('importFileInput').click()">

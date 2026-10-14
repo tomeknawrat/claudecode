@@ -1955,10 +1955,6 @@ console.warn = (...args) => {
           </button>
           <button class="add-preset-btn cam2-tool-btn" id="addPresetBtn2" onclick="openAddPreset(2)" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">＋ Přidat sedadlo</button>
           <button class="edit-order-btn" id="editOrderBtn2" onclick="toggleEditOrder(2)">⇅ Přesunout</button>
-          <button class="seat-layout-btn" id="slotEditBtn2" onclick="toggleSlotEditMode()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="6" y="2" width="12" height="9" rx="2"/><path d="M4 11h16"/><path d="M4 11v8"/><path d="M20 11v8"/><path d="M6 19v3"/><path d="M18 19v3"/><path d="M4 15h3"/><path d="M17 15h3"/></svg>
-            Editace presetů sedadel
-          </button>
           <button class="cam2-tool-btn" id="savePresetBtn2" onclick="saveSeatPresetManual()" title="Uložit aktuální (ručně upravenou) pozici kamery do presetu posledního vyvolaného sedadla" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             Uložit preset
@@ -3151,13 +3147,13 @@ function _updateCam2BtnVisibility() {
   const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
 
   if (editing) {
-    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('slotEditBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
+    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
   } else if (hiding) {
-    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('slotEditBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
+    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
   } else if (slotEditing) {
     hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
   } else {
-    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('slotEditBtn2'); show('camHeaderDivider2'); show('savePresetBtn2');
+    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('camHeaderDivider2'); show('savePresetBtn2');
     // V seat layoutu je drag&drop vždy aktivní (bez režimu „Přesunout") → tlačítko skryj.
     // V klasickém (kompaktním) gridu zůstává pro přesouvání karet.
     if (seatLayoutActive) hide('editOrderBtn2'); else show('editOrderBtn2');
@@ -4274,8 +4270,8 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
     card.appendChild(delBtn);
   }
 
-  // Pravý klik = upravit preset
-  card.addEventListener('contextmenu', e => { e.preventDefault(); editPreset(cam, presetIdx); });
+  // Pravý klik na sedadle zrušen (bez kontext menu). Úpravy: poloha = „Uložit preset",
+  // přesun = drag&drop, smazání fotky = ikona koše. V kompaktním gridu zůstává editace.
 
   // Hide-toggle klik (když je aktivní hide-mode)
   card.addEventListener('click', e => {

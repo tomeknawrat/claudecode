@@ -67,7 +67,7 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 ### CAM 2 — Komentáře (pravý panel)
 - Stejné ovládání jako CAM 1
 - **Seat layout** — zobrazení hlediště s rozmístěním sedadel (Blok A + Blok B)
-- **Editace presetů sedadel** — každé sedadlo = slot, hold 2s = uloží polohu kamery pro toto sedadlo
+- **Kalibrace sedadla bez módu** — klikni na sedadlo (kamera najede/nic), dolaď joystickem a dej **Uložit preset** → uloží polohu do presetu + VISCA souřadnice. (Dřívější mód „Editace presetů sedadel" a pravý klik na sedadle byly zrušeny; jejich funkce zůstávají v kódu „uspané".)
 - Rozsah čísel presetů: 175–255
 
 ### Seat layout

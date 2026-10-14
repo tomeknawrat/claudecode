@@ -13,6 +13,7 @@
 - ⏳ **Sken „po souřadnicích" (VISCA-over-IP) hotový v kódu** — čeká na živý test ve čtvrtek (restart serveru + překalibrace sedadel). Vznikl proto, že hardware joystick (AVMatrix PKC3500) přepsal sdílenou preset paměť kamery.
 - ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro.
 - ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
+- ✅ **Zrušen mód „Editace presetů sedadel" + pravý klik na sedadle** — workflow bez módů (Uložit preset / drag&drop / ikona koše). Funkce módu zůstávají v kódu uspané.
 
 > Detailní přehled stavu a dalšího směru je v `ROADMAP.md`.
 

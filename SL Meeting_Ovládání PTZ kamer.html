@@ -912,7 +912,7 @@ console.warn = (...args) => {
   .seat-layout-btn:hover { border-color: var(--amber-mid); color: var(--amber-d); background: var(--amber-soft); }
   .seat-layout-btn.active { border-color: var(--amber); color: var(--amber-d); background: var(--amber-soft); }
   .seat-layout-btn--main {
-    border-color: var(--amber-mid);
+    border-color: var(--amber-d);   /* border = barva písma */
     color: var(--amber-d);
     background: var(--amber-soft);
     justify-content: center;
@@ -920,12 +920,12 @@ console.warn = (...args) => {
   .seat-layout-btn--main:hover {
     background: #fef3c7;
     color: #92400e;
-    border-color: var(--amber);
+    border-color: #92400e;
     box-shadow: 0 2px 8px rgba(245,158,11,.15);
   }
   .seat-layout-btn--main:active {
     background: #fde68a;
-    border-color: var(--amber);
+    border-color: #92400e;
     color: #92400e;
     transform: scale(.97);
     box-shadow: none;
@@ -933,7 +933,7 @@ console.warn = (...args) => {
   .seat-layout-btn--main.active {
     background: #fef3c7;
     color: #92400e;
-    border-color: var(--amber);
+    border-color: #92400e;
   }
   .cam-header-divider {
     width: 1px; height: 33px;
@@ -1264,7 +1264,7 @@ console.warn = (...args) => {
     font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 700;
     text-transform: uppercase; letter-spacing: .3px; white-space: nowrap;
     cursor: pointer; transition: all .15s;
-    border: 1.5px solid var(--btn-border);
+    border: 1.5px solid var(--btn-text);   /* border vždy = barva písma */
     color: var(--btn-text);
     background: var(--btn-bg);
     box-shadow: none;

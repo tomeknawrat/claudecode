@@ -501,13 +501,10 @@ console.warn = (...args) => {
 
   /* ── POSE BUTTONS (sedí/stojí) ── */
   .pose-btns { display: flex; flex-direction: column; gap: 4px; }
-  /* Přesunuté pose ikonky pod tlačítko Skenovat (vlevo nad seat layoutem) */
-  .seat-pose-holder { position: absolute; left: 20px; top: 52px; z-index: 5; }
   .seat-pose-holder:empty { display: none; }
-  /* Vedle sebe, zleva stojící → sedící (DOM pořadí je sit, stand → row-reverse) */
-  .seat-pose-holder .pose-btns { flex-direction: row-reverse; }
-  /* V kompaktním zobrazení skryj (překrývalo by první kartu) */
-  .panel--cam2:not(.seat-layout-active) .seat-pose-holder { display: none; }
+  /* Pose ikonky přesunuté do lišty vlevo od „Kompaktní zobrazení".
+     Vedle sebe, zleva stojící → sedící (DOM pořadí je sit, stand → row-reverse). */
+  .cam2-pose { display: flex; flex-direction: row-reverse; align-items: center; gap: 4px; }
   .pose-btn {
     width: 42px; height: 42px;
     display: flex; align-items: center; justify-content: center;
@@ -531,19 +528,28 @@ console.warn = (...args) => {
   .panel--cam2 .pose-btn:hover svg { color: var(--amber-d); }
   .panel--cam2 .pose-btn.active { background: var(--amber-soft); border-color: var(--amber); }
   .panel--cam2 .pose-btn.active svg { color: var(--amber-d); }
-  /* Pose tlačítka u seat layoutu designově jako „Kompaktní zobrazení":
-     výplň = výplň toho boxu (#fef3c7), rámeček i ikona = barva slov (#92400e) */
-  .seat-pose-holder .pose-btn {
+  /* Pose tlačítka v liště designově jako „Kompaktní zobrazení":
+     výplň = výplň toho boxu (#fef3c7), rámeček i ikona = barva slov (#92400e).
+     Výška sjednocená s ostatními tlačítky lišty. */
+  .cam2-pose .pose-btn {
+    width: auto; min-width: 0; height: 32px; padding: 0 9px;
     background: #fef3c7;
     border-color: #92400e;
     box-shadow: none;
   }
-  .seat-pose-holder .pose-btn img {
+  .cam2-pose .pose-btn img {
+    width: 20px !important; height: 20px !important;
     /* panáček/židle přebarvené na #92400e (barva slov „Kompaktní zobrazení").
        !important přebije inline šedý filtr napevno na <img>. Shoda ověřená canvas samplingem. */
     filter: brightness(0) saturate(100%) invert(25%) sepia(56%) saturate(1650%) hue-rotate(352deg) brightness(94%) contrast(94%) !important;
   }
-  .seat-pose-holder .pose-btn.active { border-color: #92400e; }
+  .cam2-pose .pose-btn.active { border-color: #92400e; }
+  /* Jednotná výška všech tlačítek v liště CAM2 (pose, nástrojová i „Kompaktní") */
+  .panel--cam2 .cam-presets-header > div > button,
+  .panel--cam2 .cam2-pose .pose-btn {
+    height: 32px;
+    box-sizing: border-box;
+  }
   .drawer-sliders { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
   .slider-group label {
     display: flex; justify-content: space-between;
@@ -2670,12 +2676,18 @@ function resetPose(cam) {
 (function relocateCam2Pose() {
   try {
     const sit = document.getElementById('pose2-sit');
-    const holder = document.getElementById('seatPoseHolder');
-    if (!sit || !holder) return;
+    const seatBtn = document.getElementById('seatLayoutBtn2');
+    if (!sit || !seatBtn) return;
     const poseBtns = sit.closest('.pose-btns');
     const ctrlGroup = sit.closest('.ctrl-group');
-    if (poseBtns) holder.appendChild(poseBtns);      // přesuň obě ikonky (bez labelu)
-    if (ctrlGroup) {                                  // skryj zbylou skupinu „Pozice" + její oddělovač
+    const row = seatBtn.parentElement;                 // flex lišta tlačítek CAM2
+    if (poseBtns && row) {
+      poseBtns.classList.add('cam2-pose');
+      poseBtns.style.marginLeft = 'auto';              // cluster doprava
+      seatBtn.style.marginLeft = '';                   // auto přesunuto na pose cluster
+      row.insertBefore(poseBtns, seatBtn);             // pose vlevo od „Kompaktní zobrazení"
+    }
+    if (ctrlGroup) {                                   // skryj zbylou skupinu „Pozice" + její oddělovač
       const prev = ctrlGroup.previousElementSibling;
       if (prev && prev.classList.contains('ctrl-divider')) prev.style.display = 'none';
       ctrlGroup.style.display = 'none';

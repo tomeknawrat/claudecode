@@ -50,7 +50,8 @@
 - Status serveru = jen tečka (zelená/červená), hláška připojeno/nepřipojeno jako tooltip. „Manuální ovládání kamery" místo „Ovládací prvky".
 - Tlačítko **Připojit / Restartovat server** přesunuto z hlavičky do **Nastavení úplně nahoru** — jen tlačítko (bez boxu), na plnou šířku.
 - Box **Záloha presetů** přebarven na **modrý** (vč. Import/Export tlačítek).
-- Pose tlačítka 🧍🪑 (Sedící/Stojící) u seat layoutu sladěna s „Kompaktní zobrazení": výplň = výplň toho boxu (`#fef3c7`), panáček/židle i rámeček = barva slov (`#92400e`; ikona přes CSS filtr, shoda ověřená canvas samplingem).
+- Pose tlačítka 🧍🪑 (Sedící/Stojící) přesunuta do **lišty vlevo od „Kompaktní zobrazení"** (pravý cluster). Výplň = výplň toho boxu (`#fef3c7`), panáček/židle i rámeček = barva slov (`#92400e`; ikona přes CSS filtr s `!important` nad inline šedým filtrem).
+- **Všechna tlačítka lišty CAM2 sjednocena na stejnou výšku** (32 px, `box-sizing:border-box`).
 - **Zrušen mód „Editace presetů sedadel" i pravý klik (kontext menu) na sedadle.** Workflow bez módů: kalibrace/úprava polohy = **Uložit preset**, přesun = drag&drop, smazání fotky = ikona koše. Funkce módu zůstávají v kódu „uspané" (nevolatelné) — snadný návrat, kdyby chyběly. V kompaktním gridu pravý klik (editace presetu) zůstává.
 
 ## ✅ UI přepracování (hotovo, čistě vizuální)

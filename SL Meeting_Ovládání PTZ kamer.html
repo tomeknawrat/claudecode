@@ -539,8 +539,9 @@ console.warn = (...args) => {
     box-shadow: none;
   }
   .seat-pose-holder .pose-btn img {
-    /* panáček/židle přebarvené na #92400e (shoda ověřená canvas samplingem) */
-    filter: brightness(0) saturate(100%) invert(25%) sepia(56%) saturate(1650%) hue-rotate(352deg) brightness(94%) contrast(94%);
+    /* panáček/židle přebarvené na #92400e (barva slov „Kompaktní zobrazení").
+       !important přebije inline šedý filtr napevno na <img>. Shoda ověřená canvas samplingem. */
+    filter: brightness(0) saturate(100%) invert(25%) sepia(56%) saturate(1650%) hue-rotate(352deg) brightness(94%) contrast(94%) !important;
   }
   .seat-pose-holder .pose-btn.active { border-color: #92400e; }
   .drawer-sliders { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }

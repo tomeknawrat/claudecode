@@ -532,13 +532,13 @@ console.warn = (...args) => {
      výplň = výplň toho boxu (#fef3c7), rámeček i ikona = barva slov (#92400e).
      Výška sjednocená s ostatními tlačítky lišty. */
   .cam2-pose .pose-btn {
-    width: auto; min-width: 0; height: 32px; padding: 0 9px;
+    width: auto; min-width: 0; height: 42px; padding: 0 11px;
     background: #fef3c7;
     border-color: #92400e;
     box-shadow: none;
   }
   .cam2-pose .pose-btn img {
-    width: 20px !important; height: 20px !important;
+    width: 24px !important; height: 24px !important;
     /* panáček/židle přebarvené na #92400e (barva slov „Kompaktní zobrazení").
        !important přebije inline šedý filtr napevno na <img>. Shoda ověřená canvas samplingem. */
     filter: brightness(0) saturate(100%) invert(25%) sepia(56%) saturate(1650%) hue-rotate(352deg) brightness(94%) contrast(94%) !important;
@@ -547,7 +547,7 @@ console.warn = (...args) => {
   /* Jednotná výška všech tlačítek v liště CAM2 (pose, nástrojová i „Kompaktní") */
   .panel--cam2 .cam-presets-header > div > button,
   .panel--cam2 .cam2-pose .pose-btn {
-    height: 32px;
+    height: 42px;
     box-sizing: border-box;
   }
   .drawer-sliders { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }

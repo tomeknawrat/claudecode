@@ -142,6 +142,7 @@ console.warn = (...args) => {
     padding: 7px 15px; border-radius: var(--r-sm);
     background: var(--surface2); border: 1px solid var(--border);
     font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .3px;
     color: var(--text-2); cursor: pointer; box-shadow: var(--sh-sm); transition: all .15s;
   }
   .settings-btn:hover { background: var(--surface); border-color: var(--border2); color: var(--text); box-shadow: var(--sh); }
@@ -1300,11 +1301,11 @@ console.warn = (...args) => {
   }
   /* Modrá dlaždice presetu — barevné schéma jako „Přidat preset" */
   .panel--cam1 .cam1-fixed-preset {
-    width: var(--card-w); flex: 0 0 auto; box-sizing: border-box;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    width: auto; min-width: var(--card-w); flex: 0 0 auto; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
     border: 1.5px solid var(--blue-d); color: var(--blue-d);
     background: var(--blue-soft); border-radius: var(--r-xs);
-    cursor: pointer; transition: all .15s; padding: 6px 6px; overflow: hidden;
+    cursor: pointer; transition: all .15s; padding: 6px 14px; overflow: hidden;
   }
   .panel--cam1 .cam1-fixed-preset:hover { background: #dbeafe; }
   .panel--cam1 .cam1-fixed-preset.saving { border-color: #1d4ed8 !important; box-shadow: 0 0 0 3px rgba(29,78,216,.3) !important; }
@@ -1317,7 +1318,8 @@ console.warn = (...args) => {
   }
   .panel--cam1 .cam1-preset-icons .cam1-person { width: 32px; height: 32px; color: var(--blue-d); }
   .panel--cam1 .cam1-preset-label {
-    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
     color: var(--blue-d); text-align: center; white-space: nowrap; line-height: 1.1;
   }
   /* Scénky v toku přes flex-margins: sedící vlevo (margin-left = zarovnání),

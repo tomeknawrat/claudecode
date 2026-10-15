@@ -1281,20 +1281,26 @@ console.warn = (...args) => {
   .cam-presets-section .cam2-tool-btn.saved-flash svg { stroke: #fff; }
 
   /* ── CAM1 (Pódium): tlačítka ve sloupci vlevo, presety v řádku vpravo ──
-     Panel vysoký jen podle sloupce tlačítek; presety kompaktní, nerostou výšku. */
-  .panel--cam1 .cam1-strip { --card-w: 64px; width: 100%; }
-  .cam1-preset-layout { display: flex; flex-direction: row; align-items: center; gap: 12px; }
+     Preset = stejně vysoký jako sloupec obou tlačítek (horní border zarovnaný
+     s „Přidat sedadlo", spodní s „Uložit preset"). Popisek jménem, bez čísel.
+     Panel vysoký jen podle sloupce tlačítek; strip se přidává od středu. */
+  .panel--cam1 .cam1-strip { --card-w: 92px; width: 100%; }
+  .cam1-preset-layout { display: flex; flex-direction: row; align-items: stretch; gap: 12px; }
   .cam1-btn-col { display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; align-items: stretch; }
   .cam1-btn-col .cam2-tool-btn { width: 100%; height: 42px; box-sizing: border-box; justify-content: center; }
-  /* Presety CAM1 — vodorovný strip vedle tlačítek, bez zalomení, scroll doprava */
+  /* Presety CAM1 — vodorovný strip, zarovnaný na výšku sloupce tlačítek, centrovaný */
   .panel--cam1 .presets-grid {
     display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px;
-    overflow-x: auto; overflow-y: hidden; align-items: center;
+    overflow-x: auto; overflow-y: hidden; align-items: stretch; justify-content: center;
     flex: 1 1 auto; min-width: 0; grid-template-columns: none;
   }
-  .panel--cam1 .preset-card { width: var(--card-w); flex: 0 0 auto; }
-  .panel--cam1 .preset-card .preset-name { display: none; }  /* kompaktní strip — jen náhled + číslo */
-  .panel--cam1 .preset-card .preset-number { font-size: 9px; padding: 1px 4px; }
+  .panel--cam1 .preset-card {
+    width: var(--card-w); flex: 0 0 auto;
+    display: flex; flex-direction: column;   /* náhled vyplní výšku, popisek dole */
+  }
+  .panel--cam1 .preset-img-area { aspect-ratio: auto; flex: 1 1 auto; min-height: 0; }
+  .panel--cam1 .preset-card .preset-name { display: block; }   /* textový popisek (jméno) */
+  .panel--cam1 .preset-card .preset-number { display: none; }  /* bez čísel */
 
   /* Tlačítko „smazat jen fotku" v levém horním rohu karty sedadla */
   .slot-card { position: relative; }
@@ -2562,6 +2568,20 @@ document.querySelectorAll('input[type=range]').forEach(el => {
   el.style.setProperty('--val', pct + '%');
 });
 
+// Pořadí indexů tak, aby nejnovější preset (poslední) byl uprostřed,
+// starší se střídavě skládají doleva/doprava od středu.
+function _centerOutOrder(n) {
+  const left = [], right = [];
+  let center = [];
+  for (let k = 0; k < n; k++) {
+    const idx = n - 1 - k;               // od nejnovějšího
+    if (k === 0) center = [idx];
+    else if (k % 2 === 1) right.push(idx);
+    else left.push(idx);
+  }
+  return [...left.reverse(), ...center, ...right];
+}
+
 function renderPresets() {
   [1,2].forEach(cam => {
     const grid=document.getElementById('presetsGrid'+cam), empty=document.getElementById('presetsEmpty'+cam);
@@ -2570,7 +2590,10 @@ function renderPresets() {
     if (hideMode[cam]) grid.classList.add('hide-mode');
     else grid.classList.remove('hide-mode');
     if(presets.length===0){empty.style.display='block';return;} empty.style.display='none';
-    presets.forEach((p,idx) => {
+    // CAM1: nejnovější preset doprostřed (center-out); CAM2: běžné pořadí
+    const order = (cam === 1) ? _centerOutOrder(presets.length) : presets.map((_, i) => i);
+    order.forEach(idx => {
+      const p = presets[idx];
       const card=document.createElement('div');
       card.className='preset-card'; card.dataset.idx=idx; card.dataset.cam=cam;
       if(p.hidden) card.classList.add('hidden-preset');

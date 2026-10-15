@@ -33,8 +33,9 @@
 ## ✅ Panel Pódium (CAM1) — kompaktní lišta (hotovo)
 
 - Zrušeno „Přesunout"; „Přidat" → **Přidat sedadlo**. Přidáno **Uložit preset** (`saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Obě tlačítka stylem totožná s Komentáři (`cam2-tool-btn`).
-- Tlačítka ve **sloupci pod sebou vlevo**, presety ve **vodorovném stripu vpravo** (kompaktní náhledy, card-w 64 px, bez jmen).
-- **Výška panelu stabilní** — daná sloupcem tlačítek, neroste s počtem presetů (ověřeno: 0 i 6 presetů = 125 px). Styl `.cam2-tool-btn` rozšířen na obě kamery (`.cam-presets-section .cam2-tool-btn`).
+- Tlačítka ve **sloupci pod sebou vlevo**, presety ve **vodorovném stripu vpravo**. Karta presetu je **stejně vysoká jako sloupec obou tlačítek** (horní border zarovnaný s „Přidat sedadlo", spodní s „Uložit preset" = 92 px), s **textovým popiskem (jménem)**, bez čísel.
+- Nové presety se přidávají **od středu** — nejnovější je vždy uprostřed stripu (`_centerOutOrder`, starší střídavě doleva/doprava).
+- **Výška panelu stabilní** — daná sloupcem tlačítek, neroste s počtem presetů. Styl `.cam2-tool-btn` rozšířen na obě kamery (`.cam-presets-section .cam2-tool-btn`).
 
 ## ✅ Spuštění jedním krokem (hotovo)
 

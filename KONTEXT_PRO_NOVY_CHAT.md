@@ -61,7 +61,9 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 ### CAM 1 — Pódium (levý panel)
 - Manuální ovládání: šipky, zoom, focus (hold = plynulý pohyb, klik = krátký pohyb 350ms)
 - Presety: karty s fotkou, klik = vyvolat preset, hold 2s = uložit aktuální polohu
-- **Lišta presetů**: vlevo dva stacknutá tlačítka **Přidat sedadlo** (modré) a **Uložit preset** (zelené, `saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Vpravo **vodorovný strip** náhledů presetů; karta je **stejně vysoká jako sloupec obou tlačítek** (92 px) a má **textový popisek (jméno)**, bez čísel. Nové presety se přidávají **od středu** (nejnovější uprostřed, `_centerOutOrder`). Výška panelu je daná sloupcem tlačítek a **neroste** s počtem presetů.
+- **Lišta presetů**: vlevo dva stacknutá tlačítka **Přidat preset** (modré) a **Uložit preset** (zelené, `saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu).
+- **5 pevných presetů** (`CAM1_FIXED`, `renderCam1FixedPresets`) stylem jako tlačítko „Přidat preset" (modré dlaždice, popisek jménem, bez čísel, **bez kontext menu, nemazatelné**): **Scénka sedící** (2× ikona pose-sedící) vlevo — levý okraj zarovnaný s „Uložit preset" v Komentářích (`savePresetBtn2`, přepočet `layoutCam1Scenes`); **Řečník nižší / Předsedající / Řečník vyšší** vycentrované uprostřed; **Scénka stojící** (2× ikona pose-stojící) zrcadlově vpravo. Výška = sloupec obou tlačítek (92 px).
+- Chování tlačítka „Přidat preset" (přidávání dalších) zatím neřešeno. Hláška „Zatím žádné presety" odstraněna (CAM1 i CAM2).
 - Tlačítka stejného stylu jako v Komentářích (`cam2-tool-btn`, border = barva písma). Tlačítko „Přesunout" zrušeno.
 - Skrytí presetů (hide mode), rozsah čísel presetů: 1–99
 

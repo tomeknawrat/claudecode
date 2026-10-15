@@ -30,6 +30,12 @@
 | Fotka sedadla | Ořez vycentrovaný na obličej (4:3), **top-center** framing, bez detekčního rámečku | `2f75614`, `c43b025`, `c062d98` |
 | Volitelný tilt nudge | `_scan.scanTiltMs` (default off) — framing obličeje výš | `c43b025` |
 
+## ✅ Panel Pódium (CAM1) — 5 pevných presetů (hotovo)
+
+- „Přidat sedadlo" → **Přidat preset**; odstraněna hláška „Zatím žádné presety" (CAM1 i CAM2).
+- **5 pevných, nemazatelných presetů** (bez kontext menu), stylem jako tlačítko „Přidat preset" (modré dlaždice, popisek jménem): **Scénka sedící** (2× pose-sedící) vlevo zarovnaná s „Uložit preset" v Komentářích; **Řečník nižší / Předsedající / Řečník vyšší** uprostřed; **Scénka stojící** (2× pose-stojící) zrcadlově vpravo (`CAM1_FIXED`, `renderCam1FixedPresets`, `layoutCam1Scenes` — přepočet přes fonts.ready + ResizeObserver).
+- Chování „Přidat preset" (přidávání dalších) zatím odloženo.
+
 ## ✅ Panel Pódium (CAM1) — kompaktní lišta (hotovo)
 
 - Zrušeno „Přesunout"; „Přidat" → **Přidat sedadlo**. Přidáno **Uložit preset** (`saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Obě tlačítka stylem totožná s Komentáři (`cam2-tool-btn`).

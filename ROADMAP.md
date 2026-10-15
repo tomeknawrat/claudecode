@@ -35,7 +35,7 @@
 - „Přidat sedadlo" → **Přidat preset**; odstraněna hláška „Zatím žádné presety" (CAM1 i CAM2).
 - **5 pevných, nemazatelných presetů** (bez kontext menu), stylem jako tlačítko „Přidat preset" (modré dlaždice, popisek jménem): **Scénka sedící** (2× pose-sedící) vlevo zarovnaná s „Uložit preset" v Komentářích; **Řečník nižší / Předsedající / Řečník vyšší** uprostřed; **Scénka stojící** (2× pose-stojící) zrcadlově vpravo (`CAM1_FIXED`, `renderCam1FixedPresets`, `layoutCam1Scenes` — přepočet přes fonts.ready + ResizeObserver).
 - Chování „Přidat preset" (přidávání dalších) zatím odloženo.
-- Popisky 5 presetů sjednoceny do velikosti/stylu tlačítek (DM Sans 13.5px, 700, uppercase, `.3px`); boxy se rozšiřují podle textu (jeden řádek). Tlačítko „Nastavení" kapitálkami. Fonty: UI = DM Sans, technické/číselné = DM Mono, logo „Ovládání kamer" = Bebas Neue (ponecháno).
+- Popisky 5 presetů sjednoceny do velikosti/stylu tlačítek (DM Sans 13.5px, 700, uppercase, `.3px`). Všech 5 dlaždic má **stejnou šířku podle nejširší** (`equalizeCam1Tiles`), větší mezera ikona↔popisek (gap 9px). Tlačítka „Přidat preset"/„Uložit preset" jsou content-width (snug) jako v Komentářích. Tlačítko „Nastavení" kapitálkami. Fonty: UI = DM Sans, technické/číselné = DM Mono, logo „Ovládání kamer" = Bebas Neue (ponecháno).
 
 ## ✅ Panel Pódium (CAM1) — kompaktní lišta (hotovo)
 

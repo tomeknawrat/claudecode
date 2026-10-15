@@ -60,11 +60,10 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 
 ### CAM 1 — Pódium (levý panel)
 - Manuální ovládání: šipky, zoom, focus (hold = plynulý pohyb, klik = krátký pohyb 350ms)
-- Presety: karty s fotkou a jménem, klik = vyvolat preset, hold 2s = uložit aktuální polohu
-- Přidávání presetů: tlačítko „+ Přidat", modal se jménem, číslem (1–99), fotkou
-- Editace pořadí drag&drop
-- Skrytí presetů (hide mode)
-- Rozsah čísel presetů: 1–99
+- Presety: karty s fotkou, klik = vyvolat preset, hold 2s = uložit aktuální polohu
+- **Lišta presetů**: vlevo dva stacknutá tlačítka **Přidat sedadlo** (modré) a **Uložit preset** (zelené, `saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Vpravo **vodorovný strip** kompaktních náhledů presetů (card-w 64 px, bez jmen, jen náhled + číslo). Výška panelu je daná sloupcem tlačítek a **neroste** s počtem presetů (strip scrolluje doprava).
+- Tlačítka stejného stylu jako v Komentářích (`cam2-tool-btn`, border = barva písma). Tlačítko „Přesunout" zrušeno.
+- Skrytí presetů (hide mode), rozsah čísel presetů: 1–99
 
 ### CAM 2 — Komentáře (pravý panel)
 - Stejné ovládání jako CAM 1

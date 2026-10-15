@@ -1258,7 +1258,7 @@ console.warn = (...args) => {
      Stejná kompozice jako tlačítko „Kompaktní zobrazení":
      světlá (soft) výplň + střední ohraničení + tmavý sytý text → dobrá čitelnost.
      Každé tlačítko má jen jinou barvu přes --btn-bg / --btn-border / --btn-text. */
-  .panel--cam2 .cam2-tool-btn {
+  .cam-presets-section .cam2-tool-btn {
     display: flex; align-items: center; gap: 6px;
     padding: 6px 12px; border-radius: var(--r-xs);
     font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 700;
@@ -1269,16 +1269,32 @@ console.warn = (...args) => {
     background: var(--btn-bg);
     box-shadow: none;
   }
-  .panel--cam2 .cam2-tool-btn svg { width: 16px; height: 16px; stroke: var(--btn-text); }
-  .panel--cam2 .cam2-tool-btn:hover {
+  .cam-presets-section .cam2-tool-btn svg { width: 16px; height: 16px; stroke: var(--btn-text); }
+  .cam-presets-section .cam2-tool-btn:hover {
     background: color-mix(in srgb, var(--btn-text) 10%, var(--btn-bg));
     border-color: var(--btn-text);
     color: var(--btn-text);
   }
-  .panel--cam2 .cam2-tool-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .cam-presets-section .cam2-tool-btn:disabled { opacity: .5; cursor: not-allowed; }
   /* Krátké potvrzení po uložení presetu */
-  .panel--cam2 .cam2-tool-btn.saved-flash { background: var(--btn-text); color: #fff; }
-  .panel--cam2 .cam2-tool-btn.saved-flash svg { stroke: #fff; }
+  .cam-presets-section .cam2-tool-btn.saved-flash { background: var(--btn-text); color: #fff; }
+  .cam-presets-section .cam2-tool-btn.saved-flash svg { stroke: #fff; }
+
+  /* ── CAM1 (Pódium): tlačítka ve sloupci vlevo, presety v řádku vpravo ──
+     Panel vysoký jen podle sloupce tlačítek; presety kompaktní, nerostou výšku. */
+  .panel--cam1 .cam1-strip { --card-w: 64px; width: 100%; }
+  .cam1-preset-layout { display: flex; flex-direction: row; align-items: center; gap: 12px; }
+  .cam1-btn-col { display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; align-items: stretch; }
+  .cam1-btn-col .cam2-tool-btn { width: 100%; height: 42px; box-sizing: border-box; justify-content: center; }
+  /* Presety CAM1 — vodorovný strip vedle tlačítek, bez zalomení, scroll doprava */
+  .panel--cam1 .presets-grid {
+    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px;
+    overflow-x: auto; overflow-y: hidden; align-items: center;
+    flex: 1 1 auto; min-width: 0; grid-template-columns: none;
+  }
+  .panel--cam1 .preset-card { width: var(--card-w); flex: 0 0 auto; }
+  .panel--cam1 .preset-card .preset-name { display: none; }  /* kompaktní strip — jen náhled + číslo */
+  .panel--cam1 .preset-card .preset-number { font-size: 9px; padding: 1px 4px; }
 
   /* Tlačítko „smazat jen fotku" v levém horním rohu karty sedadla */
   .slot-card { position: relative; }
@@ -1881,15 +1897,18 @@ console.warn = (...args) => {
     </div><!-- cam1-controls-collapsible -->
     </div><!-- cam1-controls-wrap -->
     </div><!-- /panel-body -->
-    <div class="cam-presets-section" style="flex:1 1 auto;min-width:0;">
-      <div class="cam-presets-header">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button class="add-preset-btn" id="addPresetBtn1" onclick="openAddPreset(1)">＋ Přidat</button>
-          <button class="edit-order-btn" id="editOrderBtn1" onclick="toggleEditOrder(1)">⇅ Přesunout</button>
+    <div class="cam-presets-section cam1-strip" style="flex:0 0 auto;min-width:0;">
+      <div class="cam1-preset-layout">
+        <div class="cam1-btn-col">
+          <button class="add-preset-btn cam2-tool-btn" id="addPresetBtn1" onclick="openAddPreset(1)" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">＋ Přidat sedadlo</button>
+          <button class="cam2-tool-btn" id="savePresetBtn1" onclick="saveLastPresetManual(1)" title="Uložit aktuální (ručně upravenou) pozici kamery do posledního vyvolaného presetu" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Uložit preset
+          </button>
         </div>
+        <div class="presets-grid" id="presetsGrid1"></div>
+        <div id="presetsEmpty1" style="display:none;color:var(--text-3);font-size:12px;padding:8px;align-self:center">Zatím žádné presety</div>
       </div>
-      <div class="presets-grid" id="presetsGrid1"></div>
-      <div id="presetsEmpty1" style="display:none;color:var(--text-3);font-size:12px;padding:16px;text-align:center">Zatím žádné presety</div>
     </div>
   </div>
 
@@ -2792,6 +2811,7 @@ function toggleCtrl(el) {
 function recallPreset(cam,idx) {
   const p=state.presets[cam][idx]; if(!p) return;
   sendCmd(cam,'gotopreset',p.num);
+  _lastRecalledPreset[cam] = idx;   // pro „Uložit preset" (ruční doladění)
   resetPose(cam);
   logMsg('info',`CAM${cam}: Vyvolán preset "${p.name}" (#${p.num})`);
   // Animace v běžném preset gridu — přesný selektor s cam i idx
@@ -2820,6 +2840,22 @@ function savePresetNow(cam, idx) {
   }
   sendCmd(cam, 'setpreset', p.num);
   logMsg('info', `CAM${cam}: Uložen preset „${p.name}" (#${p.num})`);
+}
+
+// Poslední vyvolaný preset (klasický grid) na kameře — pro „Uložit preset"
+let _lastRecalledPreset = { 1: null, 2: null };
+
+// Uloží aktuální (ručně doladěnou) polohu kamery do posledního vyvolaného presetu.
+// Scénář (CAM1 Pódium): klik na preset → kamera najede → dolaď joystickem → „Uložit preset".
+function saveLastPresetManual(cam) {
+  const idx = _lastRecalledPreset[cam];
+  if (idx === null || idx === undefined || !state.presets[cam][idx]) {
+    logMsg('err', 'Uložit preset: nejdřív klikni na preset (kamera na něj najede), dolaď joystickem a pak ulož.');
+    return;
+  }
+  savePresetNow(cam, idx);   // přepíše pozici v preset paměti kamery na aktuální polohu
+  const b = document.getElementById('savePresetBtn' + cam);
+  if (b) { b.classList.add('saved-flash'); setTimeout(() => b.classList.remove('saved-flash'), 700); }
 }
 
 // Poslední vyvolané sedadlo — aby „Uložit preset" vědělo, kam uložit ručně doladěnou pozici

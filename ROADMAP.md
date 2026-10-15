@@ -30,6 +30,12 @@
 | Fotka sedadla | Ořez vycentrovaný na obličej (4:3), **top-center** framing, bez detekčního rámečku | `2f75614`, `c43b025`, `c062d98` |
 | Volitelný tilt nudge | `_scan.scanTiltMs` (default off) — framing obličeje výš | `c43b025` |
 
+## ✅ Panel Pódium (CAM1) — kompaktní lišta (hotovo)
+
+- Zrušeno „Přesunout"; „Přidat" → **Přidat sedadlo**. Přidáno **Uložit preset** (`saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Obě tlačítka stylem totožná s Komentáři (`cam2-tool-btn`).
+- Tlačítka ve **sloupci pod sebou vlevo**, presety ve **vodorovném stripu vpravo** (kompaktní náhledy, card-w 64 px, bez jmen).
+- **Výška panelu stabilní** — daná sloupcem tlačítek, neroste s počtem presetů (ověřeno: 0 i 6 presetů = 125 px). Styl `.cam2-tool-btn` rozšířen na obě kamery (`.cam-presets-section .cam2-tool-btn`).
+
 ## ✅ Spuštění jedním krokem (hotovo)
 
 - **`start_ptz.bat`** (+ `start_ptz_bez_okna.vbs` pro běh bez okna) spustí `ptz_server.py`; server při startu **sám otevře appku v prohlížeči** (`_open_app`).

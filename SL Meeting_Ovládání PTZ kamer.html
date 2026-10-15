@@ -3616,8 +3616,12 @@ function _makeViewSlotOld(seatNum) {
   const preset = (presetIdx !== null && presetIdx !== undefined) ? state.presets[2][presetIdx] : null;
   let t = null;
   slot.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); t = Date.now(); });
+  const _slotOccupied = () => !!(preset && (!preset.hidden || hideMode[2]));
   slot.addEventListener('pointerup', () => {
     if (t === null) return;
+    // Obsazené sedadlo řeší recall karta (makePresetCardForSlot) — tady přeskoč,
+    // ať se nepošle druhý pohyb (gotopreset) přes už najeté souřadnice.
+    if (_slotOccupied()) { t = null; return; }
     if (Date.now() - t < 600) {
       // Primárně po souřadnicích (VISCA abs), jinak preset
       if (slotCoords && slotCoords[si]) {
@@ -4557,8 +4561,17 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
     card.classList.remove('saving');
     const slotGrid = document.getElementById('seatLayoutGrid2');
     if (elapsed < 500 && e.type !== 'mouseleave' && !seatLayoutEditMode && !slotGrid.classList.contains('hide-mode')) {
-      recallPreset(cam, presetIdx);
+      // Recall primárně po VISCA souřadnicích (nezávislé na přepsané preset paměti);
+      // jen když souřadnice nejsou, fallback na preset kamery.
+      if (slotCoords && slotCoords[slotIdx]) {
+        _wsAbsMove(2, slotCoords[slotIdx]);
+        logMsg('info', `Sedadlo ${seatNum}: najeto na souřadnice`);
+      } else {
+        recallPreset(cam, presetIdx);
+      }
       _lastRecalledSeat = { si: slotIdx, seatNum };
+      card.classList.add('recalled');
+      setTimeout(() => card.classList.remove('recalled'), 600);
     }
   };
   card.addEventListener('mousedown', startHold);

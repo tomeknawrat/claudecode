@@ -2184,6 +2184,13 @@ console.warn = (...args) => {
                  onchange="_scan.zoomTiltUpMs = parseInt(this.value)||0">
           <span style="color:var(--text-3)">(0 = vypnuto; zaměří zoom na obličej v top-center)</span>
         </label>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
+          🙂 Min. jistota obličeje (%):
+          <input type="number" id="minFaceConfInput" value="90" min="50" max="99" step="1"
+                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
+                 onchange="_scan.minFaceConfidence = (parseInt(this.value)||0)/100">
+          <span style="color:var(--text-3)">(vyšší = míň falešných detekcí jako ruce, ale může zahodit profily)</span>
+        </label>
       </div>
 
       <!-- Log -->
@@ -4980,6 +4987,7 @@ const _scan = {
   zoomStepMs: 600,       // délka jednoho zoom kroku (ms) — laditelné podle rychlosti kamery
   zoomSettleMs: 700,     // ustálení po zoom kroku (ms)
   zoomMinAcceptFrac: 0.20, // min. výška tváře pro PŘIJETÍ — jen „přizoomovaná" (velká) tvář = osoba na místě; malé/oddálené se zahodí
+  minFaceConfidence: 0.90, // min. jistota BlazeFace (0–1) — odfiltruje falešné detekce (ruce apod.); laditelné polem ve scan modalu
   recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
 };
 
@@ -5174,6 +5182,13 @@ async function _loadModel() {
 }
 
 // Vrátí aktuálně detekované tváře + vykreslí je do canvasu
+// Jistota detekce BlazeFace (0–1). returnTensors=false → probability je [num].
+function _faceProb(f) {
+  const p = f && f.probability;
+  if (Array.isArray(p)) return p[0] || 0;
+  return (typeof p === 'number') ? p : 1;
+}
+
 async function _detectAndDraw() {
   const v  = document.getElementById('scanVideo');
   const cv = document.getElementById('scanCanvas');
@@ -5194,7 +5209,14 @@ async function _detectAndDraw() {
   ctx.drawImage(src, 0, 0, cv.width, cv.height);
 
   try {
-    const faces = await _scan.model.estimateFaces(cv, false);
+    let faces = await _scan.model.estimateFaces(cv, false);
+    // Odfiltruj málo jisté detekce (ruce apod.) — BlazeFace confidence
+    const thr = _scan.minFaceConfidence || 0;
+    const rejected = faces.filter(f => _faceProb(f) < thr);
+    if (rejected.length) {
+      _sLog(`  ↳ odfiltrováno ${rejected.length} málo jistých (práh ${(thr*100).toFixed(0)}%): ${rejected.map(f => (_faceProb(f)*100).toFixed(0)+'%').join(', ')}`);
+    }
+    faces = faces.filter(f => _faceProb(f) >= thr);
     faces.forEach((f, i) => {
       const [x1,y1] = f.topLeft, [x2,y2] = f.bottomRight;
       ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
@@ -5270,7 +5292,7 @@ async function _zoomFindOccupant(seatNum, W, H) {
       const centered = pick.dx <= _scan.maxDx;
       const big      = pick.hFrac >= _scan.zoomMinAcceptFrac;
       const verdict  = (centered && big) ? '✓ přijato' : (big ? '✗ ne u středu' : '✗ moc malá/oddálená');
-      _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: ${faces.length} tvář(í) dx=${pick.dx.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}% (práh ${(_scan.zoomMinAcceptFrac*100).toFixed(0)}%) ${verdict}`);
+      _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: ${faces.length} tvář(í) dx=${pick.dx.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}% conf=${(_faceProb(pick.f)*100).toFixed(0)}% (práh ${(_scan.zoomMinAcceptFrac*100).toFixed(0)}%) ${verdict}`);
       if (centered && big) return { pick, zoomLevel: lvl };
     } else {
       _sLog(`  Sedadlo ${seatNum} [zoom ${lvl}]: žádná tvář`);
@@ -5436,7 +5458,7 @@ async function startScan() {
       }
       // Vyber tvář osoby sedící na místě (horizontálně u středu + největší = nejblíž kameře)
       const pick = _pickSeatFace(faces, W, H);
-      _sLog(`  Sedadlo ${seatNum}: ${faces.length} tvář(í) · vybraná dx=${pick.dx.toFixed(2)} dy=${pick.dy.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}%`);
+      _sLog(`  Sedadlo ${seatNum}: ${faces.length} tvář(í) · vybraná dx=${pick.dx.toFixed(2)} dy=${pick.dy.toFixed(2)} vel=${(pick.hFrac*100).toFixed(0)}% conf=${(_faceProb(pick.f)*100).toFixed(0)}%`);
       // Brána obsazenosti: tvář u středu (dx) a dost velká (hFrac), jinak soused/pozadí/prázdné → skip.
       if (pick.dx > _scan.maxDx || pick.hFrac < _scan.minFaceFrac) {
         _sLog(`  Sedadlo ${seatNum}: mimo cíl (dx=${pick.dx.toFixed(2)}, vel=${(pick.hFrac*100).toFixed(0)}%) → přeskočeno`, 'warn');

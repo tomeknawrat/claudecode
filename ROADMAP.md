@@ -84,6 +84,8 @@
 2. Ověřit **zoom sken top-center + mírnější zoom**, doladit `pickAnchorY`, `zoomSteps`, `zoomMinAcceptFrac`.
 3. Fotky **top-center + bez rámečku**, doladit `facePhotoFaceAt`.
 4. Případně `scanTiltMs` (fyzický tilt nudge) — vyzkoušet směr/velikost.
+6. **Zoom sken: tilt nahoru před zoomem** (`zoomTiltUpMs`, default 450 ms, laditelné polem ve scan modalu) — zoom se zaměří na obličej v top-center, ne na střed/hruď. Doladit hodnotu podle záběru.
+7. Zadní řada (51–57) + některá sedadla (46, 43) mají **rozhozené uložené souřadnice** → překalibrovat (klik na sedadlo → joystick → Uložit preset). Prázdná sedadla chytající souseda (12, 46) = smazat fotku.
 5. Rozpoznávání: nahrát osoby, doladit práh z `dist:` hodnot.
 
 ---

@@ -2177,6 +2177,13 @@ console.warn = (...args) => {
           <input type="checkbox" id="zoomScanToggle" onchange="_scan.zoomScan = this.checked">
           🔍 Zoom-in sken (experimentální) — na každém sedadle přiblíží a hledá hlavní obličej
         </label>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
+          ↑ Tilt nahoru před zoomem (ms):
+          <input type="number" id="zoomTiltUpInput" value="450" min="0" max="2000" step="50"
+                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
+                 onchange="_scan.zoomTiltUpMs = parseInt(this.value)||0">
+          <span style="color:var(--text-3)">(0 = vypnuto; zaměří zoom na obličej v top-center)</span>
+        </label>
       </div>
 
       <!-- Log -->
@@ -4969,6 +4976,7 @@ const _scan = {
   // Zoom-in sken (opt-in, experimentální): na sedadle přiblíží a od nejtěsnějšího
   // oddaluje, dokud nenajde centrální dost velkou tvář = osoba sedící na místě.
   zoomScan: false,       // zapíná zaškrtávátko ve scan modalu
+  zoomTiltUpMs: 450,     // naklonění NAHORU před zoomem — zoom se pak zaměří na top-center (obličej), ne na střed/hruď (0=vypnuto)
   zoomSteps: 2,          // kolik kroků přiblížení od base presetu sedadla (míň = mírnější zoom)
   zoomStepMs: 600,       // délka jednoho zoom kroku (ms) — laditelné podle rychlosti kamery
   zoomSettleMs: 700,     // ustálení po zoom kroku (ms)
@@ -5238,6 +5246,15 @@ async function _zoomStep(cam, dir, ms) {
 // Vrací { pick, zoomLevel } nebo null (prázdné). Po návratu je kamera přiblížená —
 // screenshot/rozpoznání se udělá na té úrovni, další gotopreset zoom resetuje.
 async function _zoomFindOccupant(seatNum, W, H) {
+  // Nejdřív nakloň NAHORU — obličej je v horní části širokého presetu (top-center).
+  // Bez toho zoom míří na geometrický střed (hruď/sedačka) a obličej ztratí.
+  if (_scan.zoomTiltUpMs > 0) {
+    sendCmd(2, 'up');
+    await _sleep(_scan.zoomTiltUpMs);
+    sendCmd(2, 'stop');
+    await _sleep(350);
+    if (_scan.aborting) return null;
+  }
   // Přibliž na nejtěsnější úroveň
   for (let i = 0; i < _scan.zoomSteps; i++) {
     if (_scan.aborting) return null;

@@ -2179,7 +2179,7 @@ console.warn = (...args) => {
         </label>
         <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
           ↑ Tilt nahoru před zoomem (ms):
-          <input type="number" id="zoomTiltUpInput" value="450" min="0" max="2000" step="50"
+          <input type="number" id="zoomTiltUpInput" value="700" min="0" max="2000" step="50"
                  style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
                  onchange="_scan.zoomTiltUpMs = parseInt(this.value)||0">
           <span style="color:var(--text-3)">(0 = vypnuto; zaměří zoom na obličej v top-center)</span>
@@ -3623,12 +3623,11 @@ function _makeViewSlotOld(seatNum) {
   const preset = (presetIdx !== null && presetIdx !== undefined) ? state.presets[2][presetIdx] : null;
   let t = null;
   slot.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); t = Date.now(); });
-  const _slotOccupied = () => !!(preset && (!preset.hidden || hideMode[2]));
   slot.addEventListener('pointerup', () => {
     if (t === null) return;
-    // Obsazené sedadlo řeší recall karta (makePresetCardForSlot) — tady přeskoč,
-    // ať se nepošle druhý pohyb (gotopreset) přes už najeté souřadnice.
-    if (_slotOccupied()) { t = null; return; }
+    // Recall řeší SLOT (pointer eventy) pro prázdná i obsazená sedadla — mouse eventy
+    // na kartě jsou potlačené preventDefaultem, takže recall karty se stejně nespustí.
+    // Vždy po souřadnicích (coords-first), takže žádný gotopreset „do stropu".
     if (Date.now() - t < 600) {
       // Primárně po souřadnicích (VISCA abs), jinak preset
       if (slotCoords && slotCoords[si]) {
@@ -4976,7 +4975,7 @@ const _scan = {
   // Zoom-in sken (opt-in, experimentální): na sedadle přiblíží a od nejtěsnějšího
   // oddaluje, dokud nenajde centrální dost velkou tvář = osoba sedící na místě.
   zoomScan: false,       // zapíná zaškrtávátko ve scan modalu
-  zoomTiltUpMs: 450,     // naklonění NAHORU před zoomem — zoom se pak zaměří na top-center (obličej), ne na střed/hruď (0=vypnuto)
+  zoomTiltUpMs: 700,     // naklonění NAHORU před zoomem — zoom se pak zaměří na top-center (obličej), ne na střed/hruď (0=vypnuto)
   zoomSteps: 2,          // kolik kroků přiblížení od base presetu sedadla (míň = mírnější zoom)
   zoomStepMs: 600,       // délka jednoho zoom kroku (ms) — laditelné podle rychlosti kamery
   zoomSettleMs: 700,     // ustálení po zoom kroku (ms)

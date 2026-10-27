@@ -15,11 +15,27 @@
 - ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
 - ✅ **Zrušen mód „Editace presetů sedadel" + pravý klik na sedadle** — workflow bez módů (Uložit preset / drag&drop / ikona koše). Funkce módu zůstávají v kódu uspané.
 - ✅ **Spuštění jedním krokem** — `start_ptz.bat` / `start_ptz_bez_okna.vbs`; server při startu sám otevře appku v prohlížeči.
-- ✅ **Fix recall obsazeného sedadla „do stropu"** — klik posílal dva pohyby (správné VISCA souřadnice + `gotopreset` na přepsaný preset, který vyhrál). Nově jen recall po souřadnicích; slot přeskočí obsazená sedadla (řeší karta). Souřadnice samotné beze změny.
+- ✅ **Fix recall obsazeného sedadla „do stropu"** — klik posílal `gotopreset` na joystickem přepsaný preset. Nově recall **vždy po souřadnicích** (coords-first), obsluhuje ho **slot** (pointer eventy) pro prázdná i obsazená sedadla — mouse eventy na kartě jsou potlačené preventDefaultem. Souřadnice samotné beze změny.
 - ✅ **Panel Pódium (CAM1) přepracován** — „Přidat preset" + „Uložit preset" vlevo; **5 pevných nemazatelných presetů** (Scénka sedící | Řečník nižší/Předsedající/Řečník vyšší | Scénka stojící) stylem modrých dlaždic jako „Přidat preset", scénky zarovnané/zrcadlené podle „Uložit preset" v Komentářích. Hláška „Zatím žádné presety" odstraněna. Chování „Přidat preset" odloženo.
 - ✅ **Tlačítko Připojit/Restartovat server** přesunuto z hlavičky do Nastavení (úplně nahoru, samostatné tlačítko bez boxu). Box Záloha presetů přebarven na modrý; pose tlačítka 🧍🪑 sladěna s „Kompaktní zobrazení".
 
 > Detailní přehled stavu a dalšího směru je v `ROADMAP.md`.
+
+---
+
+## Záznamy dne
+
+### 22. 10. 2026 — živý test skenu + opravy recallu/detekce
+Testováno naostro na síti (sken hlediště, vyvolávání sedadel). Tři změny:
+
+1. **Zoom sken: naklonění nahoru před zoomem** (`2a582fc`) — zoom-in dřív mířil na geometrický střed (hruď/sedačka) a obličej ztrácel. Nově se kamera před zoomem nakloní nahoru (`_scan.zoomTiltUpMs`), takže zoom zamíří na obličej v **top-center**. Laditelné polem „↑ Tilt nahoru před zoomem (ms)" ve scan modalu.
+2. **Fix: obsazená sedadla zase vyvolatelná + default tilt 700 ms** (`2000bee`) — regrese z předchozího recall fixu: klik na sedadlo s fotkou nedělal nic. Příčina: na kartě sedadla jsou **mouse eventy potlačené** (slot dělá `preventDefault` na pointerdown), takže recall obsluhuje jen slot přes pointer eventy — a ten jsem u obsazených sedadel omylem vypnul. Vráceno: slot vyvolává prázdná i obsazená sedadla, **coords-first** (žádný strop, žádný dvojí pohyb). Ověřeno reálným klikem (1× `absmove`). Default `zoomTiltUpMs` 450 → **700 ms**.
+3. **Filtr jistoty obličeje (ruce)** (`24635a0`) — ruce se někdy detekovaly jako obličej a umístily na sedadlo. Přidán práh `_scan.minFaceConfidence` (default **0.90**, laditelné polem „🙂 Min. jistota obličeje (%)"); `_detectAndDraw` odfiltruje nízkou BlazeFace confidence. **Log teď ukazuje confidence** přijatých i odfiltrovaných detekcí → snadné doladění.
+
+**Pozorování z živého skenu (k doladění):**
+- Prázdná sedadla občas chytnou **souseda** při oddálení zoomu (12, 46, 43) — metriky dx/vel se překrývají s reálnými vzdálenými lidmi, čistě algoritmicky neoddělitelné → pomůže přesnější kalibrace + smazat falešné fotky.
+- **Zadní řada (51–57) ujíždí** (54 najel na 56, 42 vzal člověka z 51) — rozhozené **uložené souřadnice** těch sedadel (ne bug v kódu) → překalibrovat (klik → joystick → Uložit preset).
+- Potvrzen mechanismus „do stropu": appka a joystick sdílí **jednu preset paměť v kameře** (appka přes LAN CGI/VISCA, joystick přes RS-485/Pelco-D); joystick ji přepsal → `gotopreset` jel špatně. Souřadnice (VISCA, uložené v appce) jsou vůči joysticku imunní.
 
 ---
 

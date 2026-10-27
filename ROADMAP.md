@@ -49,6 +49,15 @@
 - **`start_ptz.bat`** (+ `start_ptz_bez_okna.vbs` pro běh bez okna) spustí `ptz_server.py`; server při startu **sám otevře appku v prohlížeči** (`_open_app`).
 - Prohlížeč (sandbox) server spustit neumí → startuje se server, ten otevře stránku; tlačítko „Připojit server" slouží na (re)connect.
 
+## 🚧 Výchozí pozice sedadel (větev `vychozi-pozice-sedadel`)
+
+Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
+- Nové úložiště `slotDefaultCoords` (localStorage `ptz_slot_default_coords`), paralelní k `slotCoords`.
+- **Režim nastavení výchozích pozic** (tlačítko „Výchozí pozice" / „Hotovo", `defaultPosMode`): klik na sedadlo najede na jeho výchozí pozici, „Uložit výchozí" uloží aktuální polohu jako výchozí (nesáhne na pracovní pozici ani preset kamery). Banner + tečkované zvýraznění gridu.
+- **Normální režim** (jako dřív): úprava/ukládání pracovních pozic (`slotCoords` + setpreset).
+- Tlačítko **„Vrátit výchozí"** (`resetSeatsToDefault`) vrátí pracovní pozice všech sedadel na výchozí (`slotCoords ← slotDefaultCoords`, s potvrzením).
+- Ověřeno Playwrightem (ukládání do správného úložiště, reset, přepínání módu). Čeká na živý test.
+
 ## ✅ Drag & drop fotek mezi sedadly (hotovo)
 
 - Ve výchozím (detailním) zobrazení lze fotku **chytit myší a přetáhnout** na jiné sedadlo **bez přepínání do režimu „Přesunout"**.

@@ -1280,6 +1280,19 @@ console.warn = (...args) => {
   /* Krátké potvrzení po uložení presetu */
   .cam-presets-section .cam2-tool-btn.saved-flash { background: var(--btn-text); color: #fff; }
   .cam-presets-section .cam2-tool-btn.saved-flash svg { stroke: #fff; }
+  /* Aktivní přepínač (režim výchozích pozic) — vyplněný barvou */
+  .cam-presets-section .cam2-tool-btn.active { background: var(--btn-text); color: #fff; }
+  .cam-presets-section .cam2-tool-btn.active svg { stroke: #fff; }
+  /* Banner režimu výchozích pozic */
+  .default-mode-banner {
+    display: flex; align-items: center; gap: 8px;
+    margin: 8px 0 6px; padding: 8px 12px; border-radius: var(--r-xs);
+    background: #f0fdfa; border: 1.5px solid #5eead4; color: #0f766e;
+    font-size: 12.5px; font-weight: 600; line-height: 1.3;
+  }
+  .default-mode-banner svg { flex-shrink: 0; }
+  /* Jemné zvýraznění seat gridu v režimu výchozích pozic */
+  .seat-layout-grid.default-pos-mode { outline: 2px dashed #5eead4; outline-offset: 6px; border-radius: 6px; }
 
   /* ── CAM1 (Pódium): tlačítka absolutně vlevo, presety přes celou šířku ──
      5 pevných presetů stylem jako tlačítko „Přidat preset" (modré). Scénka sedící
@@ -2031,7 +2044,15 @@ console.warn = (...args) => {
           <button class="edit-order-btn" id="editOrderBtn2" onclick="toggleEditOrder(2)">⇅ Přesunout</button>
           <button class="cam2-tool-btn" id="savePresetBtn2" onclick="saveSeatPresetManual()" title="Uložit aktuální (ručně upravenou) pozici kamery do presetu posledního vyvolaného sedadla" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Uložit preset
+            <span id="savePresetLabel2">Uložit preset</span>
+          </button>
+          <button class="cam2-tool-btn" id="defaultModeBtn2" onclick="toggleDefaultPosMode()" title="Režim nastavení výchozích pozic: klikni na sedadlo, dolaď joystickem a dej Uložit výchozí" style="--btn-bg:#f0fdfa;--btn-border:#5eead4;--btn-text:#0f766e">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
+            <span class="btn-label">Výchozí pozice</span>
+          </button>
+          <button class="cam2-tool-btn" id="resetDefaultBtn2" onclick="resetSeatsToDefault()" title="Vrátit pracovní pozice všech sedadel na uložené výchozí" style="--btn-bg:#f0fdfa;--btn-border:#5eead4;--btn-text:#0f766e">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            Vrátit výchozí
           </button>
           <button class="hide-presets-btn cam2-tool-btn" id="clearAllBtn2" onclick="clearAllPresets(2)" title="Smazat všechny uložené fotky/karty na CAM2 (pozice presetů v kameře zůstanou)" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
@@ -2044,6 +2065,10 @@ console.warn = (...args) => {
         </div>
       </div>
       <div id="seatPoseHolder" class="seat-pose-holder"></div>
+      <div id="defaultModeBanner" class="default-mode-banner" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
+        <span><strong>Režim nastavení výchozích pozic</strong> — klikni na sedadlo, dolaď joystickem a dej „Uložit výchozí". Tlačítkem „Vrátit výchozí" pak všechna sedadla vrátíš sem.</span>
+      </div>
       <div class="presets-grid" id="presetsGrid2"></div>
       <div class="seat-layout-grid" id="seatLayoutGrid2" style="display:none"></div>
       <div class="seat-layout-grid" id="slotEditGrid2" style="display:none"></div>
@@ -3054,12 +3079,58 @@ function saveSeatPresetManual() {
     return;
   }
   const { si, seatNum } = _lastRecalledSeat;
+  const b = document.getElementById('savePresetBtn2');
+  const flash = () => { if (b) { b.classList.add('saved-flash'); setTimeout(() => b.classList.remove('saved-flash'), 700); } };
+  if (defaultPosMode) {
+    // Režim výchozích pozic — ulož jen VÝCHOZÍ souřadnice (nemění pracovní pozici ani preset kamery)
+    _captureSlotCoords(si, seatNum, true);
+    flash();
+    return;
+  }
   const presetNum = (slotPresets && slotPresets[si] !== null && slotPresets[si] !== undefined) ? slotPresets[si] : seatNum;
   sendCmd(2, 'setpreset', presetNum);                 // přepíše pozici v preset paměti kamery
   if (slotPresets) { slotPresets[si] = presetNum; saveSlotPresetsStorage(); }
-  _captureSlotCoords(si, seatNum);                    // uloží i VISCA souřadnice (sken po souřadnicích)
+  _captureSlotCoords(si, seatNum, false);             // uloží i VISCA souřadnice (sken po souřadnicích)
   logMsg('info', `Sedadlo ${seatNum}: pozice přeuložena do presetu #${presetNum} (aktuální poloha kamery).`);
-  const b = document.getElementById('savePresetBtn2');
+  flash();
+}
+
+// Přepne režim nastavování výchozích pozic. V tomto režimu „Uložit preset" ukládá
+// aktuální polohu jako VÝCHOZÍ pozici sedadla a klik na sedadlo najíždí na výchozí.
+function toggleDefaultPosMode() {
+  defaultPosMode = !defaultPosMode;
+  const btn = document.getElementById('defaultModeBtn2');
+  if (btn) {
+    btn.classList.toggle('active', defaultPosMode);
+    const lbl = btn.querySelector('.btn-label');
+    if (lbl) lbl.textContent = defaultPosMode ? 'Hotovo' : 'Výchozí pozice';
+  }
+  const saveLbl = document.getElementById('savePresetLabel2');
+  if (saveLbl) saveLbl.textContent = defaultPosMode ? 'Uložit výchozí' : 'Uložit preset';
+  const banner = document.getElementById('defaultModeBanner');
+  if (banner) banner.style.display = defaultPosMode ? 'flex' : 'none';
+  const grid = document.getElementById('seatLayoutGrid2');
+  if (grid) grid.classList.toggle('default-pos-mode', defaultPosMode);
+  logMsg('info', defaultPosMode
+    ? 'Režim VÝCHOZÍCH pozic zapnut — klikni na sedadlo, dolaď joystickem a dej „Uložit výchozí".'
+    : 'Režim výchozích pozic ukončen.');
+}
+
+// Vrátí pracovní pozice VŠECH sedadel na uložené výchozí (slotCoords ← slotDefaultCoords).
+async function resetSeatsToDefault() {
+  const hasDef = slotDefaultCoords && slotDefaultCoords.some(c => c);
+  if (!hasDef) { logMsg('err', 'Nejsou uložené žádné výchozí pozice sedadel.'); return; }
+  const n = slotDefaultCoords.filter(c => c).length;
+  const ok = await showConfirm(`Vrátit pracovní pozice <strong style="color:var(--text)">${n}</strong> sedadel na výchozí?<br>Aktuální pracovní pozice se přepíšou.`);
+  if (!ok) return;
+  if (!slotCoords) slotCoords = new Array(TOTAL_SEATS).fill(null);
+  let cnt = 0;
+  for (let i = 0; i < TOTAL_SEATS; i++) {
+    if (slotDefaultCoords[i]) { slotCoords[i] = { ...slotDefaultCoords[i] }; cnt++; }
+  }
+  saveSlotCoordsStorage();
+  logMsg('info', `Pracovní pozice vráceny na výchozí (${cnt} sedadel).`);
+  const b = document.getElementById('resetDefaultBtn2');
   if (b) { b.classList.add('saved-flash'); setTimeout(() => b.classList.remove('saved-flash'), 700); }
 }
 
@@ -3397,13 +3468,13 @@ function _updateCam2BtnVisibility() {
   const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
 
   if (editing) {
-    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
+    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2'); hide('resetDefaultBtn2');
   } else if (hiding) {
-    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
+    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2'); hide('resetDefaultBtn2');
   } else if (slotEditing) {
-    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2');
+    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2'); hide('resetDefaultBtn2');
   } else {
-    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('camHeaderDivider2'); show('savePresetBtn2');
+    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('camHeaderDivider2'); show('savePresetBtn2'); show('defaultModeBtn2'); show('resetDefaultBtn2');
     // V seat layoutu je drag&drop vždy aktivní (bez režimu „Přesunout") → tlačítko skryj.
     // V klasickém (kompaktním) gridu zůstává pro přesouvání karet.
     if (seatLayoutActive) hide('editOrderBtn2'); else show('editOrderBtn2');
@@ -3494,6 +3565,10 @@ let slotPresets = null; // inicializuje se při prvním otevření
 // slotCoords[i] = {pan,tilt,zoom} absolutní VISCA souřadnice sedadla (null = neuloženo).
 // Primární cesta pro sken „po souřadnicích" — nezávislá na preset paměti kamery.
 let slotCoords = null;
+// slotDefaultCoords[i] = {pan,tilt,zoom} VÝCHOZÍ (baseline) pozice sedadla.
+// Nastavuje se v „režimu výchozích pozic"; tlačítkem lze všechna sedadla vrátit na tyto hodnoty.
+let slotDefaultCoords = null;
+let defaultPosMode = false;   // true = režim nastavování výchozích pozic
 let seatLayoutEditMode = false;
 let slotAssignments = null; // pole indexů do state.presets[2], nebo null
 
@@ -3636,10 +3711,13 @@ function _makeViewSlotOld(seatNum) {
     // na kartě jsou potlačené preventDefaultem, takže recall karty se stejně nespustí.
     // Vždy po souřadnicích (coords-first), takže žádný gotopreset „do stropu".
     if (Date.now() - t < 600) {
-      // Primárně po souřadnicích (VISCA abs), jinak preset
-      if (slotCoords && slotCoords[si]) {
-        _wsAbsMove(2, slotCoords[si]);
-        logMsg('info', `Sedadlo ${seatNum}: najeto na souřadnice`);
+      // V režimu výchozích pozic najeď na VÝCHOZÍ (baseline), jinak na pracovní souřadnice.
+      const dc = defaultPosMode && slotDefaultCoords ? slotDefaultCoords[si] : null;
+      const wc = slotCoords ? slotCoords[si] : null;
+      const target = dc || wc;
+      if (target) {
+        _wsAbsMove(2, target);
+        logMsg('info', `Sedadlo ${seatNum}: najeto na ${dc ? 'výchozí ' : ''}souřadnice`);
       } else {
         const presetNum = (slotPresets && slotPresets[si] !== null) ? slotPresets[si] : seatNum;
         sendCmd(2, 'gotopreset', presetNum);
@@ -4347,16 +4425,29 @@ function saveSlotCoordsStorage() {
   try { localStorage.setItem('ptz_slot_coords', JSON.stringify(slotCoords)); } catch(e) {}
 }
 
+function saveSlotDefaultCoordsStorage() {
+  try { localStorage.setItem('ptz_slot_default_coords', JSON.stringify(slotDefaultCoords)); } catch(e) {}
+}
+
 // Přečte aktuální absolutní pozici kamery (VISCA) a uloží ji jako souřadnice sedadla.
-async function _captureSlotCoords(slotIdx, seatNum) {
+// toDefault=true → uloží do VÝCHOZÍCH pozic (slotDefaultCoords), jinak do pracovních (slotCoords).
+async function _captureSlotCoords(slotIdx, seatNum, toDefault) {
   const pos = await _wsGetPos(2);
   if (pos && typeof pos.pan !== 'undefined') {
-    if (!slotCoords) slotCoords = new Array(TOTAL_SEATS).fill(null);
-    slotCoords[slotIdx] = { pan: pos.pan, tilt: pos.tilt, zoom: pos.zoom };
-    saveSlotCoordsStorage();
-    logMsg('info', `Sedadlo ${seatNum}: souřadnice uloženy (pan ${pos.pan}, tilt ${pos.tilt}, zoom ${pos.zoom}).`);
+    const c = { pan: pos.pan, tilt: pos.tilt, zoom: pos.zoom };
+    if (toDefault) {
+      if (!slotDefaultCoords) slotDefaultCoords = new Array(TOTAL_SEATS).fill(null);
+      slotDefaultCoords[slotIdx] = c;
+      saveSlotDefaultCoordsStorage();
+      logMsg('info', `Sedadlo ${seatNum}: VÝCHOZÍ pozice uložena (pan ${pos.pan}, tilt ${pos.tilt}, zoom ${pos.zoom}).`);
+    } else {
+      if (!slotCoords) slotCoords = new Array(TOTAL_SEATS).fill(null);
+      slotCoords[slotIdx] = c;
+      saveSlotCoordsStorage();
+      logMsg('info', `Sedadlo ${seatNum}: souřadnice uloženy (pan ${pos.pan}, tilt ${pos.tilt}, zoom ${pos.zoom}).`);
+    }
   } else {
-    logMsg('err', `Sedadlo ${seatNum}: souřadnice se nepodařilo přečíst (VISCA 1259) — uložen jen preset.`);
+    logMsg('err', `Sedadlo ${seatNum}: souřadnice se nepodařilo přečíst (VISCA 1259).`);
   }
 }
 
@@ -4382,6 +4473,17 @@ function loadSlotPresetsStorage() {
     slotCoords.forEach((v,i)=>{ if(i<TOTAL_SEATS) nc[i]=v; });
     slotCoords = nc;
   }
+  // Výchozí (baseline) souřadnice sedadel
+  try {
+    const rawD = localStorage.getItem('ptz_slot_default_coords');
+    if (rawD) { const arrD = JSON.parse(rawD); if (Array.isArray(arrD)) slotDefaultCoords = arrD; }
+  } catch(e) {}
+  if (!slotDefaultCoords) slotDefaultCoords = new Array(TOTAL_SEATS).fill(null);
+  else if (slotDefaultCoords.length !== TOTAL_SEATS) {
+    const nd = new Array(TOTAL_SEATS).fill(null);
+    slotDefaultCoords.forEach((v,i)=>{ if(i<TOTAL_SEATS) nd[i]=v; });
+    slotDefaultCoords = nd;
+  }
   try {
     const raw2 = localStorage.getItem('ptz_slot_assignments');
     if (raw2) {
@@ -4401,6 +4503,7 @@ function loadSlotPresetsStorage() {
 
 function toggleSeatLayout() {
   seatLayoutActive = !seatLayoutActive;
+  if (!seatLayoutActive && defaultPosMode) toggleDefaultPosMode(); // odchod ze seat layoutu ukončí režim výchozích
   const btn      = document.getElementById('seatLayoutBtn2');
   const grid     = document.getElementById('presetsGrid2');
   const slotGrid = document.getElementById('seatLayoutGrid2');

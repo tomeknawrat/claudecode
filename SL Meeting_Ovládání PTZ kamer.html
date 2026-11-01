@@ -1659,7 +1659,8 @@ console.warn = (...args) => {
 
     <!-- ZÁLOHA PRESETŮ — vždy viditelná, bez collapse -->
     <div class="drawer-section backup-section">
-      <div class="drawer-section-title">Záloha presetů</div>
+      <div class="drawer-section-title">Záloha / obnova (vše)</div>
+      <div style="font-size:11px;color:var(--text-3);margin:-4px 0 8px;line-height:1.35">Presety a fotky, souřadnice sedadel, výchozí pozice, nastavení (IP/hesla) i osoby — jeden soubor pro přenos na jiný PC.</div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-backup-import" onclick="document.getElementById('importFileInput').click()">
           ⬆ Import
@@ -3365,20 +3366,36 @@ document.addEventListener('paste', e => {
 //  EXPORT / IMPORT
 // ══════════════════════════════════════════════════
 function exportPresets() {
+  // Osoby (rozpoznávání) z paměti — descriptor Float32Array → obyčejné pole kvůli JSON
+  let persons = null;
+  try { persons = (_persons || []).map(p => ({ ...p, descriptor: p.descriptor ? Array.from(p.descriptor) : null })); } catch(e) {}
+  let settings = null;
+  try { settings = JSON.parse(localStorage.getItem('ptz_settings') || 'null'); } catch(e) {}
   const data = {
-    version: 1,
+    version: 2,
     exported: new Date().toISOString(),
     presets: state.presets,
     slotAssignments: slotAssignments ? [...slotAssignments] : null,
-    slotPresets: slotPresets ? [...slotPresets] : null
+    slotPresets: slotPresets ? [...slotPresets] : null,
+    slotCoords: slotCoords ? [...slotCoords] : null,                 // pracovní VISCA souřadnice sedadel
+    slotDefaultCoords: slotDefaultCoords ? [...slotDefaultCoords] : null, // výchozí pozice sedadel
+    settings,                                                         // IP/hesla/rychlosti/RTSP…
+    persons,                                                          // osoby + embeddingy pro rozpoznávání
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   const date = new Date().toISOString().slice(0,10);
-  a.href = url; a.download = `presety-kamer-${date}.json`; a.click();
+  a.href = url; a.download = `zaloha-kamer-${date}.json`; a.click();
   URL.revokeObjectURL(url);
-  logMsg('info', `Presety exportovány do souboru presety-kamer-${date}.json`);
+  logMsg('info', `Kompletní záloha exportována (presety, souřadnice, výchozí pozice, nastavení, osoby) → zaloha-kamer-${date}.json`);
+}
+
+// Zarovná pole na délku TOTAL_SEATS (pad null / ořez)
+function _fitSeatArray(arr) {
+  const out = new Array(TOTAL_SEATS).fill(null);
+  if (Array.isArray(arr)) arr.forEach((v,i)=>{ if (i < TOTAL_SEATS) out[i] = v; });
+  return out;
 }
 
 function importPresets(e) {
@@ -3390,17 +3407,36 @@ function importPresets(e) {
       if (!data.presets || !data.presets[1] || !data.presets[2]) throw new Error('Neplatný formát souboru');
       state.presets[1] = data.presets[1];
       state.presets[2] = data.presets[2];
-      if (Array.isArray(data.slotAssignments) && data.slotAssignments.length === TOTAL_SEATS) {
-        slotAssignments = [...data.slotAssignments];
+      if (Array.isArray(data.slotAssignments)) {
+        slotAssignments = _fitSeatArray(data.slotAssignments);
+        try { localStorage.setItem('ptz_slot_assignments', JSON.stringify(slotAssignments)); } catch(e) {}
       }
-      if (Array.isArray(data.slotPresets) && data.slotPresets.length === TOTAL_SEATS) {
-        slotPresets = [...data.slotPresets];
+      if (Array.isArray(data.slotPresets)) { slotPresets = _fitSeatArray(data.slotPresets); saveSlotPresetsStorage(); }
+      // Souřadnice sedadel (v2)
+      if (Array.isArray(data.slotCoords)) { slotCoords = _fitSeatArray(data.slotCoords); saveSlotCoordsStorage(); }
+      if (Array.isArray(data.slotDefaultCoords)) { slotDefaultCoords = _fitSeatArray(data.slotDefaultCoords); saveSlotDefaultCoordsStorage(); }
+      // Nastavení (IP/hesla/rychlosti…) (v2)
+      if (data.settings && typeof data.settings === 'object') {
+        try { localStorage.setItem('ptz_settings', JSON.stringify(data.settings)); } catch(e) {}
+        if (window.loadSettings) loadSettings();
+        if (window._sendCamConfigs) _sendCamConfigs();
+      }
+      // Osoby + embeddingy (v2)
+      if (Array.isArray(data.persons)) {
+        _persons = data.persons.map(p => ({ ...p, descriptor: p.descriptor ? new Float32Array(p.descriptor) : null }));
+        if (window._savePersonsDB) await _savePersonsDB();
+        if (window._renderPersonsList) _renderPersonsList();
       }
       await savePresetsStorage();
       renderPresets();
       if (seatLayoutActive) renderSeatLayout();
-      logMsg('info', `Import úspěšný — načteno ${data.presets[1].length + data.presets[2].length} presetů`);
-      showToast('Import presetů dokončen 👍');
+      const bits = ['presety'];
+      if (Array.isArray(data.slotCoords)) bits.push('souřadnice');
+      if (Array.isArray(data.slotDefaultCoords)) bits.push('výchozí pozice');
+      if (data.settings) bits.push('nastavení');
+      if (Array.isArray(data.persons)) bits.push(`osoby (${data.persons.length})`);
+      logMsg('info', `Import úspěšný (v${data.version || 1}): ${bits.join(', ')}.`);
+      showToast('Import zálohy dokončen 👍');
     } catch(err) { logMsg('err', 'Chyba importu: ' + err.message); }
   };
   reader.readAsText(file); e.target.value = '';

@@ -103,7 +103,6 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 ## 🧩 Zaparkované / otevřené nápady
 
 - **Přidat/smazat sedadlo + přečíslování** — dynamický layout místo pevného `SEAT_LAYOUT`. Architektonické, k rozmyšlení.
-- **Export/import osob** (vč. embeddingů) — ať se neztrácí lidé při přesunu složky / nové instanci (IndexedDB je per-origin).
 - **Víc referenčních fotek na osobu** — robustnější rozpoznávání.
 
 ---

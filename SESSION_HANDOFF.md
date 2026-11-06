@@ -17,6 +17,8 @@
 - ✅ **Spuštění jedním krokem** — `start_ptz.bat` / `start_ptz_bez_okna.vbs`; server při startu sám otevře appku v prohlížeči.
 - ✅ **Fix recall obsazeného sedadla „do stropu"** — klik posílal `gotopreset` na joystickem přepsaný preset. Nově recall **vždy po souřadnicích** (coords-first), obsluhuje ho **slot** (pointer eventy) pro prázdná i obsazená sedadla — mouse eventy na kartě jsou potlačené preventDefaultem. Souřadnice samotné beze změny.
 - ✅ **Panel Pódium (CAM1) přepracován** — „Přidat preset" + „Uložit preset" vlevo; **5 pevných nemazatelných presetů** (Scénka sedící | Řečník nižší/Předsedající/Řečník vyšší | Scénka stojící) stylem modrých dlaždic jako „Přidat preset", scénky zarovnané/zrcadlené podle „Uložit preset" v Komentářích. Hláška „Zatím žádné presety" odstraněna. Chování „Přidat preset" odloženo.
+- ✅ **Výchozí (baseline) pozice sedadel** — režim nastavení výchozích pozic + tlačítko „Vrátit výchozí" (sloučeno do `ptzcameracontroller`).
+- ✅ **Kompletní záloha/obnova** (export v2) — presety+fotky, souřadnice, výchozí pozice, nastavení, osoby; pro přenos na jiný PC.
 - ✅ **Tlačítko Připojit/Restartovat server** přesunuto z hlavičky do Nastavení (úplně nahoru, samostatné tlačítko bez boxu). Box Záloha presetů přebarven na modrý; pose tlačítka 🧍🪑 sladěna s „Kompaktní zobrazení".
 
 > Detailní přehled stavu a dalšího směru je v `ROADMAP.md`.
@@ -24,6 +26,12 @@
 ---
 
 ## Záznamy dne
+
+### 1.–6. 11. 2026 — výchozí pozice + kompletní záloha (nová větev → merge)
+Vyvinuto na větvi `vychozi-pozice-sedadel`, poté **sloučeno do `ptzcameracontroller`**.
+1. **Výchozí (baseline) pozice sedadel** — nové úložiště `slotDefaultCoords` (localStorage `ptz_slot_default_coords`) paralelní k `slotCoords`. Režim „Výchozí pozice" (tlačítko přepínač + banner): klik najede na výchozí, „Uložit výchozí" uloží aktuální polohu jako výchozí (nesáhne na pracovní ani preset). Tlačítko „Vrátit výchozí" vrátí pracovní pozice všech sedadel na výchozí.
+2. **Kompletní záloha/obnova** (export v2) — export/import teď zahrnuje i `slotCoords`, `slotDefaultCoords`, nastavení (`ptz_settings`) a osoby (`ptz_persons` vč. embeddingů); zpětně kompatibilní s v1. Pro přenos appky na jiný PC (jinak jsou data jen v browser storage).
+3. Dotaz „co přenést na jiný PC": kód (git clone + checkout / HTML+server+launchery), `mediamtx.exe` (není v Gitu), Python + balíčky, a data přes Export/Import.
 
 ### 22. 10. 2026 — živý test skenu + opravy recallu/detekce
 Testováno naostro na síti (sken hlediště, vyvolávání sedadel). Tři změny:

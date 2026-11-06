@@ -116,7 +116,7 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 ### Nastavení (boční panel)
 - **Připojit / Restartovat server** (úplně nahoře) — samostatné tlačítko (`connectBtn`, `toggleConnect`), přesunuto z hlavičky; v hlavičce zůstala jen stavová tečka.
-- Záloha presetů (export/import JSON)
+- **Záloha / obnova (vše)** — export/import JSON pokrývá presety+fotky, `slotCoords`, `slotDefaultCoords`, `slotPresets`, `slotAssignments`, nastavení (`ptz_settings`) i osoby (`ptz_persons` vč. embeddingů). Verze 2, zpětně kompatibilní s v1. Pro přenos na jiný PC.
 - Kamera 1 – IP, user, pass, rychlosti, test připojení
 - Kamera 2 – IP, user, pass, rychlosti, test, RTSP URL, „✓ Použít RTSP URL" (spustí MediaMTX)
 - Pozice sedí/stojí (čísla presetů pro speciální pozice)

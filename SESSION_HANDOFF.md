@@ -17,6 +17,7 @@
 - ✅ **Mazání jedné fotky = pravý klik na kartě** (7. 11.) — ikonka koše na kartě zrušena.
 - ✅ **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** (7. 11.) — dialog s checkboxem (hromadné mazání fotek vždy; volitelně i vrácení pozic na výchozí).
 - ✅ **Responsivní viewport CAM2** (7. 11.) — na úzkém okně (split-screen) pravý sektor pod levý + zvětšená sedadla (stacked režim).
+- ✅ **Layout sedadel upraven** (7. 11.) — přidána 16, 116, 127, 138; odebrána 168 (TOTAL_SEATS 81). Bez migrace → **po nasazení překalibrovat**.
 - ✅ **Spuštění jedním krokem** — `start_ptz.bat` / `start_ptz_bez_okna.vbs`; server při startu sám otevře appku v prohlížeči.
 - ✅ **Fix recall obsazeného sedadla „do stropu"** — klik posílal `gotopreset` na joystickem přepsaný preset. Nově recall **vždy po souřadnicích** (coords-first), obsluhuje ho **slot** (pointer eventy) pro prázdná i obsazená sedadla — mouse eventy na kartě jsou potlačené preventDefaultem. Souřadnice samotné beze změny.
 - ✅ **Panel Pódium (CAM1) přepracován** — „Přidat preset" + „Uložit preset" vlevo; **5 pevných nemazatelných presetů** (Scénka sedící | Řečník nižší/Předsedající/Řečník vyšší | Scénka stojící) stylem modrých dlaždic jako „Přidat preset", scénky zarovnané/zrcadlené podle „Uložit preset" v Komentářích. Hláška „Zatím žádné presety" odstraněna. Chování „Přidat preset" odloženo.
@@ -31,7 +32,7 @@
 ## Záznamy dne
 
 ### 7. 11. 2026 — mazání fotky pravým klikem, sloučené „Smazat všechny fotky", diagnostika skenu
-Víkendová zpětná vazba z reálného použití: záloha OK, sken >90 % OK (log teď neřešit). Pět požadavků, hotové 1–3:
+Víkendová zpětná vazba z reálného použití: záloha OK, sken >90 % OK (log teď neřešit). Všech pět požadavků hotovo:
 
 1. **Mazání jedné fotky zpět na pravý klik** — na kartě sedadla (`makePresetCardForSlot`) přidán `contextmenu` → `deleteSlotPhoto` (preset/pozice zůstává). **Ikonka koše odstraněna** (tlačítko `.slot-del-photo` + jeho CSS). Pozn.: slot `pointerdown` má `if (e.button !== 0) return`, takže pravý klik není potlačen; `_makeViewSlotOld` (živý view) nemá vlastní contextmenu, takže konflikt nehrozí.
 2. **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** — samostatné tlačítko `resetDefaultBtn2` zrušeno. Nový dialog `#clearResetOverlay` (`openClearResetDialog` / `clearResetResolve`): vždy hromadné smazání fotek/karet CAM2; **checkbox** `#clearResetAlsoReset` (default off, zobrazí se jen když existují výchozí pozice) navíc vrátí pracovní pozice na výchozí (`_applyResetSeatsToDefault`: `slotCoords ← slotDefaultCoords`). Odpověď na dotaz „kde jsou výchozí pozice": `slotDefaultCoords`, localStorage `ptz_slot_default_coords`.
@@ -40,8 +41,7 @@ Víkendová zpětná vazba z reálného použití: záloha OK, sken >90 % OK (lo
 5. **Responsivní viewport — HOTOVO (CAM2).** `applyZoom` dřív sedadla jen zmenšoval, aby se oba sektory vešly vedle sebe. Nově: pod prahem (sedadlo „vedle sebe" < 64 px) přepne na **STACKED** — třída `seat-stacked` na `<html>`, bloky pod sebou (`.seat-hall-live` sloupec), sedadla zvětšená (`calcCardWStacked`, strop ~83 px). CAM1 odpojen (`cam1Base`), aby se Pódium nenafouklo. Ověřeno Playwrightem.
    - Pozn.: na ~960 px se v Pódiu překrývá dlaždice „Scénka sedící" s „Uložit preset" — **pre-existující** layout CAM1 (ne regrese), k doladění zvlášť.
 
-**Nedořešeno (4):**
-4. **Přidat sedadla 116, 127, 138 (a 16?) + smazat sedadlo 16** — požadavek rozporný (přidat 16 i smazat 16), čeká na upřesnění. Navíc riziko: úložiště je indexované podle pořadí v `SEAT_NUMBERS`, vložení doprostřed posune indexy a rozhodí kalibraci → potřeba migrace (remap podle čísla sedadla).
+4. **Změna layoutu sedadel — HOTOVO.** Po upřesnění: přidat **16, 116, 127, 138**, „smazat 16" byl překlep → smazat **168**. `SEAT_LAYOUT`: levá řada 1 `[16..11]`, pravá řada 1 `[111..116]`, řada 2 `[121..127]`, řada 3 `[131..138]`, řada 6 `[161..167]`. **TOTAL_SEATS 78 → 81.** Zvoleno **bez migrace** — úložiště se jen přepočítá na novou délku (index-based), hodnoty se posunou → **nutná překalibrace** (uživatel akceptoval). Zároveň přepracován výpočet velikosti sedadla (`_blockW`/`_seatTotalSide`/`_seatTotalStacked` z reálné `clientWidth` gridu), aby se vešly i delší řady bez přetečení (ověřeno 1920–800 px). TODO naostro: **překalibrovat** nová i posunutá sedadla.
 
 Ověřeno `node --check` (inline skripty OK) + Playwrightem (reset tlačítko pryč, dialog + checkbox fungují, bez JS chyb mimo blokované CDN/WS).
 

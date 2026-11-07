@@ -3671,7 +3671,7 @@ let slotAssignments = null; // pole indexů do state.presets[2], nebo null
 // ── SEAT LAYOUT — původní struktura (rows + margin-left) ──
 const SEAT_LAYOUT = {
   left: [
-    [15, 14, 13, 12, 11],
+    [16, 15, 14, 13, 12, 11],
     [27, 26, 25, 24, 23, 22, 21],
     [38, 37, 36, 35, 34, 33, 32, 31],
     [47, 46, 45, 44, 43, 42, 41],
@@ -3680,12 +3680,12 @@ const SEAT_LAYOUT = {
     [0, 1],
   ],
   right: [
-    [111, 112, 113, 114, 115],
-    [121, 122, 123, 124, 125, 126],
-    [131, 132, 133, 134, 135, 136, 137],
+    [111, 112, 113, 114, 115, 116],
+    [121, 122, 123, 124, 125, 126, 127],
+    [131, 132, 133, 134, 135, 136, 137, 138],
     [141, 142, 143, 144, 145, 146, 147, 148],
     [151, 152, 153, 154, 155, 156, 157, 158],
-    [161, 162, 163, 164, 165, 166, 167, 168],
+    [161, 162, 163, 164, 165, 166, 167],
   ],
 };
 
@@ -6076,6 +6076,39 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
   if (drawer) document.body.appendChild(drawer);
   if (overlay) document.body.appendChild(overlay);
 
+  // Odsazení řad (násobky „unit" = card+gap) — jediný zdroj pravdy pro výpočet
+  // šířky i pro vykreslení (applyZoom je použije přes INDENT_L/INDENT_R).
+  const INDENT_L = [1.5, 0.5, 0, 0.5, 0.5, 0];
+  const INDENT_R = [1.5, 1.0, 0.5, 0, 0, 0];
+
+  // Rozměry odvozené z C (musí odpovídat tomu, co nastaví applyZoom)
+  function _dims(C) {
+    return { card: Math.round(C * 0.75), gap: Math.round(2 * C / 60), hall: Math.round(45 * C / 60) };
+  }
+  // Skutečná šířka bloku v px — největší řada včetně odsazení (robustní vůči změnám layoutu)
+  function _blockW(rows, indents, card, gap) {
+    const unit = card + gap;
+    let mx = 0;
+    rows.forEach((row, ri) => {
+      const n = Array.isArray(row) ? row.length : (row.left.length + row.right.length);
+      const splitGap = Array.isArray(row) ? 0 : 16; // mezera mezi podřadami (0/1 split)
+      const w = Math.round((indents[ri] || 0) * unit) + n * card + Math.max(0, n - 1) * gap + splitGap;
+      if (w > mx) mx = w;
+    });
+    return mx;
+  }
+  const SEAT_PAD = 48; // padding gridu (32 vlevo + 16 vpravo)
+  function _seatTotalSide(C) { // dva sektory vedle sebe
+    const { card, gap, hall } = _dims(C);
+    return _blockW(SEAT_LAYOUT.left, INDENT_L, card, gap) + hall
+         + _blockW(SEAT_LAYOUT.right, INDENT_R, card, gap) + SEAT_PAD;
+  }
+  function _seatTotalStacked(C) { // sektory pod sebou → stačí ten širší
+    const { card, gap } = _dims(C);
+    return Math.max(_blockW(SEAT_LAYOUT.left, INDENT_L, card, gap),
+                    _blockW(SEAT_LAYOUT.right, INDENT_R, card, gap)) + SEAT_PAD;
+  }
+
   // Seat layout: 14 sloupců (4+6+4) + 2 hall gaps (20px) + cam1 + padding
   // cam1 = 2*C + 8 + 24 + 40 = 2*C + 72
   // cam2 = 14*C + 13*8 + 2*20 + 40 = 14*C + 144
@@ -6134,16 +6167,10 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
 
   function calcCardW(vw, isSeat) {
     if (isSeat) {
-      // Hledáme C tak aby se hall vešel do vw (DVA sektory vedle sebe)
-      // Skutečná card = round(C*0.75), gap = round(2*C/60), hall_gap = round(8*C/60)
-      // hall šířka = left + hall_gap + right = 2*(8*card+7*gap) + hall_gap
-      // + padding 32+16 = 48px
+      // Hledáme největší C tak, aby se oba sektory VEDLE SEBE vešly do vw
+      // (skutečná šířka včetně odsazení + hall gap, viz _seatTotalSide).
       for (let C = 130; C >= 40; C--) {
-        const card = Math.round(C * 0.75);
-        const gap  = Math.round(2 * C / 60);
-        const hall = Math.round(8 * C / 60);
-        const total = 2 * (8 * card + 7 * gap) + hall + 48;
-        if (total <= vw) return C;
+        if (_seatTotalSide(C) <= vw) return C;
       }
       return 40;
     } else {
@@ -6151,16 +6178,12 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     }
   }
 
-  // STACKED režim: sektory pod sebou → stačí, aby se vešel JEDEN sektor
-  // (nejširší řada = 8 sedadel) do vw. Card smí být výrazně větší (viditelná fotka).
-  // Stropem je MAX_C, ať sedadla nejsou nesmyslně obří a nescrolluje se donekonečna.
+  // STACKED režim: sektory pod sebou → stačí, aby se vešel ten širší sektor do vw.
+  // Card smí být výrazně větší (viditelná fotka). Strop MAX_C, ať sedadla nejsou obří.
   const STACK_MAX_C = 110; // card ≈ round(110*0.75) = 83 px
   function calcCardWStacked(vw) {
     for (let C = STACK_MAX_C; C >= 40; C--) {
-      const card = Math.round(C * 0.75);
-      const gap  = Math.round(2 * C / 60);
-      const total = 8 * card + 7 * gap + 48; // jeden sektor + padding
-      if (total <= vw) return C;
+      if (_seatTotalStacked(C) <= vw) return C;
     }
     return 40;
   }
@@ -6174,8 +6197,14 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     if (drawer) drawer.style.zoom = 1;
     if (overlay) overlay.style.zoom = 1;
 
+    // Skutečná dostupná šířka pro seat grid (zahrnuje jeho padding). Měříme přímo
+    // z elementu — vw neodpovídá (odečítají se paddingy appky/panelu/sekce).
+    // Při otevřeném seat layoutu je grid viditelný (toggleSeatLayout ho zobrazí dřív).
+    const gridEl = document.getElementById('seatLayoutGrid2');
+    const seatAvail = (isSeat && gridEl && gridEl.clientWidth > 0) ? gridEl.clientWidth : vw;
+
     let stacked = false;
-    let card = calcCardW(vw, isSeat);
+    let card = calcCardW(seatAvail, isSeat);
     // Základ pro CAM1 (Pódium) = velikost „vedle sebe" — CAM1 se nestackuje a nesmí
     // se nafouknout, když CAM2 přejde do stacked režimu s velkými sedadly.
     let cam1Base = card;
@@ -6189,7 +6218,7 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
       const sideActual = Math.round(card * 0.75);
       if (sideActual < 64) {
         stacked = true;
-        card = calcCardWStacked(vw);
+        card = calcCardWStacked(seatAvail);
         // cam1Base zůstává na „vedle sebe" hodnotě, aby Pódium nepřeteklo.
       }
     }
@@ -6203,8 +6232,8 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     // Dynamická odsazení řad podle aktuální velikosti slotu
     const actualCard = Math.round(card * 0.75);
     const unit = actualCard + gap;
-    window._seatIndentsLeft  = [Math.round(1.5*unit), Math.round(0.5*unit), 0, Math.round(0.5*unit), Math.round(0.5*unit), 0];
-    window._seatIndentsRight = [Math.round(1.5*unit), Math.round(1.0*unit), Math.round(0.5*unit), 0, 0, 0];
+    window._seatIndentsLeft  = INDENT_L.map(m => Math.round(m * unit));
+    window._seatIndentsRight = INDENT_R.map(m => Math.round(m * unit));
     window._seatNegMargin    = -Math.round(0.3 * unit);
     window._seatLeftGap      = (6*actualCard + 5*gap - 5*actualCard) / 4;
     document.documentElement.style.setProperty('--seat-gap', gap + 'px');

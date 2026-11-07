@@ -80,22 +80,25 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 **Blok A (levý):**
 ```
-Řada 1: [15,14,13,12,11]           odsazení ~1.5×krok
+Řada 1: [16,15,14,13,12,11]        odsazení ~1.5×krok
 Řada 2: [27,26,25,24,23,22,21]     odsazení ~0.5×krok
 Řada 3: [38,37,36,35,34,33,32,31]  bez odsazení
 Řada 4: [47,46,45,44,43,42,41]     odsazení ~0.5×krok
-Řada 5: [0,1] mezera [57..51]      bez odsazení
+Řada 5: [57,56,55,54,53,52,51]     odsazení ~0.5×krok
+Řada 6: [0,1]                      bez odsazení
 ```
 
 **Blok B (pravý):**
 ```
-Řada 1: [111..115]   odsazení ~1.5×krok (pyramida)
-Řada 2: [121..126]   odsazení ~1×krok
-Řada 3: [131..137]   odsazení ~0.5×krok
+Řada 1: [111..116]   odsazení ~1.5×krok (pyramida)
+Řada 2: [121..127]   odsazení ~1×krok
+Řada 3: [131..138]   odsazení ~0.5×krok
 Řada 4: [141..148]   bez odsazení
 Řada 5: [151..158]   bez odsazení
-Řada 6: [161..168]   bez odsazení
+Řada 6: [161..167]   bez odsazení
 ```
+*(7. 11.: doplněna 16, 116, 127, 138; odebrána 168. TOTAL_SEATS = 81.)*
+**Pozor:** úložiště (`slotCoords`/`slotPresets`/`slotAssignments`/`slotDefaultCoords`) je indexované podle pořadí v `SEAT_NUMBERS`. Při změně layoutu se pole jen přepočítají na novou délku (bez migrace podle čísla) → **hodnoty se posunou, nutná překalibrace.**
 
 Čísla sedadel = čísla presetů na CAM2 (přímé mapování).
 

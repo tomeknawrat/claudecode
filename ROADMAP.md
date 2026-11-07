@@ -113,9 +113,9 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 
 ---
 
-## 🚧 Rozpracováno / čeká na upřesnění
+## ✅ Změna layoutu sedadel (#4) + responsivita (#5) — hotovo 7. 11.
 
-- **#4 Přidat sedadla 116, 127, 138 (a 16?)** do `SEAT_LAYOUT` + smazat sedadlo 16 — *požadavek je rozporný (přidat 16 a zároveň smazat 16), čeká na upřesnění.* **Pozor:** úložiště (`slotCoords`, `slotPresets`, `slotAssignments`, `slotDefaultCoords`) je indexované podle pořadí v `SEAT_NUMBERS`; vložení sedadla doprostřed **posune indexy** → rozhodí stávající kalibraci. Nutná migrace (remap podle čísla sedadla) nebo přepis úložiště na klíč = číslo sedadla.
+- **#4 Úprava `SEAT_LAYOUT`** (po upřesnění: přidat 16, 116, 127, 138; „smazat 16" byl překlep → smazat **168**). Výsledek: levá řada 1 `[16..11]`, pravá řada 1 `[111..116]`, řada 2 `[121..127]`, řada 3 `[131..138]`, řada 6 `[161..167]`. **TOTAL_SEATS 78 → 81.** Zvoleno **bez migrace** — úložiště se jen přepočítá na novou délku, hodnoty se posunou → **nutná překalibrace** (uživatel akceptoval). Výpočet velikosti sedadla přepracován, aby se vešly i delší řady (robustní `_blockW`/`_seatTotalSide`/`_seatTotalStacked`, měřeno z reálné `clientWidth` gridu → žádné přetečení).
 - **#5 Responsivní viewport — HOTOVO (CAM2).** Dosud `applyZoom`/`calcCardW` sedadla jen **zmenšoval**, aby se oba sektory vešly vedle sebe (na úzkém okně byla nečitelná). Nově: když by sedadla vedle sebe byla < 64 px, přepne se do **STACKED** režimu (třída `seat-stacked` na `<html>`): pravý sektor spadne **pod** levý (`.seat-hall-live` → sloupec) a sedadla se **zvětší** (`calcCardWStacked`, strop `STACK_MAX_C` → card ≈ 83 px). CAM1 (Pódium) odpojen od stacked velikosti (`cam1Base`), aby se nenafoukl. Ověřeno Playwrightem (1600 vedle sebe 92 px; 950 stacked 83 px, bloky nad sebou).
   - *Pozn.:* na ~960 px se v **Pódiu** překrývá první dlaždice „Scénka sedící" s tlačítkem „Uložit preset" — **pre-existující** layout CAM1 (ne regrese z této změny), k doladění zvlášť.
 

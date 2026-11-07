@@ -62,7 +62,7 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 - Manuální ovládání: šipky, zoom, focus (hold = plynulý pohyb, klik = krátký pohyb 350ms)
 - Presety: karty s fotkou, klik = vyvolat preset, hold 2s = uložit aktuální polohu
 - **Lišta presetů**: vlevo jen tlačítko **Uložit preset** (zelené, `saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). *(„Přidat preset" na CAM1 bylo 7. 11. úplně odstraněno.)*
-- **5 pevných presetů** (`CAM1_FIXED`, `renderCam1FixedPresets`, **bez kontext menu, nemazatelné**) jako **ikonový pruh bez mezer a bez textových popisků** (jméno jen tooltip): Scénka sedící (2× pose-sedící) / Řečník nižší / Předsedající / Řečník vyšší / Scénka stojící (2× pose-stojící). Ikony 3 „osobních" presetů (`_cam1Icon`): nižší = pult + šipka dolů, vyšší = pult + šipka nahoru, předsedající = osoba za stolem. Na úzkém okně se pruh zalomí **pod** tlačítko (`cam1-preset-layout` flex-wrap).
+- **5 pevných presetů** (`CAM1_FIXED`, `renderCam1FixedPresets`, **bez kontext menu, nemazatelné**) jako **ikonový pruh s malými mezerami (6px) a bez textových popisků** (jméno jen tooltip): Scénka sedící (2× pose-sedící) / Řečník nižší / Předsedající / Řečník vyšší / Scénka stojící (2× pose-stojící). Ikony 3 „osobních" presetů (`_cam1Icon`) = **jednotný panáček v saku s kravatou** (`_CAM1_SUIT`): předsedající + čárka (pultík) pod ním, vyšší + šipka nahoru vpravo, nižší + šipka dolů vlevo. Na úzkém okně se pruh zalomí **pod** tlačítko (`cam1-preset-layout` flex-wrap).
 - Tlačítka stejného stylu jako v Komentářích (`cam2-tool-btn`, border = barva písma). Tlačítko „Přesunout" zrušeno.
 - Skrytí presetů (hide mode), rozsah čísel presetů: 1–99
 

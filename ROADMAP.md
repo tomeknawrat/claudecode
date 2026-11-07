@@ -35,9 +35,9 @@
 - **5 pevných, nemazatelných presetů** (bez kontext menu): Scénka sedící / Řečník nižší / Předsedající / Řečník vyšší / Scénka stojící (`CAM1_FIXED`, `renderCam1FixedPresets`).
 - **7. 11. — přepracováno na ikonový pruh bez popisků:**
   - **Tlačítko „Přidat preset" na CAM1 úplně odstraněno** (vč. `addPresetBtn1` a jeho viditelnosti). Zůstalo jen **Uložit preset**.
-  - Všech **5 presetů vedle sebe BEZ MEZER** (segmentový pruh, sdílené bordery, zaoblené jen krajní dlaždice), `justify-content:center`.
+  - Všech **5 presetů vedle sebe s malými mezerami** (6px, jako mezi sedadly), každá dlaždice samostatně zaoblená, `justify-content:center`.
   - **Textové popisky odstraněny**, jméno jen jako tooltip (`card.title`). Ikony **zmenšené** (person 28px, PNG scénky 26px, dlaždice v 50px).
-  - **Nové rozlišené ikony** pro 3 „osobní" presety (`_cam1Icon`): Řečník nižší = osoba u pultu + šipka dolů; Řečník vyšší = pult + šipka nahoru; Předsedající = osoba za stolem (vodorovná deska). Scénky = 2× pose-sedící / 2× pose-stojící (PNG, přebarvené na modrou).
+  - **Rozlišené ikony** pro 3 „osobní" presety (`_cam1Icon`) — **jeden a tentýž panáček v saku s kravatou** (`_CAM1_SUIT`), rozlišený: **Předsedající** = panáček + vodorovná čárka (pultík) pod ním; **Řečník vyšší** = panáček + šipka nahoru vpravo (bez čárky); **Řečník nižší** = panáček + šipka dolů vlevo (bez čárky). Scénky = 2× pose-sedící / 2× pose-stojící (PNG, přebarvené na modrou).
   - **Responzivně:** na úzkém okně se pruh presetů **zalomí pod tlačítko „Uložit preset"** (`cam1-preset-layout` → `flex-wrap`). Odstraněno absolutní polohování; `equalizeCam1Tiles`/`layoutCam1Scenes` jsou no-op (layout řeší CSS flex).
 
 ## ✅ Panel Pódium (CAM1) — kompaktní lišta (hotovo)

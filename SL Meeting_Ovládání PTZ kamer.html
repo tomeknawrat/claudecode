@@ -1311,9 +1311,9 @@ console.warn = (...args) => {
   .cam1-preset-layout { display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; row-gap: 10px; }
   .cam1-btn-col { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; flex: 0 0 auto; }
   .cam1-btn-col .cam2-tool-btn { height: 42px; box-sizing: border-box; }
-  /* 5 ikonových presetů vedle sebe bez mezer, vycentrované ve zbylém prostoru */
+  /* 5 ikonových presetů vedle sebe s malými mezerami (jako mezi sedadly) */
   .panel--cam1 .presets-grid {
-    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 0;
+    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 6px;
     align-items: stretch; justify-content: center;
     grid-template-columns: none; overflow: visible;
     flex: 1 1 auto; min-width: 0;
@@ -1324,13 +1324,9 @@ console.warn = (...args) => {
     display: flex; align-items: center; justify-content: center;
     height: 50px; min-width: 50px; padding: 0 10px;
     border: 1.5px solid var(--blue-d); color: var(--blue-d);
-    background: var(--blue-soft);
+    background: var(--blue-soft); border-radius: var(--r-xs);
     cursor: pointer; transition: all .15s; overflow: hidden;
   }
-  /* bez mezer → sdílené bordery; zaoblení jen na krajních dlaždicích */
-  .panel--cam1 .cam1-fixed-preset + .cam1-fixed-preset { border-left: none; }
-  .panel--cam1 .cam1-fixed-preset:first-child { border-top-left-radius: var(--r-xs); border-bottom-left-radius: var(--r-xs); }
-  .panel--cam1 .cam1-fixed-preset:last-child  { border-top-right-radius: var(--r-xs); border-bottom-right-radius: var(--r-xs); }
   .panel--cam1 .cam1-fixed-preset:hover { background: #dbeafe; }
   .panel--cam1 .cam1-fixed-preset.saving { border-color: #1d4ed8 !important; box-shadow: 0 0 0 3px rgba(29,78,216,.3) !important; z-index: 1; }
   .panel--cam1 .cam1-fixed-preset.recalled { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.35); z-index: 1; }
@@ -2657,29 +2653,32 @@ function ensureCam1Fixed() {
   state.presets[1] = CAM1_FIXED.map(p => ({ ...p }));
 }
 
-// Ikony pro 3 „osobní" presety — vizuálně příbuzné (osoba + pult/stůl), ale významově
-// odlišené: Řečník nižší = pult + šipka dolů, Řečník vyšší = pult + šipka nahoru,
-// Předsedající = osoba za stolem (vodorovná deska).
-const _CAM1_LECTERN = 'M8 21 l1.3-6 h5.4 L16 21 z';
+// Ikony pro 3 „osobní" presety — JEDEN a tentýž panáček v saku s kravatou, rozlišený:
+//  • Předsedající  = panáček + vodorovná čárka (pultík) pod ním
+//  • Řečník vyšší  = panáček + šipka NAHORU vpravo (bez čárky)
+//  • Řečník nižší  = panáček + šipka DOLŮ vlevo (bez čárky)
+const _CAM1_SUIT =
+    '<circle cx="12" cy="6" r="2.8"/>'
+  + '<path d="M7 20 v-2.5 a5 5 0 0 1 10 0 V20"/>'   // ramena / sako
+  + '<path d="M9.3 11 L12 14.4 L14.7 11"/>'          // klopy (V límec)
+  + '<line x1="12" y1="14.4" x2="12" y2="19"/>';     // kravata
 function _cam1Icon(kind) {
-  const S = '<svg class="cam1-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+  const S = '<svg class="cam1-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
   if (kind === 'chair') {
-    // Osoba za stolem (předsedající)
-    return S + '<circle cx="12" cy="7" r="3"/>'
-      + '<path d="M6.3 14.6c0-3.1 2.4-4.9 5.7-4.9s5.7 1.8 5.7 4.9"/>'
-      + '<line x1="3.5" y1="18.6" x2="20.5" y2="18.6"/></svg>';
-  }
-  if (kind === 'speaker-low') {
-    // Řečník u pultu + šipka DOLŮ (nižší)
-    return S + '<polyline points="9 4.5 12 7 15 4.5"/>'
-      + '<circle cx="12" cy="10.6" r="2.4"/>'
-      + '<path d="' + _CAM1_LECTERN + '"/></svg>';
+    // Předsedající — panáček + pultík (čárka pod ním)
+    return S + _CAM1_SUIT + '<line x1="4.5" y1="21.5" x2="19.5" y2="21.5"/></svg>';
   }
   if (kind === 'speaker-high') {
-    // Řečník u pultu + šipka NAHORU (vyšší)
-    return S + '<polyline points="9 7 12 4.5 15 7"/>'
-      + '<circle cx="12" cy="10.6" r="2.4"/>'
-      + '<path d="' + _CAM1_LECTERN + '"/></svg>';
+    // Řečník vyšší — panáček + šipka NAHORU vpravo
+    return S + _CAM1_SUIT
+      + '<line x1="20" y1="17" x2="20" y2="9"/>'
+      + '<polyline points="17.8 11 20 9 22.2 11"/></svg>';
+  }
+  if (kind === 'speaker-low') {
+    // Řečník nižší — panáček + šipka DOLŮ vlevo
+    return S + _CAM1_SUIT
+      + '<line x1="4" y1="9" x2="4" y2="17"/>'
+      + '<polyline points="1.8 15 4 17 6.2 15"/></svg>';
   }
   // fallback — prostá osoba
   return '<svg class="cam1-person" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>';

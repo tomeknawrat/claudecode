@@ -4,7 +4,7 @@
 > **Není to doslovný přepis chatu** — je to kontext pro pokračování v nové (i remote) session.
 > Doplňuje `KONTEXT_PRO_NOVY_CHAT.md`, který popisuje celý projekt. Tento soubor popisuje, co se dělo naposledy a co zbývá.
 
-## TL;DR — kde to stojí (aktualizace 14. 10. 2026)
+## TL;DR — kde to stojí (aktualizace 7. 11. 2026)
 
 - ✅ **Zastavování kamery — VYŘEŠENO a ověřeno naostro** — pan/tilt stop je `ptzstop`, ne `stop`.
 - ✅ **Video náhled (WHEP) — VYŘEŠENO** — CORS proxy v `ptz_server.py` (:8890) obchází CORS MediaMTX.
@@ -13,11 +13,13 @@
 - ⏳ **Sken „po souřadnicích" (VISCA-over-IP) hotový v kódu** — čeká na živý test ve čtvrtek (restart serveru + překalibrace sedadel). Vznikl proto, že hardware joystick (AVMatrix PKC3500) přepsal sdílenou preset paměť kamery.
 - ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro.
 - ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
-- ✅ **Zrušen mód „Editace presetů sedadel" + pravý klik na sedadle** — workflow bez módů (Uložit preset / drag&drop / ikona koše). Funkce módu zůstávají v kódu uspané.
+- ✅ **Zrušen mód „Editace presetů sedadel"** — workflow bez módů (Uložit preset / drag&drop). Funkce módu zůstávají v kódu uspané.
+- ✅ **Mazání jedné fotky = pravý klik na kartě** (7. 11.) — ikonka koše na kartě zrušena.
+- ✅ **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** (7. 11.) — dialog s checkboxem (hromadné mazání fotek vždy; volitelně i vrácení pozic na výchozí).
 - ✅ **Spuštění jedním krokem** — `start_ptz.bat` / `start_ptz_bez_okna.vbs`; server při startu sám otevře appku v prohlížeči.
 - ✅ **Fix recall obsazeného sedadla „do stropu"** — klik posílal `gotopreset` na joystickem přepsaný preset. Nově recall **vždy po souřadnicích** (coords-first), obsluhuje ho **slot** (pointer eventy) pro prázdná i obsazená sedadla — mouse eventy na kartě jsou potlačené preventDefaultem. Souřadnice samotné beze změny.
 - ✅ **Panel Pódium (CAM1) přepracován** — „Přidat preset" + „Uložit preset" vlevo; **5 pevných nemazatelných presetů** (Scénka sedící | Řečník nižší/Předsedající/Řečník vyšší | Scénka stojící) stylem modrých dlaždic jako „Přidat preset", scénky zarovnané/zrcadlené podle „Uložit preset" v Komentářích. Hláška „Zatím žádné presety" odstraněna. Chování „Přidat preset" odloženo.
-- ✅ **Výchozí (baseline) pozice sedadel** — režim nastavení výchozích pozic + tlačítko „Vrátit výchozí" (sloučeno do `ptzcameracontroller`).
+- ✅ **Výchozí (baseline) pozice sedadel** — režim nastavení výchozích pozic; vrácení pozic na výchozí je teď v dialogu „Smazat všechny fotky" (sloučeno do `ptzcameracontroller`).
 - ✅ **Kompletní záloha/obnova** (export v2) — presety+fotky, souřadnice, výchozí pozice, nastavení, osoby; pro přenos na jiný PC.
 - ✅ **Tlačítko Připojit/Restartovat server** přesunuto z hlavičky do Nastavení (úplně nahoru, samostatné tlačítko bez boxu). Box Záloha presetů přebarven na modrý; pose tlačítka 🧍🪑 sladěna s „Kompaktní zobrazení".
 
@@ -26,6 +28,19 @@
 ---
 
 ## Záznamy dne
+
+### 7. 11. 2026 — mazání fotky pravým klikem, sloučené „Smazat všechny fotky", diagnostika skenu
+Víkendová zpětná vazba z reálného použití: záloha OK, sken >90 % OK (log teď neřešit). Pět požadavků, hotové 1–3:
+
+1. **Mazání jedné fotky zpět na pravý klik** — na kartě sedadla (`makePresetCardForSlot`) přidán `contextmenu` → `deleteSlotPhoto` (preset/pozice zůstává). **Ikonka koše odstraněna** (tlačítko `.slot-del-photo` + jeho CSS). Pozn.: slot `pointerdown` má `if (e.button !== 0) return`, takže pravý klik není potlačen; `_makeViewSlotOld` (živý view) nemá vlastní contextmenu, takže konflikt nehrozí.
+2. **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** — samostatné tlačítko `resetDefaultBtn2` zrušeno. Nový dialog `#clearResetOverlay` (`openClearResetDialog` / `clearResetResolve`): vždy hromadné smazání fotek/karet CAM2; **checkbox** `#clearResetAlsoReset` (default off, zobrazí se jen když existují výchozí pozice) navíc vrátí pracovní pozice na výchozí (`_applyResetSeatsToDefault`: `slotCoords ← slotDefaultCoords`). Odpověď na dotaz „kde jsou výchozí pozice": `slotDefaultCoords`, localStorage `ptz_slot_default_coords`.
+3. **Sken přeskakuje sedadla v pravém sektoru = nejsou kalibrovaná.** Sken jede jen přes sedadla s `slotCoords` nebo `slotPresets`; nekalibrovaná nemá kam najet. Přidán log: `Kalibrovaných sedadel: X z Y` + `Přeskočeno (bez kalibrace): …` — hned vidět, co dokalibrovat. (Není to bug, je to mezera v kalibraci.)
+
+**Nedořešeno (4, 5):**
+4. **Přidat sedadla 116, 127, 138 (a 16?) + smazat sedadlo 16** — požadavek rozporný (přidat 16 i smazat 16), čeká na upřesnění. Navíc riziko: úložiště je indexované podle pořadí v `SEAT_NUMBERS`, vložení doprostřed posune indexy a rozhodí kalibraci → potřeba migrace (remap podle čísla sedadla).
+5. **Responsivní viewport** — na úzkém okně (1080p split-screen, půl OBS/půl controller) dát pravý sektor pod levý (nad sebou) a zvětšit sedadla. Rozpracováno.
+
+Ověřeno `node --check` (inline skripty OK) + Playwrightem (reset tlačítko pryč, dialog + checkbox fungují, bez JS chyb mimo blokované CDN/WS).
 
 ### 1.–6. 11. 2026 — výchozí pozice + kompletní záloha (nová větev → merge)
 Vyvinuto na větvi `vychozi-pozice-sedadel`, poté **sloučeno do `ptzcameracontroller`**.

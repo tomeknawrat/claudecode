@@ -2,7 +2,7 @@
 
 > Přehled hotového, rozpracovaného a dalšího směru. Doplňuje
 > `KONTEXT_PRO_NOVY_CHAT.md` (popis projektu) a `SESSION_HANDOFF.md` (stav práce).
-> Aktualizováno: **14. 10. 2026**. Hlavní větev: `ptzcameracontroller`.
+> Aktualizováno: **7. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
 > Hlavní soubor appky: **`SL Meeting_Ovládání PTZ kamer.html`**.
 
 ---
@@ -55,8 +55,21 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 - Nové úložiště `slotDefaultCoords` (localStorage `ptz_slot_default_coords`), paralelní k `slotCoords`.
 - **Režim nastavení výchozích pozic** (tlačítko „Výchozí pozice" / „Hotovo", `defaultPosMode`): klik na sedadlo najede na jeho výchozí pozici, „Uložit výchozí" uloží aktuální polohu jako výchozí (nesáhne na pracovní pozici ani preset kamery). Banner + tečkované zvýraznění gridu.
 - **Normální režim** (jako dřív): úprava/ukládání pracovních pozic (`slotCoords` + setpreset).
-- Tlačítko **„Vrátit výchozí"** (`resetSeatsToDefault`) vrátí pracovní pozice všech sedadel na výchozí (`slotCoords ← slotDefaultCoords`, s potvrzením).
+- Vrácení pracovních pozic na výchozí (`slotCoords ← slotDefaultCoords`) je **sloučené do dialogu „Smazat všechny fotky"** — viz sekce níže (samostatné tlačítko „Vrátit výchozí" zrušeno).
 - Ověřeno Playwrightem (ukládání do správného úložiště, reset, přepínání módu). Čeká na živý test.
+
+## ✅ Mazání fotky + sloučené „Smazat všechny fotky" (hotovo 7. 11.)
+
+- **Mazání jedné fotky = pravý klik (contextmenu) na kartě sedadla** (`makePresetCardForSlot` → `deleteSlotPhoto`); preset/pozice zůstává. **Ikonka koše na kartě odstraněna** (vč. CSS `.slot-del-photo`).
+- **Tlačítko „Vrátit výchozí" sloučeno do „Smazat všechny fotky".** Klik otevře dialog (`openClearResetDialog` / `clearResetResolve`, overlay `#clearResetOverlay`) s vysvětlením:
+  - Vždy: hromadné smazání všech uložených fotek/karet CAM2 (pozice presetů v kameře zůstávají).
+  - **Checkbox** (`#clearResetAlsoReset`, defaultně nezaškrtnutý): *„Vrátit i pracovní pozice sedadel na uložené výchozí"* → navíc `slotCoords ← slotDefaultCoords` (`_applyResetSeatsToDefault`). Volba se zobrazí jen když existují uložené výchozí pozice.
+- Ověřeno Playwrightem (reset tlačítko pryč, dialog + checkbox fungují).
+
+## ✅ Sken — diagnostika přeskočených sedadel (hotovo 7. 11.)
+
+- Sken prochází **jen kalibrovaná sedadla** (mají `slotCoords` nebo `slotPresets`). Nekalibrovaná se přeskakují (kamera nemá kam najet) — **nejčastější příčina „v pravém sektoru neskenuje všechna sedadla"**.
+- Přidán log: `Kalibrovaných sedadel: X z Y` + `Přeskočeno (bez kalibrace): …` (výpis čísel sedadel) → hned je vidět, co dokalibrovat.
 
 ## ✅ Drag & drop fotek mezi sedadly (hotovo)
 
@@ -69,14 +82,14 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 
 - 4 nástrojová tlačítka sladěná do **stejné kompozice jako „Kompaktní zobrazení"** (světlá soft výplň + střední ohraničení + tmavý sytý text = dobrá čitelnost), každé vlastní barva přes `--btn-bg/--btn-border/--btn-text`: **Skenovat hlediště** (fialová), **Přidat sedadlo** (modrá), **Uložit preset** (zelená), **Smazat všechny fotky** (červená).
 - **Uložit preset** (`saveSeatPresetManual`) — po kliku na sedadlo a ručním doladění joystickem uloží **aktuální polohu** kamery do presetu posledního vyvolaného sedadla (setpreset + VISCA souřadnice).
-- Mazání **jen fotky** vráceno do levého horního rohu karty sedadla (`deleteSlotPhoto`) — preset/pozice zůstává.
+- Mazání **jen fotky** (`deleteSlotPhoto`) — preset/pozice zůstává. *(7. 11.: přesunuto z ikony koše na **pravý klik** na kartě, viz novější sekce.)*
 - Status serveru = jen tečka (zelená/červená), hláška připojeno/nepřipojeno jako tooltip. „Manuální ovládání kamery" místo „Ovládací prvky".
 - Tlačítko **Připojit / Restartovat server** přesunuto z hlavičky do **Nastavení úplně nahoru** — jen tlačítko (bez boxu), na plnou šířku.
 - Box **Záloha presetů** přebarven na **modrý** (vč. Import/Export tlačítek).
 - Pose tlačítka 🧍🪑 (Sedící/Stojící) přesunuta do **lišty vlevo od „Kompaktní zobrazení"** (pravý cluster). Výplň = výplň toho boxu (`#fef3c7`), panáček/židle i rámeček = barva slov (`#92400e`; ikona přes CSS filtr s `!important` nad inline šedým filtrem).
 - **Všechna tlačítka lišty CAM2 sjednocena na stejnou výšku** (42 px, `box-sizing:border-box`).
 - **Border každého tlačítka = barva jeho písma/ikony** (nástrojová tlačítka přes `--btn-text`, „Kompaktní" i pose v amber `#92400e`).
-- **Zrušen mód „Editace presetů sedadel" i pravý klik (kontext menu) na sedadle.** Workflow bez módů: kalibrace/úprava polohy = **Uložit preset**, přesun = drag&drop, smazání fotky = ikona koše. Funkce módu zůstávají v kódu „uspané" (nevolatelné) — snadný návrat, kdyby chyběly. V kompaktním gridu pravý klik (editace presetu) zůstává.
+- **Zrušen mód „Editace presetů sedadel".** Workflow bez módů: kalibrace/úprava polohy = **Uložit preset**, přesun = drag&drop. *(7. 11.: smazání fotky vráceno na **pravý klik** na kartě; ikona koše odstraněna.)* Funkce módu zůstávají v kódu „uspané" (nevolatelné). V kompaktním gridu pravý klik (editace presetu) zůstává.
 
 ## ✅ UI přepracování (hotovo, čistě vizuální)
 
@@ -100,9 +113,14 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 
 ---
 
+## 🚧 Rozpracováno / čeká na upřesnění
+
+- **#4 Přidat sedadla 116, 127, 138 (a 16?)** do `SEAT_LAYOUT` + smazat sedadlo 16 — *požadavek je rozporný (přidat 16 a zároveň smazat 16), čeká na upřesnění.* **Pozor:** úložiště (`slotCoords`, `slotPresets`, `slotAssignments`, `slotDefaultCoords`) je indexované podle pořadí v `SEAT_NUMBERS`; vložení sedadla doprostřed **posune indexy** → rozhodí stávající kalibraci. Nutná migrace (remap podle čísla sedadla) nebo přepis úložiště na klíč = číslo sedadla.
+- **#5 Responsivní viewport** — na úzkém okně (1080p split-screen, půl OBS / půl controller) **pravý sektor pod levý** (nad sebou) + **větší sedadla** (viditelná fotka ze skenu). Rozpracováno.
+
 ## 🧩 Zaparkované / otevřené nápady
 
-- **Přidat/smazat sedadlo + přečíslování** — dynamický layout místo pevného `SEAT_LAYOUT`. Architektonické, k rozmyšlení.
+- **Dynamický layout** místo pevného `SEAT_LAYOUT` (plné přidání/mazání/přečíslování sedadel z UI). Architektonické.
 - **Víc referenčních fotek na osobu** — robustnější rozpoznávání.
 
 ---

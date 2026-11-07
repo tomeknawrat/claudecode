@@ -1341,18 +1341,8 @@ console.warn = (...args) => {
   .panel--cam1 .cam1-scene-left  { margin-right: auto; }
   .panel--cam1 .cam1-scene-right { margin-left: auto; }
 
-  /* Tlačítko „smazat jen fotku" v levém horním rohu karty sedadla */
+  /* Mazání jedné fotky = pravý klik na kartě sedadla (bez ikonky koše) */
   .slot-card { position: relative; }
-  .slot-card .slot-del-photo {
-    position: absolute; top: 3px; left: 3px; z-index: 6;
-    width: 20px; height: 20px; padding: 0; border: none; border-radius: 50%;
-    display: none; align-items: center; justify-content: center;
-    background: rgba(239,68,68,.92); color: #fff; cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,.3);
-  }
-  .slot-card .slot-del-photo svg { width: 12px; height: 12px; }
-  .slot-card:hover .slot-del-photo { display: flex; }
-  .slot-card .slot-del-photo:hover { background: var(--red); }
 
   /* ── SCAN MODÁL ── */
   .scan-overlay {
@@ -2051,11 +2041,7 @@ console.warn = (...args) => {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
             <span class="btn-label">Výchozí pozice</span>
           </button>
-          <button class="cam2-tool-btn" id="resetDefaultBtn2" onclick="resetSeatsToDefault()" title="Vrátit pracovní pozice všech sedadel na uložené výchozí" style="--btn-bg:#f0fdfa;--btn-border:#5eead4;--btn-text:#0f766e">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-            Vrátit výchozí
-          </button>
-          <button class="hide-presets-btn cam2-tool-btn" id="clearAllBtn2" onclick="clearAllPresets(2)" title="Smazat všechny uložené fotky/karty na CAM2 (pozice presetů v kameře zůstanou)" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
+          <button class="hide-presets-btn cam2-tool-btn" id="clearAllBtn2" onclick="openClearResetDialog()" title="Smazat uložené fotky/karty na CAM2 (volitelně i vrátit pozice na výchozí)" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
             Smazat všechny fotky
           </button>
@@ -2068,7 +2054,7 @@ console.warn = (...args) => {
       <div id="seatPoseHolder" class="seat-pose-holder"></div>
       <div id="defaultModeBanner" class="default-mode-banner" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
-        <span><strong>Režim nastavení výchozích pozic</strong> — klikni na sedadlo, dolaď joystickem a dej „Uložit výchozí". Tlačítkem „Vrátit výchozí" pak všechna sedadla vrátíš sem.</span>
+        <span><strong>Režim nastavení výchozích pozic</strong> — klikni na sedadlo, dolaď joystickem a dej „Uložit výchozí". Na výchozí pozice pak všechna sedadla vrátíš přes „Smazat všechny fotky" (zaškrtni volbu vrácení pozic).</span>
       </div>
       <div class="presets-grid" id="presetsGrid2"></div>
       <div class="seat-layout-grid" id="seatLayoutGrid2" style="display:none"></div>
@@ -2124,6 +2110,29 @@ console.warn = (...args) => {
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="confirmResolve(false)">Zrušit</button>
       <button class="modal-btn modal-btn-danger" onclick="confirmResolve(true)">Smazat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SMAZAT FOTKY / VRÁTIT VÝCHOZÍ ══ -->
+<div class="modal-overlay" id="clearResetOverlay">
+  <div class="modal" style="width:360px">
+    <div class="modal-title" style="color:var(--red)">Smazat všechny fotky</div>
+    <div style="font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:8px;">
+      Smažou se <strong style="color:var(--text)">všechny uložené fotky/karty</strong> sedadel na kameře Komentáře.
+      Pozice presetů v kameře (čísla + souřadnice) <strong style="color:var(--text)">zůstanou</strong> zachované.
+    </div>
+    <label id="clearResetChkRow" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+      <input type="checkbox" id="clearResetAlsoReset" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer;">
+      <span style="font-size:13px;color:var(--text-2);line-height:1.5;">
+        Vrátit i <strong style="color:var(--text)">pracovní pozice sedadel na uložené výchozí</strong>
+        — aktuální souřadnice se přepíšou baseline hodnotami (výchozí pozice).
+      </span>
+    </label>
+    <div style="font-size:13px;color:var(--text-3);margin-bottom:4px;">Akce je nevratná.</div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="clearResetResolve(false)">Zrušit</button>
+      <button class="modal-btn modal-btn-danger" onclick="clearResetResolve(true)">Smazat</button>
     </div>
   </div>
 </div>
@@ -3118,12 +3127,12 @@ function toggleDefaultPosMode() {
 }
 
 // Vrátí pracovní pozice VŠECH sedadel na uložené výchozí (slotCoords ← slotDefaultCoords).
-async function resetSeatsToDefault() {
-  const hasDef = slotDefaultCoords && slotDefaultCoords.some(c => c);
-  if (!hasDef) { logMsg('err', 'Nejsou uložené žádné výchozí pozice sedadel.'); return; }
-  const n = slotDefaultCoords.filter(c => c).length;
-  const ok = await showConfirm(`Vrátit pracovní pozice <strong style="color:var(--text)">${n}</strong> sedadel na výchozí?<br>Aktuální pracovní pozice se přepíšou.`);
-  if (!ok) return;
+// Používá sloučený dialog (openClearResetDialog) — zde je sdílená logika bez potvrzení.
+function _applyResetSeatsToDefault() {
+  if (!(slotDefaultCoords && slotDefaultCoords.some(c => c))) {
+    logMsg('err', 'Nejsou uložené žádné výchozí pozice sedadel.');
+    return 0;
+  }
   if (!slotCoords) slotCoords = new Array(TOTAL_SEATS).fill(null);
   let cnt = 0;
   for (let i = 0; i < TOTAL_SEATS; i++) {
@@ -3131,8 +3140,45 @@ async function resetSeatsToDefault() {
   }
   saveSlotCoordsStorage();
   logMsg('info', `Pracovní pozice vráceny na výchozí (${cnt} sedadel).`);
-  const b = document.getElementById('resetDefaultBtn2');
-  if (b) { b.classList.add('saved-flash'); setTimeout(() => b.classList.remove('saved-flash'), 700); }
+  return cnt;
+}
+
+// ── Sloučený dialog: hromadné mazání fotek + volitelné vrácení pozic na výchozí ──
+let _clearResetHandler = null;
+function openClearResetDialog() {
+  const chk = document.getElementById('clearResetAlsoReset');
+  if (chk) chk.checked = false;
+  // Volbu „vrátit pozice" ukaž jen když nějaké výchozí pozice existují
+  const hasDef = slotDefaultCoords && slotDefaultCoords.some(c => c);
+  const row = document.getElementById('clearResetChkRow');
+  if (row) row.style.display = hasDef ? 'flex' : 'none';
+  document.getElementById('clearResetOverlay').classList.add('show');
+  _clearResetHandler = e => {
+    if (e.key === 'Escape') clearResetResolve(false);
+  };
+  setTimeout(() => document.addEventListener('keydown', _clearResetHandler), 50);
+}
+async function clearResetResolve(ok) {
+  document.getElementById('clearResetOverlay').classList.remove('show');
+  if (_clearResetHandler) { document.removeEventListener('keydown', _clearResetHandler); _clearResetHandler = null; }
+  if (!ok) return;
+  const alsoReset = !!(document.getElementById('clearResetAlsoReset') || {}).checked;
+  // 1) Hromadné smazání fotek/karet (pozice presetů v kameře zůstávají)
+  const list = state.presets[2] || [];
+  const n = list.length;
+  if (n > 0) {
+    state.presets[2] = [];
+    if (slotAssignments) slotAssignments.fill(null);
+    await savePresetsStorage();
+    logMsg('info', `CAM2: smazáno ${n} fotek/karet (pozice v kameře zachovány)`);
+  } else {
+    logMsg('info', 'CAM2: žádné fotky k smazání');
+  }
+  // 2) Volitelně vrátit pracovní pozice na výchozí
+  if (alsoReset) _applyResetSeatsToDefault();
+  // Překreslit
+  renderPresets();
+  if (seatLayoutActive) renderSeatLayout();
 }
 
 // Smaže jen fotku karty sedadla — preset/pozice (číslo + souřadnice) zůstává.
@@ -3504,13 +3550,13 @@ function _updateCam2BtnVisibility() {
   const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
 
   if (editing) {
-    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2'); hide('resetDefaultBtn2');
+    hide('addPresetBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2');
   } else if (hiding) {
-    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2'); hide('resetDefaultBtn2');
+    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2');
   } else if (slotEditing) {
-    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2'); hide('resetDefaultBtn2');
+    hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2');
   } else {
-    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('camHeaderDivider2'); show('savePresetBtn2'); show('defaultModeBtn2'); show('resetDefaultBtn2');
+    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('camHeaderDivider2'); show('savePresetBtn2'); show('defaultModeBtn2');
     // V seat layoutu je drag&drop vždy aktivní (bez režimu „Přesunout") → tlačítko skryj.
     // V klasickém (kompaktním) gridu zůstává pro přesouvání karet.
     if (seatLayoutActive) hide('editOrderBtn2'); else show('editOrderBtn2');
@@ -4648,22 +4694,13 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
     imgSlot.innerHTML = '<div class="preset-img-placeholder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>';
   }
 
-  // Tlačítko (levý horní roh) — smaže JEN fotku, preset/pozice zůstává. Jen když fotka je.
-  if (p.img) {
-    const delBtn = document.createElement('button');
-    delBtn.className = 'slot-del-photo';
-    delBtn.title = 'Smazat jen fotku (preset zůstane)';
-    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>';
-    // Nesmí spustit hold/recall ani tažení karty
-    delBtn.addEventListener('mousedown', e => e.stopPropagation());
-    delBtn.addEventListener('pointerdown', e => e.stopPropagation());
-    delBtn.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
-    delBtn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); deleteSlotPhoto(cam, presetIdx); });
-    card.appendChild(delBtn);
-  }
-
-  // Pravý klik na sedadle zrušen (bez kontext menu). Úpravy: poloha = „Uložit preset",
-  // přesun = drag&drop, smazání fotky = ikona koše. V kompaktním gridu zůstává editace.
+  // Smazání jedné fotky = pravý klik (kontext menu) na sedadle. Preset/pozice zůstává.
+  // Ikonka koše odstraněna — mazání fotky řeší pravý klik níže.
+  card.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (p.img) deleteSlotPhoto(cam, presetIdx);
+  });
 
   // Hide-toggle klik (když je aktivní hide-mode)
   card.addEventListener('click', e => {
@@ -5550,7 +5587,18 @@ async function startScan() {
       calibrated.push({ slotIdx: i, seatNum: SEAT_NUMBERS[i], presetNum: preset, coords });
     }
   }
-  _sLog(`Kalibrovaných sedadel: ${calibrated.length}`);
+  _sLog(`Kalibrovaných sedadel: ${calibrated.length} z ${TOTAL_SEATS}`);
+
+  // Vypiš NEkalibrovaná sedadla — ta scan přeskakuje (nemají souřadnice ani preset).
+  // Nejčastější příčina „v pravém sektoru neskenuje všechna sedadla".
+  const uncalibrated = [];
+  for (let i = 0; i < TOTAL_SEATS; i++) {
+    const coords = (slotCoords && slotCoords[i]) ? slotCoords[i] : null;
+    if (!coords && slotPresets[i] === null) uncalibrated.push(SEAT_NUMBERS[i]);
+  }
+  if (uncalibrated.length) {
+    _sLog(`Přeskočeno (bez kalibrace): ${uncalibrated.join(', ')}`, 'warn');
+  }
 
   // Projdi každé sedadlo
   for (let j = 0; j < calibrated.length; j++) {

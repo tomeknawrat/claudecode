@@ -61,9 +61,8 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 ### CAM 1 — Pódium (levý panel)
 - Manuální ovládání: šipky, zoom, focus (hold = plynulý pohyb, klik = krátký pohyb 350ms)
 - Presety: karty s fotkou, klik = vyvolat preset, hold 2s = uložit aktuální polohu
-- **Lišta presetů**: vlevo dva stacknutá tlačítka **Přidat preset** (modré) a **Uložit preset** (zelené, `saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu).
-- **5 pevných presetů** (`CAM1_FIXED`, `renderCam1FixedPresets`) stylem jako tlačítko „Přidat preset" (modré dlaždice, popisek jménem, bez čísel, **bez kontext menu, nemazatelné**): **Scénka sedící** (2× ikona pose-sedící) vlevo — levý okraj zarovnaný s „Uložit preset" v Komentářích (`savePresetBtn2`, přepočet `layoutCam1Scenes`); **Řečník nižší / Předsedající / Řečník vyšší** vycentrované uprostřed; **Scénka stojící** (2× ikona pose-stojící) zrcadlově vpravo. Výška = sloupec obou tlačítek (92 px).
-- Chování tlačítka „Přidat preset" (přidávání dalších) zatím neřešeno. Hláška „Zatím žádné presety" odstraněna (CAM1 i CAM2).
+- **Lišta presetů**: vlevo jen tlačítko **Uložit preset** (zelené, `saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). *(„Přidat preset" na CAM1 bylo 7. 11. úplně odstraněno.)*
+- **5 pevných presetů** (`CAM1_FIXED`, `renderCam1FixedPresets`, **bez kontext menu, nemazatelné**) jako **ikonový pruh bez mezer a bez textových popisků** (jméno jen tooltip): Scénka sedící (2× pose-sedící) / Řečník nižší / Předsedající / Řečník vyšší / Scénka stojící (2× pose-stojící). Ikony 3 „osobních" presetů (`_cam1Icon`): nižší = pult + šipka dolů, vyšší = pult + šipka nahoru, předsedající = osoba za stolem. Na úzkém okně se pruh zalomí **pod** tlačítko (`cam1-preset-layout` flex-wrap).
 - Tlačítka stejného stylu jako v Komentářích (`cam2-tool-btn`, border = barva písma). Tlačítko „Přesunout" zrušeno.
 - Skrytí presetů (hide mode), rozsah čísel presetů: 1–99
 
@@ -103,6 +102,8 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 Čísla sedadel = čísla presetů na CAM2 (přímé mapování).
 
 **Responsivní viewport (`applyZoom`):** velikost sedadla (`--card-w`) se dopočítává podle šířky okna. Na širokém okně oba bloky **vedle sebe**. Na úzkém (např. 1080p split-screen) by byly moc malé → **STACKED režim** (třída `seat-stacked` na `<html>`): bloky **pod sebou** (`.seat-hall-live` sloupec) a sedadla **zvětšená** (`calcCardWStacked`, strop `STACK_MAX_C`). CAM1 velikost (`--cam1-card-w`) je na stacked nezávislá (`cam1Base`).
+
+**Vycentrování sektorů:** řady v obou blocích jsou vycentrované (symetrická pyramida, `align-items:center`, odsazení `INDENT_L/R` = 0), celá skupina je vycentrovaná v panelu. **Výjimka: řada [0,1]** zůstává vlevo (`align-self:flex-start`).
 
 ### Scan modal (skenování hlediště)
 - Otevře se z panelu CAM2

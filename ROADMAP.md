@@ -32,17 +32,21 @@
 
 ## ✅ Panel Pódium (CAM1) — 5 pevných presetů (hotovo)
 
-- „Přidat sedadlo" → **Přidat preset**; odstraněna hláška „Zatím žádné presety" (CAM1 i CAM2).
-- **5 pevných, nemazatelných presetů** (bez kontext menu), stylem jako tlačítko „Přidat preset" (modré dlaždice, popisek jménem): **Scénka sedící** (2× pose-sedící) vlevo zarovnaná s „Uložit preset" v Komentářích; **Řečník nižší / Předsedající / Řečník vyšší** uprostřed; **Scénka stojící** (2× pose-stojící) zrcadlově vpravo (`CAM1_FIXED`, `renderCam1FixedPresets`, `layoutCam1Scenes` — přepočet přes fonts.ready + ResizeObserver).
-- Chování „Přidat preset" (přidávání dalších) zatím odloženo.
-- Popisky 5 presetů sjednoceny do velikosti/stylu tlačítek (DM Sans 13.5px, 700, uppercase, `.3px`). Všech 5 dlaždic má **stejnou šířku podle nejširší** (`equalizeCam1Tiles`), větší mezera ikona↔popisek (gap 9px). Tlačítka „Přidat preset"/„Uložit preset" jsou content-width (snug) jako v Komentářích. Tlačítko „Nastavení" kapitálkami. Fonty: UI = DM Sans, technické/číselné = DM Mono, logo „Ovládání kamer" = Bebas Neue (ponecháno).
+- **5 pevných, nemazatelných presetů** (bez kontext menu): Scénka sedící / Řečník nižší / Předsedající / Řečník vyšší / Scénka stojící (`CAM1_FIXED`, `renderCam1FixedPresets`).
+- **7. 11. — přepracováno na ikonový pruh bez popisků:**
+  - **Tlačítko „Přidat preset" na CAM1 úplně odstraněno** (vč. `addPresetBtn1` a jeho viditelnosti). Zůstalo jen **Uložit preset**.
+  - Všech **5 presetů vedle sebe BEZ MEZER** (segmentový pruh, sdílené bordery, zaoblené jen krajní dlaždice), `justify-content:center`.
+  - **Textové popisky odstraněny**, jméno jen jako tooltip (`card.title`). Ikony **zmenšené** (person 28px, PNG scénky 26px, dlaždice v 50px).
+  - **Nové rozlišené ikony** pro 3 „osobní" presety (`_cam1Icon`): Řečník nižší = osoba u pultu + šipka dolů; Řečník vyšší = pult + šipka nahoru; Předsedající = osoba za stolem (vodorovná deska). Scénky = 2× pose-sedící / 2× pose-stojící (PNG, přebarvené na modrou).
+  - **Responzivně:** na úzkém okně se pruh presetů **zalomí pod tlačítko „Uložit preset"** (`cam1-preset-layout` → `flex-wrap`). Odstraněno absolutní polohování; `equalizeCam1Tiles`/`layoutCam1Scenes` jsou no-op (layout řeší CSS flex).
 
 ## ✅ Panel Pódium (CAM1) — kompaktní lišta (hotovo)
 
-- Zrušeno „Přesunout"; „Přidat" → **Přidat sedadlo**. Přidáno **Uložit preset** (`saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Obě tlačítka stylem totožná s Komentáři (`cam2-tool-btn`).
-- Tlačítka ve **sloupci pod sebou vlevo**, presety ve **vodorovném stripu vpravo**. Karta presetu je **stejně vysoká jako sloupec obou tlačítek** (horní border zarovnaný s „Přidat sedadlo", spodní s „Uložit preset" = 92 px), s **textovým popiskem (jménem)**, bez čísel.
-- Nové presety se přidávají **od středu** — nejnovější je vždy uprostřed stripu (`_centerOutOrder`, starší střídavě doleva/doprava).
-- **Výška panelu stabilní** — daná sloupcem tlačítek, neroste s počtem presetů. Styl `.cam2-tool-btn` rozšířen na obě kamery (`.cam-presets-section .cam2-tool-btn`).
+> *Pozn. 7. 11.: tato lišta byla zjednodušena — „Přidat preset" na CAM1 zcela zrušeno, presety jsou teď malý ikonový pruh bez popisků (viz sekce výše). Body níže popisují předchozí stav.*
+
+- Zrušeno „Přesunout". Přidáno **Uložit preset** (`saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Tlačítko stylem totožné s Komentáři (`cam2-tool-btn`).
+- Tlačítko vlevo, presety vpravo. *(Dřív: textový popisek, výška 92 px, přidávání od středu — nyní nahrazeno ikonovým pruhem.)*
+- Styl `.cam2-tool-btn` rozšířen na obě kamery (`.cam-presets-section .cam2-tool-btn`).
 
 ## ✅ Spuštění jedním krokem (hotovo)
 
@@ -117,6 +121,7 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 
 - **#4 Úprava `SEAT_LAYOUT`** (po upřesnění: přidat 16, 116, 127, 138; „smazat 16" byl překlep → smazat **168**). Výsledek: levá řada 1 `[16..11]`, pravá řada 1 `[111..116]`, řada 2 `[121..127]`, řada 3 `[131..138]`, řada 6 `[161..167]`. **TOTAL_SEATS 78 → 81.** Zvoleno **bez migrace** — úložiště se jen přepočítá na novou délku, hodnoty se posunou → **nutná překalibrace** (uživatel akceptoval). Výpočet velikosti sedadla přepracován, aby se vešly i delší řady (robustní `_blockW`/`_seatTotalSide`/`_seatTotalStacked`, měřeno z reálné `clientWidth` gridu → žádné přetečení).
 - **#5 Responsivní viewport — HOTOVO (CAM2).** Dosud `applyZoom`/`calcCardW` sedadla jen **zmenšoval**, aby se oba sektory vešly vedle sebe (na úzkém okně byla nečitelná). Nově: když by sedadla vedle sebe byla < 64 px, přepne se do **STACKED** režimu (třída `seat-stacked` na `<html>`): pravý sektor spadne **pod** levý (`.seat-hall-live` → sloupec) a sedadla se **zvětší** (`calcCardWStacked`, strop `STACK_MAX_C` → card ≈ 83 px). CAM1 (Pódium) odpojen od stacked velikosti (`cam1Base`), aby se nenafoukl. Ověřeno Playwrightem (1600 vedle sebe 92 px; 950 stacked 83 px, bloky nad sebou).
+- **Vycentrování sektorů (7. 11.):** řady v obou blocích jsou **vycentrované** (symetrická pyramida místo zarovnání vlevo; `align-items:center`), odsazení řad (`INDENT_L/R`) vynulováno. **Výjimka: řada [0,1]** zůstává zarovnaná vlevo (`align-self:flex-start`). Celá skupina sektorů je vycentrovaná v panelu (`.seat-hall-live` `justify-content:center`, ve stacked `align-items:center`).
   - *Pozn.:* na ~960 px se v **Pódiu** překrývá první dlaždice „Scénka sedící" s tlačítkem „Uložit preset" — **pre-existující** layout CAM1 (ne regrese z této změny), k doladění zvlášť.
 
 ## 🧩 Zaparkované / otevřené nápady

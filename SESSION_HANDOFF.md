@@ -20,7 +20,8 @@
 - ✅ **Layout sedadel upraven** (7. 11.) — přidána 16, 116, 127, 138; odebrána 168 (TOTAL_SEATS 81). Bez migrace → **po nasazení překalibrovat**.
 - ✅ **Spuštění jedním krokem** — `start_ptz.bat` / `start_ptz_bez_okna.vbs`; server při startu sám otevře appku v prohlížeči.
 - ✅ **Fix recall obsazeného sedadla „do stropu"** — klik posílal `gotopreset` na joystickem přepsaný preset. Nově recall **vždy po souřadnicích** (coords-first), obsluhuje ho **slot** (pointer eventy) pro prázdná i obsazená sedadla — mouse eventy na kartě jsou potlačené preventDefaultem. Souřadnice samotné beze změny.
-- ✅ **Panel Pódium (CAM1) přepracován** — „Přidat preset" + „Uložit preset" vlevo; **5 pevných nemazatelných presetů** (Scénka sedící | Řečník nižší/Předsedající/Řečník vyšší | Scénka stojící) stylem modrých dlaždic jako „Přidat preset", scénky zarovnané/zrcadlené podle „Uložit preset" v Komentářích. Hláška „Zatím žádné presety" odstraněna. Chování „Přidat preset" odloženo.
+- ✅ **Panel Pódium (CAM1)** — **5 pevných nemazatelných presetů** (Scénka sedící | Řečník nižší/Předsedající/Řečník vyšší | Scénka stojící). **7. 11.: „Přidat preset" zrušeno; ikonový pruh bez mezer a bez popisků, rozlišené ikony, na úzkém okně se zalomí pod „Uložit preset".** Jen „Uložit preset" vlevo.
+- ✅ **Sektory sedadel vycentrované** (7. 11.) — symetrická pyramida, kromě řady [0,1] (vlevo).
 - ✅ **Výchozí (baseline) pozice sedadel** — režim nastavení výchozích pozic; vrácení pozic na výchozí je teď v dialogu „Smazat všechny fotky" (sloučeno do `ptzcameracontroller`).
 - ✅ **Kompletní záloha/obnova** (export v2) — presety+fotky, souřadnice, výchozí pozice, nastavení, osoby; pro přenos na jiný PC.
 - ✅ **Tlačítko Připojit/Restartovat server** přesunuto z hlavičky do Nastavení (úplně nahoru, samostatné tlačítko bez boxu). Box Záloha presetů přebarven na modrý; pose tlačítka 🧍🪑 sladěna s „Kompaktní zobrazení".
@@ -30,6 +31,12 @@
 ---
 
 ## Záznamy dne
+
+### 7. 11. 2026 (pokračování) — vycentrování sektorů + přepracování CAM1 Pódium
+1. **Vycentrování sektorů (Komentáře).** Řady v obou blocích jsou teď **vycentrované** (symetrická pyramida místo zarovnání vlevo) — `align-items:center` na blocích, odsazení `INDENT_L/R` vynulováno. Celá skupina sektorů vycentrovaná v panelu (`.seat-hall-live` `justify-content:center`; ve stacked `align-items:center`). **Výjimka: řada [0,1]** zůstává vlevo (`align-self:flex-start`). Pozor na úskalí: inline `align-items` na hall dřív přebíjel CSS → layout přesunut celý do CSS třídy `.seat-hall-live`.
+2. **CAM1 Pódium přepracováno:** „Přidat preset" **úplně odstraněno** (tlačítko + viditelnost). 5 presetů je teď **ikonový pruh bez mezer a bez textových popisků** (jméno jen tooltip), ikony **zmenšené**. **Nové rozlišené ikony** (`_cam1Icon`): Řečník nižší = pult + šipka dolů, Řečník vyšší = pult + šipka nahoru, Předsedající = osoba za stolem. Na úzkém okně se pruh **zalomí pod tlačítko „Uložit preset"** (`flex-wrap`). `equalizeCam1Tiles`/`layoutCam1Scenes` → no-op (layout řeší CSS). Tím zmizel i starý překryv „Scénka sedící" × „Uložit preset" na úzkém okně.
+
+Ověřeno `node --check` + Playwrightem (1920–800 px bez přetečení, bloky vycentrované, CAM1 ikony čitelné a bez popisků).
 
 ### 7. 11. 2026 — mazání fotky pravým klikem, sloučené „Smazat všechny fotky", diagnostika skenu
 Víkendová zpětná vazba z reálného použití: záloha OK, sken >90 % OK (log teď neřešit). Všech pět požadavků hotovo:

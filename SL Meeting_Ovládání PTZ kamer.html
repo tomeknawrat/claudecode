@@ -967,14 +967,14 @@ console.warn = (...args) => {
     --hall-gap: 12px;
   }
 
-  /* Živý seat layout (renderSeatLayout) — dva sektory vedle sebe */
-  .seat-hall-live { display: flex; gap: var(--hall-gap); align-items: flex-start; }
+  /* Živý seat layout (renderSeatLayout) — dva sektory vedle sebe, vycentrované */
+  .seat-hall-live { display: flex; gap: var(--hall-gap); align-items: flex-start; justify-content: center; }
 
   /* Responsivní STACKED režim: na úzkém okně (např. 1080p split-screen — půl OBS,
      půl controller) by sedadla vedle sebe byla moc malá. Třídu `seat-stacked`
      zapíná JS (applyZoom), který zároveň sedadla ZVĚTŠÍ (vejdou se, protože je
      jen jeden sektor na šířku). Pravý sektor pak spadne POD levý (nad sebou). */
-  .seat-stacked .seat-hall-live { flex-direction: column; gap: 22px; }
+  .seat-stacked .seat-hall-live { flex-direction: column; gap: 22px; align-items: center; }
   .seat-stacked .seat-hall-live > div + div { border-top: 1px dashed var(--border); padding-top: 18px; }
 
   .seat-layout-block { display: flex; flex-direction: column; gap: var(--seat-gap); }
@@ -1304,52 +1304,44 @@ console.warn = (...args) => {
   /* Jemné zvýraznění seat gridu v režimu výchozích pozic */
   .seat-layout-grid.default-pos-mode { outline: 2px dashed #5eead4; outline-offset: 6px; border-radius: 6px; }
 
-  /* ── CAM1 (Pódium): tlačítka absolutně vlevo, presety přes celou šířku ──
-     5 pevných presetů stylem jako tlačítko „Přidat preset" (modré). Scénka sedící
-     vlevo (zarovnaná na „Uložit preset" v Komentářích), 3 Řečníci uprostřed,
-     Scénka stojící zrcadlově vpravo. Výška = sloupec obou tlačítek (92 px). */
-  .panel--cam1 .cam1-strip { --card-w: 92px; --cam1-row-h: 92px; width: 100%; }
-  .cam1-preset-layout { position: relative; min-height: var(--cam1-row-h); }
-  .cam1-btn-col {
-    position: absolute; left: 0; top: 0; z-index: 2;
-    display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
-  }
-  /* content-width (snug) jako tlačítka v Komentářích — odsazení slov od borderu stejné */
+  /* ── CAM1 (Pódium): tlačítko „Uložit preset" vlevo + 5 malých ikonových presetů ──
+     Presety vedle sebe BEZ MEZER (segmentový pruh), bez textových popisků, ikony
+     zmenšené. Na úzkém okně se pruh presetů zalomí POD tlačítko (flex-wrap). */
+  .panel--cam1 .cam1-strip { width: 100%; }
+  .cam1-preset-layout { display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; row-gap: 10px; }
+  .cam1-btn-col { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; flex: 0 0 auto; }
   .cam1-btn-col .cam2-tool-btn { height: 42px; box-sizing: border-box; }
-  /* Presety CAM1 — přes celou šířku, 3 prostřední vycentrované; scénky absolutně */
+  /* 5 ikonových presetů vedle sebe bez mezer, vycentrované ve zbylém prostoru */
   .panel--cam1 .presets-grid {
-    position: relative; width: 100%; height: var(--cam1-row-h);
-    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px;
+    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 0;
     align-items: stretch; justify-content: center;
     grid-template-columns: none; overflow: visible;
+    flex: 1 1 auto; min-width: 0;
   }
-  /* Modrá dlaždice presetu — barevné schéma jako „Přidat preset" */
+  /* Modrá dlaždice presetu — jen ikona, bez popisku */
   .panel--cam1 .cam1-fixed-preset {
-    width: auto; min-width: var(--card-w); flex: 0 0 auto; box-sizing: border-box;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px;
+    flex: 0 0 auto; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    height: 50px; min-width: 50px; padding: 0 10px;
     border: 1.5px solid var(--blue-d); color: var(--blue-d);
-    background: var(--blue-soft); border-radius: var(--r-xs);
-    cursor: pointer; transition: all .15s; padding: 8px 14px; overflow: hidden;
+    background: var(--blue-soft);
+    cursor: pointer; transition: all .15s; overflow: hidden;
   }
+  /* bez mezer → sdílené bordery; zaoblení jen na krajních dlaždicích */
+  .panel--cam1 .cam1-fixed-preset + .cam1-fixed-preset { border-left: none; }
+  .panel--cam1 .cam1-fixed-preset:first-child { border-top-left-radius: var(--r-xs); border-bottom-left-radius: var(--r-xs); }
+  .panel--cam1 .cam1-fixed-preset:last-child  { border-top-right-radius: var(--r-xs); border-bottom-right-radius: var(--r-xs); }
   .panel--cam1 .cam1-fixed-preset:hover { background: #dbeafe; }
-  .panel--cam1 .cam1-fixed-preset.saving { border-color: #1d4ed8 !important; box-shadow: 0 0 0 3px rgba(29,78,216,.3) !important; }
-  .panel--cam1 .cam1-fixed-preset.recalled { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.35); }
-  .panel--cam1 .cam1-preset-icons { display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 40px; }
+  .panel--cam1 .cam1-fixed-preset.saving { border-color: #1d4ed8 !important; box-shadow: 0 0 0 3px rgba(29,78,216,.3) !important; z-index: 1; }
+  .panel--cam1 .cam1-fixed-preset.recalled { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.35); z-index: 1; }
+  .panel--cam1 .cam1-preset-icons { display: flex; align-items: center; justify-content: center; gap: 1px; }
   .panel--cam1 .cam1-preset-icons img {
-    height: 38px; width: auto;
-    /* přebarvení ikony na modrou (schéma „Přidat preset") */
+    height: 26px; width: auto;
+    /* přebarvení PNG ikony (scénky) na modrou */
     filter: brightness(0) saturate(100%) invert(26%) sepia(89%) saturate(1583%) hue-rotate(211deg) brightness(94%) contrast(92%);
   }
-  .panel--cam1 .cam1-preset-icons .cam1-person { width: 32px; height: 32px; color: var(--blue-d); }
-  .panel--cam1 .cam1-preset-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
-    color: var(--blue-d); text-align: center; white-space: nowrap; line-height: 1.1;
-  }
-  /* Scénky v toku přes flex-margins: sedící vlevo (margin-left = zarovnání),
-     stojící vpravo (margin-right = totéž); auto margins vycentrují 3 prostřední. */
-  .panel--cam1 .cam1-scene-left  { margin-right: auto; }
-  .panel--cam1 .cam1-scene-right { margin-left: auto; }
+  .panel--cam1 .cam1-preset-icons .cam1-person { width: 28px; height: 28px; color: var(--blue-d); }
+  .panel--cam1 .cam1-preset-label { display: none; } /* popisky odstraněny */
 
   /* Mazání jedné fotky = pravý klik na kartě sedadla (bez ikonky koše) */
   .slot-card { position: relative; }
@@ -1946,7 +1938,6 @@ console.warn = (...args) => {
     <div class="cam-presets-section cam1-strip" style="flex:0 0 auto;min-width:0;">
       <div class="cam1-preset-layout">
         <div class="cam1-btn-col">
-          <button class="add-preset-btn cam2-tool-btn" id="addPresetBtn1" onclick="openAddPreset(1)" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">＋ Přidat preset</button>
           <button class="cam2-tool-btn" id="savePresetBtn1" onclick="saveLastPresetManual(1)" title="Uložit aktuální (ručně upravenou) pozici kamery do posledního vyvolaného presetu" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             Uložit preset
@@ -2656,16 +2647,43 @@ document.querySelectorAll('input[type=range]').forEach(el => {
 // ── CAM1 (Pódium): pevných 5 presetů ──
 // kind: 'scene-sit' (2× sedící), 'speaker' (1 osoba), 'scene-stand' (2× stojící)
 const CAM1_FIXED = [
-  { name: 'Scénka sedící',  num: 1, kind: 'scene-sit',   fixed: true },
-  { name: 'Řečník nižší',   num: 2, kind: 'speaker',     fixed: true },
-  { name: 'Předsedající',   num: 3, kind: 'speaker',     fixed: true },
-  { name: 'Řečník vyšší',   num: 4, kind: 'speaker',     fixed: true },
-  { name: 'Scénka stojící', num: 5, kind: 'scene-stand', fixed: true },
+  { name: 'Scénka sedící',  num: 1, kind: 'scene-sit',    fixed: true },
+  { name: 'Řečník nižší',   num: 2, kind: 'speaker-low',  fixed: true },
+  { name: 'Předsedající',   num: 3, kind: 'chair',        fixed: true },
+  { name: 'Řečník vyšší',   num: 4, kind: 'speaker-high', fixed: true },
+  { name: 'Scénka stojící', num: 5, kind: 'scene-stand',  fixed: true },
 ];
 function ensureCam1Fixed() {
   state.presets[1] = CAM1_FIXED.map(p => ({ ...p }));
 }
-const _CAM1_PERSON_SVG = '<svg class="cam1-person" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>';
+
+// Ikony pro 3 „osobní" presety — vizuálně příbuzné (osoba + pult/stůl), ale významově
+// odlišené: Řečník nižší = pult + šipka dolů, Řečník vyšší = pult + šipka nahoru,
+// Předsedající = osoba za stolem (vodorovná deska).
+const _CAM1_LECTERN = 'M8 21 l1.3-6 h5.4 L16 21 z';
+function _cam1Icon(kind) {
+  const S = '<svg class="cam1-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+  if (kind === 'chair') {
+    // Osoba za stolem (předsedající)
+    return S + '<circle cx="12" cy="7" r="3"/>'
+      + '<path d="M6.3 14.6c0-3.1 2.4-4.9 5.7-4.9s5.7 1.8 5.7 4.9"/>'
+      + '<line x1="3.5" y1="18.6" x2="20.5" y2="18.6"/></svg>';
+  }
+  if (kind === 'speaker-low') {
+    // Řečník u pultu + šipka DOLŮ (nižší)
+    return S + '<polyline points="9 4.5 12 7 15 4.5"/>'
+      + '<circle cx="12" cy="10.6" r="2.4"/>'
+      + '<path d="' + _CAM1_LECTERN + '"/></svg>';
+  }
+  if (kind === 'speaker-high') {
+    // Řečník u pultu + šipka NAHORU (vyšší)
+    return S + '<polyline points="9 7 12 4.5 15 7"/>'
+      + '<circle cx="12" cy="10.6" r="2.4"/>'
+      + '<path d="' + _CAM1_LECTERN + '"/></svg>';
+  }
+  // fallback — prostá osoba
+  return '<svg class="cam1-person" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>';
+}
 
 function renderCam1FixedPresets() {
   const grid = document.getElementById('presetsGrid1');
@@ -2680,18 +2698,15 @@ function renderCam1FixedPresets() {
     const card = document.createElement('div');
     card.className = 'cam1-fixed-preset preset-card';
     card.dataset.idx = idx; card.dataset.cam = 1;
-    if (p.kind === 'scene-sit')   card.classList.add('cam1-scene-left');
-    if (p.kind === 'scene-stand') card.classList.add('cam1-scene-right');
+    card.title = p.name; // popisek jen jako tooltip (texty odstraněny)
     let icons;
     if (p.kind === 'scene-sit')        icons = `<img src="${sitSrc}" alt=""><img src="${sitSrc}" alt="">`;
     else if (p.kind === 'scene-stand') icons = `<img src="${standSrc}" alt=""><img src="${standSrc}" alt="">`;
-    else                               icons = _CAM1_PERSON_SVG;
-    card.innerHTML = `<div class="cam1-preset-icons">${icons}</div><div class="cam1-preset-label">${p.name.replace(/"/g,'&quot;')}</div>`;
+    else                               icons = _cam1Icon(p.kind);
+    card.innerHTML = `<div class="cam1-preset-icons">${icons}</div>`;
     _attachCam1PresetHandlers(card, idx);
     grid.appendChild(card);
   });
-  equalizeCam1Tiles();
-  layoutCam1Scenes();
 }
 
 // Hold = uložit pozici, krátký klik = vyvolat. Bez kontext menu / mazání (pevné presety).
@@ -2719,37 +2734,11 @@ function _attachCam1PresetHandlers(card, idx) {
   card.addEventListener('touchend', end);
 }
 
-// Všech 5 dlaždic CAM1 na stejnou šířku podle nejširší (zpravidla „Scénka stojící").
-function equalizeCam1Tiles() {
-  const grid = document.getElementById('presetsGrid1');
-  if (!grid) return;
-  const tiles = [...grid.querySelectorAll('.cam1-fixed-preset')];
-  if (!tiles.length) return;
-  tiles.forEach(t => { t.style.width = 'auto'; });     // dočasně přirozená šířka
-  let max = 0;
-  tiles.forEach(t => { const w = t.getBoundingClientRect().width; if (w > max) max = w; });
-  const px = Math.ceil(max) + 'px';
-  tiles.forEach(t => { t.style.width = px; });
-}
-
-// Scénka sedící: levý okraj zarovnaný s „Uložit preset" v Komentářích (savePresetBtn2).
-// Scénka stojící: zrcadlově (stejná vzdálenost od pravého kraje panelu).
-function layoutCam1Scenes() {
-  const grid = document.getElementById('presetsGrid1');
-  const panel = document.querySelector('.panel--cam1');
-  const left  = grid && grid.querySelector('.cam1-scene-left');
-  const right = grid && grid.querySelector('.cam1-scene-right');
-  const ref   = document.getElementById('savePresetBtn2');
-  if (!grid || !panel || !left || !right || !ref) return;
-  const g = grid.getBoundingClientRect();
-  const rr = ref.getBoundingClientRect();
-  if (rr.width === 0) return;                 // Komentáře ještě nevykresleny
-  // M = odstup levého okraje scénky sedící od začátku stripu (= zarovnání na „Uložit preset").
-  // Stejné M jako margin-right u scénky stojící → zrcadlově, 3 prostřední se auto-margins vycentrují.
-  const M = Math.max(0, Math.round(rr.left - g.left));
-  left.style.marginLeft = M + 'px';
-  right.style.marginRight = M + 'px';
-}
+// Layout CAM1 presetů teď řeší čistě CSS flex (ikonový pruh bez mezer, bez popisků,
+// zalomení pod tlačítko na úzkém okně). Tyto funkce zůstávají jako no-op kvůli
+// starším voláním (setupCam1SceneLayout, applyZoom).
+function equalizeCam1Tiles() {}
+function layoutCam1Scenes() {}
 
 // Robustní přepočet pozic scének — reference (tlačítko v Komentářích) se během
 // načítání/doběhu fontů posouvá, proto přepočítáváme opakovaně i při změně hlavičky.
@@ -3546,8 +3535,8 @@ function _updateCam1BtnVisibility() {
   const editing = editOrderState[1];
   const show = id => { const el = document.getElementById(id); if (el) el.style.display = ''; };
   const hide = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
-  if (editing) { hide('addPresetBtn1'); }
-  else         { show('addPresetBtn1'); show('editOrderBtn1'); }
+  if (editing) { hide('editOrderBtn1'); }
+  else         { show('editOrderBtn1'); }
 }
 
 // ── VIDITELNOST TLAČÍTEK CAM2 — zabraňuje kombinování módů ──
@@ -3743,20 +3732,17 @@ function renderSeatLayout() {
   const slotGrid = document.getElementById('seatLayoutGrid2');
   slotGrid.innerHTML = '';
   const hall = document.createElement('div');
-  hall.className = 'seat-hall-live';
-  hall.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
+  hall.className = 'seat-hall-live'; // layout (vč. centrování) řeší CSS, viz .seat-hall-live
 
-  // Levý blok
-  const _leftInd = window._seatIndentsLeft || [99, 33, 0, 33, 33, 0];
-  const _negM    = window._seatNegMargin   ?? -20;
-  const _lgap    = window._seatLeftGap     ?? 22.5;
+  // Levý blok — řady VYCENTROVANÉ (symetrická pyramida). Výjimka: řada [0,1]
+  // zůstává zarovnaná vlevo (align-self:flex-start).
   const blockL = document.createElement('div');
-  blockL.style.cssText = `display:flex;flex-direction:column;gap:var(--seat-gap);`;
+  blockL.style.cssText = `display:flex;flex-direction:column;gap:var(--seat-gap);align-items:center;`;
   SEAT_LAYOUT.left.forEach((row, ri) => {
     const rowEl = document.createElement('div');
     rowEl.style.cssText = 'display:flex;gap:var(--seat-gap);';
-    rowEl.style.marginLeft = (_leftInd[ri] || 0) + 'px';
     if (Array.isArray(row)) {
+      if (row.includes(0)) rowEl.style.alignSelf = 'flex-start'; // 0/1 vlevo, necentrovat
       row.forEach(sn => rowEl.appendChild(_makeViewSlotOld(sn)));
     } else {
       row.left.forEach(sn => rowEl.appendChild(_makeViewSlotOld(sn)));
@@ -3768,14 +3754,12 @@ function renderSeatLayout() {
     blockL.appendChild(rowEl);
   });
 
-  // Pravý blok
-  const _rightInd = window._seatIndentsRight || [99, 66, 33, 0, 0, 0];
+  // Pravý blok — řady vycentrované (symetrická pyramida)
   const blockR = document.createElement('div');
-  blockR.style.cssText = 'display:flex;flex-direction:column;gap:var(--seat-gap);';
+  blockR.style.cssText = 'display:flex;flex-direction:column;gap:var(--seat-gap);align-items:center;';
   SEAT_LAYOUT.right.forEach((row, ri) => {
     const rowEl = document.createElement('div');
     rowEl.style.cssText = 'display:flex;gap:var(--seat-gap);';
-    if (_rightInd[ri] > 0) rowEl.style.marginLeft = _rightInd[ri] + 'px';
     row.forEach(sn => rowEl.appendChild(_makeViewSlotOld(sn)));
     blockR.appendChild(rowEl);
   });
@@ -6076,10 +6060,10 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
   if (drawer) document.body.appendChild(drawer);
   if (overlay) document.body.appendChild(overlay);
 
-  // Odsazení řad (násobky „unit" = card+gap) — jediný zdroj pravdy pro výpočet
-  // šířky i pro vykreslení (applyZoom je použije přes INDENT_L/INDENT_R).
-  const INDENT_L = [1.5, 0.5, 0, 0.5, 0.5, 0];
-  const INDENT_R = [1.5, 1.0, 0.5, 0, 0, 0];
+  // Řady jsou VYCENTROVANÉ (symetrická pyramida), takže bez odsazení — šířka bloku
+  // = nejširší řada (8 sedadel). Pole ponechána kvůli iteraci v _blockW.
+  const INDENT_L = [0, 0, 0, 0, 0, 0];
+  const INDENT_R = [0, 0, 0, 0, 0, 0];
 
   // Rozměry odvozené z C (musí odpovídat tomu, co nastaví applyZoom)
   function _dims(C) {

@@ -2658,10 +2658,10 @@ function ensureCam1Fixed() {
 //  • Řečník vyšší  = panáček + šipka NAHORU vpravo (bez čárky)
 //  • Řečník nižší  = panáček + šipka DOLŮ vlevo (bez čárky)
 const _CAM1_SUIT =
-    '<circle cx="12" cy="6" r="2.8"/>'
+    '<circle cx="12" cy="8" r="2.8"/>'             // hlava — níž, blíž k tělu
   + '<path d="M7 20 v-2.5 a5 5 0 0 1 10 0 V20"/>'   // ramena / sako
-  + '<path d="M9.5 13 L12 15.8 L14.5 13"/>'          // klopy (V límec) — zarovnané s horní hranou těla
-  + '<line x1="12" y1="15.8" x2="12" y2="19.3"/>';   // kravata
+  + '<path d="M9.5 14 L12 20 L14.5 14"/>'           // klopy (V límec) — hrot u spodní hrany těla
+  + '<line x1="12" y1="16.5" x2="12" y2="20"/>';    // kravata (končí u spodní hrany)
 function _cam1Icon(kind) {
   const S = '<svg class="cam1-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
   if (kind === 'chair') {
@@ -2669,16 +2669,17 @@ function _cam1Icon(kind) {
     return S + _CAM1_SUIT + '<line x1="4.5" y1="21.5" x2="19.5" y2="21.5"/></svg>';
   }
   if (kind === 'speaker-high') {
-    // Řečník vyšší — panáček + šipka NAHORU vpravo (dál od těla)
+    // Řečník vyšší — panáček + šipka NAHORU vpravo (hrot V nahoře, y9–11)
     return S + _CAM1_SUIT
       + '<line x1="21" y1="17" x2="21" y2="9"/>'
       + '<polyline points="19 11 21 9 23 11"/></svg>';
   }
   if (kind === 'speaker-low') {
-    // Řečník nižší — panáček + šipka DOLŮ vlevo (dál od těla)
+    // Řečník nižší — panáček + šipka DOLŮ vlevo; zrcadlově k šipce nahoru
+    // (hrot V ve stejné úrovni y9–11, šicht výš)
     return S + _CAM1_SUIT
-      + '<line x1="3" y1="9" x2="3" y2="17"/>'
-      + '<polyline points="1 15 3 17 5 15"/></svg>';
+      + '<line x1="3" y1="3" x2="3" y2="11"/>'
+      + '<polyline points="1 9 3 11 5 9"/></svg>';
   }
   // fallback — prostá osoba
   return '<svg class="cam1-person" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>';

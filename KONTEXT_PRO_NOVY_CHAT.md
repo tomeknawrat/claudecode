@@ -99,6 +99,8 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 Čísla sedadel = čísla presetů na CAM2 (přímé mapování).
 
+**Responsivní viewport (`applyZoom`):** velikost sedadla (`--card-w`) se dopočítává podle šířky okna. Na širokém okně oba bloky **vedle sebe**. Na úzkém (např. 1080p split-screen) by byly moc malé → **STACKED režim** (třída `seat-stacked` na `<html>`): bloky **pod sebou** (`.seat-hall-live` sloupec) a sedadla **zvětšená** (`calcCardWStacked`, strop `STACK_MAX_C`). CAM1 velikost (`--cam1-card-w`) je na stacked nezávislá (`cam1Base`).
+
 ### Scan modal (skenování hlediště)
 - Otevře se z panelu CAM2
 - Zobrazí live WebRTC stream z CAM2 (přes MediaMTX WHEP endpoint `http://localhost:8889/cam2/whep`)

@@ -16,6 +16,7 @@
 - ✅ **Zrušen mód „Editace presetů sedadel"** — workflow bez módů (Uložit preset / drag&drop). Funkce módu zůstávají v kódu uspané.
 - ✅ **Mazání jedné fotky = pravý klik na kartě** (7. 11.) — ikonka koše na kartě zrušena.
 - ✅ **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** (7. 11.) — dialog s checkboxem (hromadné mazání fotek vždy; volitelně i vrácení pozic na výchozí).
+- ✅ **Responsivní viewport CAM2** (7. 11.) — na úzkém okně (split-screen) pravý sektor pod levý + zvětšená sedadla (stacked režim).
 - ✅ **Spuštění jedním krokem** — `start_ptz.bat` / `start_ptz_bez_okna.vbs`; server při startu sám otevře appku v prohlížeči.
 - ✅ **Fix recall obsazeného sedadla „do stropu"** — klik posílal `gotopreset` na joystickem přepsaný preset. Nově recall **vždy po souřadnicích** (coords-first), obsluhuje ho **slot** (pointer eventy) pro prázdná i obsazená sedadla — mouse eventy na kartě jsou potlačené preventDefaultem. Souřadnice samotné beze změny.
 - ✅ **Panel Pódium (CAM1) přepracován** — „Přidat preset" + „Uložit preset" vlevo; **5 pevných nemazatelných presetů** (Scénka sedící | Řečník nižší/Předsedající/Řečník vyšší | Scénka stojící) stylem modrých dlaždic jako „Přidat preset", scénky zarovnané/zrcadlené podle „Uložit preset" v Komentářích. Hláška „Zatím žádné presety" odstraněna. Chování „Přidat preset" odloženo.
@@ -36,9 +37,11 @@ Víkendová zpětná vazba z reálného použití: záloha OK, sken >90 % OK (lo
 2. **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** — samostatné tlačítko `resetDefaultBtn2` zrušeno. Nový dialog `#clearResetOverlay` (`openClearResetDialog` / `clearResetResolve`): vždy hromadné smazání fotek/karet CAM2; **checkbox** `#clearResetAlsoReset` (default off, zobrazí se jen když existují výchozí pozice) navíc vrátí pracovní pozice na výchozí (`_applyResetSeatsToDefault`: `slotCoords ← slotDefaultCoords`). Odpověď na dotaz „kde jsou výchozí pozice": `slotDefaultCoords`, localStorage `ptz_slot_default_coords`.
 3. **Sken přeskakuje sedadla v pravém sektoru = nejsou kalibrovaná.** Sken jede jen přes sedadla s `slotCoords` nebo `slotPresets`; nekalibrovaná nemá kam najet. Přidán log: `Kalibrovaných sedadel: X z Y` + `Přeskočeno (bez kalibrace): …` — hned vidět, co dokalibrovat. (Není to bug, je to mezera v kalibraci.)
 
-**Nedořešeno (4, 5):**
+5. **Responsivní viewport — HOTOVO (CAM2).** `applyZoom` dřív sedadla jen zmenšoval, aby se oba sektory vešly vedle sebe. Nově: pod prahem (sedadlo „vedle sebe" < 64 px) přepne na **STACKED** — třída `seat-stacked` na `<html>`, bloky pod sebou (`.seat-hall-live` sloupec), sedadla zvětšená (`calcCardWStacked`, strop ~83 px). CAM1 odpojen (`cam1Base`), aby se Pódium nenafouklo. Ověřeno Playwrightem.
+   - Pozn.: na ~960 px se v Pódiu překrývá dlaždice „Scénka sedící" s „Uložit preset" — **pre-existující** layout CAM1 (ne regrese), k doladění zvlášť.
+
+**Nedořešeno (4):**
 4. **Přidat sedadla 116, 127, 138 (a 16?) + smazat sedadlo 16** — požadavek rozporný (přidat 16 i smazat 16), čeká na upřesnění. Navíc riziko: úložiště je indexované podle pořadí v `SEAT_NUMBERS`, vložení doprostřed posune indexy a rozhodí kalibraci → potřeba migrace (remap podle čísla sedadla).
-5. **Responsivní viewport** — na úzkém okně (1080p split-screen, půl OBS/půl controller) dát pravý sektor pod levý (nad sebou) a zvětšit sedadla. Rozpracováno.
 
 Ověřeno `node --check` (inline skripty OK) + Playwrightem (reset tlačítko pryč, dialog + checkbox fungují, bez JS chyb mimo blokované CDN/WS).
 

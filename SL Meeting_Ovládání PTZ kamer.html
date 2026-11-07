@@ -967,6 +967,16 @@ console.warn = (...args) => {
     --hall-gap: 12px;
   }
 
+  /* Živý seat layout (renderSeatLayout) — dva sektory vedle sebe */
+  .seat-hall-live { display: flex; gap: var(--hall-gap); align-items: flex-start; }
+
+  /* Responsivní STACKED režim: na úzkém okně (např. 1080p split-screen — půl OBS,
+     půl controller) by sedadla vedle sebe byla moc malá. Třídu `seat-stacked`
+     zapíná JS (applyZoom), který zároveň sedadla ZVĚTŠÍ (vejdou se, protože je
+     jen jeden sektor na šířku). Pravý sektor pak spadne POD levý (nad sebou). */
+  .seat-stacked .seat-hall-live { flex-direction: column; gap: 22px; }
+  .seat-stacked .seat-hall-live > div + div { border-top: 1px dashed var(--border); padding-top: 18px; }
+
   .seat-layout-block { display: flex; flex-direction: column; gap: var(--seat-gap); }
   .seat-layout-row { display: flex; gap: var(--seat-gap); }
   .seat-layout-hall { display: flex; gap: var(--hall-gap); align-items: flex-start; justify-content: flex-start; margin-bottom: 14px; }
@@ -3733,6 +3743,7 @@ function renderSeatLayout() {
   const slotGrid = document.getElementById('seatLayoutGrid2');
   slotGrid.innerHTML = '';
   const hall = document.createElement('div');
+  hall.className = 'seat-hall-live';
   hall.style.cssText = 'display:flex;gap:var(--hall-gap);align-items:flex-start;';
 
   // Levý blok
@@ -6123,8 +6134,8 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
 
   function calcCardW(vw, isSeat) {
     if (isSeat) {
-      // Hledáme C tak aby se hall vešel do vw
-      // Skutečná card = round(C*0.9), gap = round(2*C/60), hall_gap = round(8*C/60)
+      // Hledáme C tak aby se hall vešel do vw (DVA sektory vedle sebe)
+      // Skutečná card = round(C*0.75), gap = round(2*C/60), hall_gap = round(8*C/60)
       // hall šířka = left + hall_gap + right = 2*(8*card+7*gap) + hall_gap
       // + padding 32+16 = 48px
       for (let C = 130; C >= 40; C--) {
@@ -6140,6 +6151,20 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     }
   }
 
+  // STACKED režim: sektory pod sebou → stačí, aby se vešel JEDEN sektor
+  // (nejširší řada = 8 sedadel) do vw. Card smí být výrazně větší (viditelná fotka).
+  // Stropem je MAX_C, ať sedadla nejsou nesmyslně obří a nescrolluje se donekonečna.
+  const STACK_MAX_C = 110; // card ≈ round(110*0.75) = 83 px
+  function calcCardWStacked(vw) {
+    for (let C = STACK_MAX_C; C >= 40; C--) {
+      const card = Math.round(C * 0.75);
+      const gap  = Math.round(2 * C / 60);
+      const total = 8 * card + 7 * gap + 48; // jeden sektor + padding
+      if (total <= vw) return C;
+    }
+    return 40;
+  }
+
   function applyZoom() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -6149,11 +6174,27 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     if (drawer) drawer.style.zoom = 1;
     if (overlay) overlay.style.zoom = 1;
 
+    let stacked = false;
     let card = calcCardW(vw, isSeat);
+    // Základ pro CAM1 (Pódium) = velikost „vedle sebe" — CAM1 se nestackuje a nesmí
+    // se nafouknout, když CAM2 přejde do stacked režimu s velkými sedadly.
+    let cam1Base = card;
     if (card === null) {
       // Klasický mód — vypočítej podle počtu presetů a dostupného prostoru
       card = calcCam2CardW(vw, vh);
+      cam1Base = card;
+    } else {
+      // Seat layout: když by sedadla vedle sebe byla moc malá (nečitelná fotka
+      // ze skenu), přepni na STACKED — sektory pod sebe a sedadla zvětši.
+      const sideActual = Math.round(card * 0.75);
+      if (sideActual < 64) {
+        stacked = true;
+        card = calcCardWStacked(vw);
+        // cam1Base zůstává na „vedle sebe" hodnotě, aby Pódium nepřeteklo.
+      }
     }
+    // Přepínač stacked režimu (CSS: .seat-stacked .seat-hall-live → sloupec)
+    document.documentElement.classList.toggle('seat-stacked', stacked);
     const gap = Math.round(2 * card / 60);
     const hall = Math.round(45 * card / 60);
     document.documentElement.style.setProperty('--card-w', Math.round(card * 0.75) + 'px');
@@ -6168,8 +6209,8 @@ logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
     window._seatLeftGap      = (6*actualCard + 5*gap - 5*actualCard) / 4;
     document.documentElement.style.setProperty('--seat-gap', gap + 'px');
     document.documentElement.style.setProperty('--hall-gap', hall + 'px');
-    // Cam1 presety — 1.5× větší než cam2, nezávisle
-    const cam1Card = Math.round(card * 1.5);
+    // Cam1 presety — 1.5× větší než cam2 „vedle sebe" (nezávisle na stacked režimu CAM2)
+    const cam1Card = Math.round(cam1Base * 1.5);
     document.documentElement.style.setProperty('--cam1-card-w', cam1Card + 'px');
     // Pokud je seat layout otevřený, překreslíme ho
     if (isSeat && window.renderSeatLayout) renderSeatLayout();

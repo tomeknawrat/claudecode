@@ -1327,12 +1327,14 @@ console.warn = (...args) => {
     background: var(--blue-soft); border-radius: var(--r-xs);
     cursor: pointer; transition: all .15s; overflow: hidden;
   }
+  /* 3 osobní presety — čtverec (všechny 4 strany stejně, 50×50) */
+  .panel--cam1 .cam1-preset--person { width: 50px; min-width: 50px; padding: 0; }
   .panel--cam1 .cam1-fixed-preset:hover { background: #dbeafe; }
   .panel--cam1 .cam1-fixed-preset.saving { border-color: #1d4ed8 !important; box-shadow: 0 0 0 3px rgba(29,78,216,.3) !important; z-index: 1; }
   .panel--cam1 .cam1-fixed-preset.recalled { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.35); z-index: 1; }
   .panel--cam1 .cam1-preset-icons { display: flex; align-items: center; justify-content: center; gap: 0; }
   .panel--cam1 .cam1-preset-icons img {
-    height: 26px; width: auto; margin: 0 -3px; /* přitáhnout 2 ikony ve scénce blíž k sobě */
+    height: 28px; width: auto; margin: 0 -3px; /* výškově sladit s osobními ikonami + přitáhnout 2 ikony blíž */
     /* přebarvení PNG ikony (scénky) na modrou */
     filter: brightness(0) saturate(100%) invert(26%) sepia(89%) saturate(1583%) hue-rotate(211deg) brightness(94%) contrast(92%);
   }
@@ -2694,8 +2696,9 @@ function renderCam1FixedPresets() {
   const sitSrc   = (document.querySelector('#pose1-sit img')   || {}).src || '';
   const standSrc = (document.querySelector('#pose1-stand img') || {}).src || '';
   state.presets[1].forEach((p, idx) => {
+    const isScene = (p.kind === 'scene-sit' || p.kind === 'scene-stand');
     const card = document.createElement('div');
-    card.className = 'cam1-fixed-preset preset-card';
+    card.className = 'cam1-fixed-preset preset-card ' + (isScene ? 'cam1-preset--scene' : 'cam1-preset--person');
     card.dataset.idx = idx; card.dataset.cam = 1;
     card.title = p.name; // popisek jen jako tooltip (texty odstraněny)
     let icons;

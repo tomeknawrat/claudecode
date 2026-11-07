@@ -2660,8 +2660,8 @@ function ensureCam1Fixed() {
 const _CAM1_SUIT =
     '<circle cx="12" cy="7" r="2.8"/>'             // hlava (o chlup výš)
   + '<path d="M7 20 v-2.5 a5 5 0 0 1 10 0 V20"/>'   // ramena / tělo
-  + '<path d="M9.3 13 L12 16 L14.7 13"/>'           // horní vidlice Y (klopy)
-  + '<line x1="12" y1="16" x2="12" y2="20"/>';      // svislá čárka Y (kravata) ke spodní hraně
+  + '<path d="M9.3 14 L12 16.3 L14.7 14"/>'         // horní vidlice Y (klopy) — uvnitř horní hrany těla
+  + '<line x1="12" y1="16.3" x2="12" y2="20"/>';    // svislá čárka Y (kravata) ke spodní hraně
 function _cam1Icon(kind) {
   const S = '<svg class="cam1-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
   if (kind === 'chair') {

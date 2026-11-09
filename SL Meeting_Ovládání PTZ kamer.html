@@ -946,7 +946,7 @@ console.warn = (...args) => {
   /* ── SLOT LAYOUT ── */
   /* Šířka: levý(4×105+3×6) + gap(20) + střed(6×105+5×6) + gap(20) + pravý(4×105+3×6) + 2×padding(20) = 1576px */
   .seat-layout-grid {
-    padding: 8px 16px 8px 32px;
+    padding: 8px 24px; /* symetricky (součet 48 = SEAT_PAD) → středová ulička = střed panelu */
     user-select: none;
     width: 100%;
     overflow-x: auto;
@@ -1313,15 +1313,19 @@ console.warn = (...args) => {
      Presety vedle sebe BEZ MEZER (segmentový pruh), bez textových popisků, ikony
      zmenšené. Na úzkém okně se pruh presetů zalomí POD tlačítko (flex-wrap). */
   .panel--cam1 .cam1-strip { width: 100%; }
-  .cam1-preset-layout { display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; row-gap: 10px; }
-  .cam1-btn-col { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; flex: 0 0 auto; }
+  /* Layout: tlačítko vlevo, ikonový pruh VYCENTROVANÝ NA STŘED PANELU (= středová
+     ulička mezi sektory CAM2). Button-col a spacer rostou stejně (flex:1 1 0),
+     takže pruh (flex:0 0 auto) zůstává uprostřed panelu. */
+  .cam1-preset-layout { display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; row-gap: 10px; justify-content: center; }
+  .cam1-btn-col { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; flex: 1 1 0; }
   .cam1-btn-col .cam2-tool-btn { height: 42px; box-sizing: border-box; }
+  .cam1-preset-spacer { flex: 1 1 0; min-width: 0; }
   /* 5 ikonových presetů vedle sebe s malými mezerami (jako mezi sedadly) */
   .panel--cam1 .presets-grid {
     display: flex; flex-direction: row; flex-wrap: nowrap; gap: 6px;
     align-items: stretch; justify-content: center;
     grid-template-columns: none; overflow: visible;
-    flex: 1 1 auto; min-width: 0;
+    flex: 0 0 auto; min-width: 0;
   }
   /* Modrá dlaždice presetu — jen ikona, bez popisku */
   .panel--cam1 .cam1-fixed-preset {
@@ -1942,6 +1946,7 @@ console.warn = (...args) => {
           </button>
         </div>
         <div class="presets-grid" id="presetsGrid1"></div>
+        <div class="cam1-preset-spacer" aria-hidden="true"></div>
         <div id="presetsEmpty1" style="display:none"></div>
       </div>
     </div>
@@ -2148,8 +2153,8 @@ console.warn = (...args) => {
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
       <input type="number" id="seatEditAddNum" placeholder="Číslo" min="0" style="width:72px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;">
       <select id="seatEditBlock" onchange="_seatEditorFillRows()" style="padding:7px 8px;border:1px solid var(--border);border-radius:6px;">
-        <option value="left">Blok A</option>
-        <option value="right">Blok B</option>
+        <option value="left">Levý sektor</option>
+        <option value="right">Pravý sektor</option>
       </select>
       <select id="seatEditRow" style="flex:1;min-width:120px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;"></select>
     </div>
@@ -3854,7 +3859,8 @@ function _seatEditorFillRows() {
   for (let i = 0; i < n; i++) {
     const o = document.createElement('option');
     o.value = i;
-    o.textContent = `Řada ${i + 1}  (${SEAT_LAYOUT[block][i].join(', ') || '—'})`;
+    const nums = [...SEAT_LAYOUT[block][i]].sort((a, b) => a - b).join(', ');
+    o.textContent = `Řada ${i + 1}  (${nums || '—'})`;
     sel.appendChild(o);
   }
   if (prev && prev < n) sel.value = prev;
@@ -3869,7 +3875,7 @@ function seatEditorAdd() {
   if (isNaN(rowIdx)) { _seatEditMsg('Vyber řadu.', false); return; }
   _addSeatToLayout(num, block, rowIdx);
   _refreshAfterLayoutChange();
-  logMsg('info', `Sedadlo ${num} přidáno (blok ${block === 'left' ? 'A' : 'B'}, řada ${rowIdx + 1}).`);
+  logMsg('info', `Sedadlo ${num} přidáno (${block === 'left' ? 'levý' : 'pravý'} sektor, řada ${rowIdx + 1}).`);
   _seatEditMsg(`Sedadlo ${num} přidáno. Celkem ${TOTAL_SEATS} sedadel.`, true);
   _seatEditorFillRows();
   const addNum = document.getElementById('seatEditAddNum'); if (addNum) addNum.value = '';

@@ -1940,9 +1940,8 @@ console.warn = (...args) => {
     <div class="cam-presets-section cam1-strip" style="flex:0 0 auto;min-width:0;">
       <div class="cam1-preset-layout">
         <div class="cam1-btn-col">
-          <button class="cam2-tool-btn" id="savePresetBtn1" onclick="saveLastPresetManual(1)" title="Uložit aktuální (ručně upravenou) pozici kamery do posledního vyvolaného presetu" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Uložit preset
+          <button class="cam2-tool-btn icon-only" id="savePresetBtn1" onclick="saveLastPresetManual(1)" title="Uložit aktuální (ručně upravenou) pozici kamery do posledního vyvolaného presetu" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           </button>
         </div>
         <div class="presets-grid" id="presetsGrid1"></div>
@@ -2034,8 +2033,8 @@ console.warn = (...args) => {
           <button class="scan-btn cam2-tool-btn icon-only" id="scanBtn" onclick="openScanModal()" title="Skenovat hlediště" style="--btn-bg:#f5f3ff;--btn-border:#ddd6fe;--btn-text:#6d28d9">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
           </button>
-          <button class="add-preset-btn cam2-tool-btn icon-only" id="addPresetBtn2" onclick="openSeatEditor()" title="Upravit sedadla (přidat / smazat)" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <button class="add-preset-btn cam2-tool-btn icon-only" id="addPresetBtn2" onclick="openSeatEditor()" title="Upravit sedadla — přidat nebo smazat" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11V7a2 2 0 0 1 2-2h2.5a2 2 0 0 1 2 2v4"/><rect x="3.3" y="11" width="10.4" height="3.4" rx="1"/><path d="M5.3 14.4v3M11.7 14.4v3"/><path d="M19.6 3.1l1.3 1.3a1 1 0 0 1 0 1.4l-6 6-2.2.5.5-2.2 6-6a1 1 0 0 1 1.4 0z"/></svg>
           </button>
           <button class="edit-order-btn cam2-tool-btn icon-only" id="editOrderBtn2" onclick="toggleEditOrder(2)" title="Přesunout / přeuspořádat sedadla" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><polyline points="8 7 12 3 16 7"/><polyline points="8 17 12 21 16 17"/></svg>

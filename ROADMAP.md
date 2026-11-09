@@ -129,10 +129,18 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 - **Vycentrování sektorů (7. 11.):** řady v obou blocích jsou **vycentrované** (symetrická pyramida místo zarovnání vlevo; `align-items:center`), odsazení řad (`INDENT_L/R`) vynulováno. **Výjimka: řada [0,1]** zůstává zarovnaná vlevo (`align-self:flex-start`). Celá skupina sektorů je vycentrovaná v panelu (`.seat-hall-live` `justify-content:center`, ve stacked `align-items:center`).
   - *Pozn.:* dřívější překryv „Scénka sedící" × „Uložit preset" na úzkém okně **vyřešen** přepracováním CAM1 na kompaktní ikonový pruh (viz sekce Pódium).
 
+## ✅ Dynamický layout — minimum (hotovo 9. 11.)
+
+- `SEAT_LAYOUT` je teď **měnitelný** (`let`), ukládá se do `localStorage` **`ptz_seat_layout`** (default = tovární rozložení `_SEAT_LAYOUT_DEFAULT`). `SEAT_NUMBERS`/`SEAT_NUM_TO_IDX`/`TOTAL_SEATS` se přepočítají přes `_rebuildSeatMaps()`.
+- **Přidat/smazat sedadlo** přes dialog „Upravit sedadla" (tlačítko `+` v liště CAM2, `openSeatEditor`): přidat číslo do zvoleného bloku/řady, smazat podle čísla. Validace (duplicita/neexistence).
+- **Úložiště keyované číslem sedadla:** `_remapSeatStorageByNumber` po změně layoutu přemapuje `slotCoords`/`slotPresets`/`slotDefaultCoords`/`slotAssignments` podle čísla sedadla → **kalibrace/fotky drží u svého sedadla** (ověřeno Playwrightem). Co zmizí, se zahodí.
+- Layout je součástí **zálohy** (export/import v2, aplikuje se před slot poli).
+- *Zatím minimum:* bez přesunu/přejmenování/2D editoru a bez „obnovit výchozí layout" (připraveno `_SEAT_LAYOUT_DEFAULT`). Smazání obsazeného sedadla nechá osiřelou preset-kartu v `state.presets[2]` (vyčistí „Smazat všechny fotky").
+
 ## 🧩 Zaparkované / otevřené nápady
 
-- **Dynamický layout** místo pevného `SEAT_LAYOUT` (plné přidání/mazání/přečíslování sedadel z UI). Architektonické.
-- **Víc referenčních fotek na osobu** — robustnější rozpoznávání.
+- **Dynamický layout — rozšíření:** přesun sedadel (drag&drop / přečíslování), přejmenování, „obnovit výchozí layout", čištění osiřelých karet. Případně plný 2D editor (uspaný `_sed…` systém).
+- **Víc referenčních fotek na osobu** — robustnější rozpoznávání (v3.0, AI rozpoznávání).
 
 ---
 

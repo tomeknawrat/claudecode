@@ -106,6 +106,8 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 **Vycentrování sektorů:** řady v obou blocích jsou vycentrované (symetrická pyramida, `align-items:center`, odsazení `INDENT_L/R` = 0), celá skupina je vycentrovaná v panelu. **Výjimka: řada [0,1]** zůstává vlevo (`align-self:flex-start`).
 
+**Dynamický layout (minimum):** `SEAT_LAYOUT` je měnitelný (`let`), ukládá se do `ptz_seat_layout` (default `_SEAT_LAYOUT_DEFAULT`); `_rebuildSeatMaps()` přepočítá `SEAT_NUMBERS`/`SEAT_NUM_TO_IDX`/`TOTAL_SEATS`. Tlačítko `+` v liště CAM2 otevře dialog **„Upravit sedadla"** (`openSeatEditor`) — přidat číslo do bloku/řady, smazat podle čísla. `_remapSeatStorageByNumber` po změně přemapuje slot* pole **podle čísla sedadla** → kalibrace/fotky drží. Layout je i v záloze (export/import v2).
+
 ### Scan modal (skenování hlediště)
 - Otevře se z panelu CAM2
 - Zobrazí live WebRTC stream z CAM2 (přes MediaMTX WHEP endpoint `http://localhost:8889/cam2/whep`)
@@ -153,6 +155,8 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 | Slot assignments (sedadlo→preset) | localStorage `ptz_slot_assignments` |
 | Slot presets (sedadlo→číslo presetu) | localStorage `ptz_slot_presets` |
 | **Slot coords (sedadlo→VISCA pan/tilt/zoom)** | localStorage `ptz_slot_coords` |
+| Výchozí (baseline) coords | localStorage `ptz_slot_default_coords` |
+| **Layout sedadel (dynamický, řady)** | localStorage `ptz_seat_layout` |
 | Nastavení (IP, pass atd.) | localStorage `ptz_settings` |
 
 ---

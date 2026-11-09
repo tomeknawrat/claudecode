@@ -2029,7 +2029,7 @@ console.warn = (...args) => {
           <button class="scan-btn cam2-tool-btn icon-only" id="scanBtn" onclick="openScanModal()" title="Skenovat hlediště" style="--btn-bg:#f5f3ff;--btn-border:#ddd6fe;--btn-text:#6d28d9">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
           </button>
-          <button class="add-preset-btn cam2-tool-btn icon-only" id="addPresetBtn2" onclick="openAddPreset(2)" title="Přidat sedadlo" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
+          <button class="add-preset-btn cam2-tool-btn icon-only" id="addPresetBtn2" onclick="openSeatEditor()" title="Upravit sedadla (přidat / smazat)" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
           <button class="edit-order-btn cam2-tool-btn icon-only" id="editOrderBtn2" onclick="toggleEditOrder(2)" title="Přesunout / přeuspořádat sedadla" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
@@ -2132,6 +2132,38 @@ console.warn = (...args) => {
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="clearResetResolve(false)">Zrušit</button>
       <button class="modal-btn modal-btn-danger" onclick="clearResetResolve(true)">Smazat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ UPRAVIT SEDADLA (dynamický layout) ══ -->
+<div class="modal-overlay" id="seatEditorOverlay">
+  <div class="modal" style="width:360px">
+    <div class="modal-title" style="color:var(--blue-d)">Upravit sedadla</div>
+    <div style="font-size:12.5px;color:var(--text-3);line-height:1.5;margin-bottom:10px;">
+      Změny se uloží a kalibrace/fotky zůstanou u svých čísel sedadel.
+    </div>
+
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-2);margin-bottom:6px;">Přidat sedadlo</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+      <input type="number" id="seatEditAddNum" placeholder="Číslo" min="0" style="width:72px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;">
+      <select id="seatEditBlock" onchange="_seatEditorFillRows()" style="padding:7px 8px;border:1px solid var(--border);border-radius:6px;">
+        <option value="left">Blok A</option>
+        <option value="right">Blok B</option>
+      </select>
+      <select id="seatEditRow" style="flex:1;min-width:120px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;"></select>
+    </div>
+    <button class="modal-btn" onclick="seatEditorAdd()" style="width:100%;background:var(--blue-soft);color:var(--blue-d);border:1px solid var(--blue-mid);margin-bottom:14px;">+ Přidat do řady</button>
+
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-2);margin-bottom:6px;">Smazat sedadlo</div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+      <input type="number" id="seatEditDelNum" placeholder="Číslo" style="width:72px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;">
+      <button class="modal-btn modal-btn-danger" onclick="seatEditorRemove()" style="flex:1;">Smazat sedadlo</button>
+    </div>
+
+    <div id="seatEditMsg" style="font-size:12.5px;min-height:16px;margin-top:4px;"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeSeatEditor()">Zavřít</button>
     </div>
   </div>
 </div>
@@ -3423,6 +3455,7 @@ function exportPresets() {
     version: 2,
     exported: new Date().toISOString(),
     presets: state.presets,
+    seatLayout: SEAT_LAYOUT,                                           // dynamický layout sedadel (řady)
     slotAssignments: slotAssignments ? [...slotAssignments] : null,
     slotPresets: slotPresets ? [...slotPresets] : null,
     slotCoords: slotCoords ? [...slotCoords] : null,                 // pracovní VISCA souřadnice sedadel
@@ -3455,6 +3488,12 @@ function importPresets(e) {
       if (!data.presets || !data.presets[1] || !data.presets[2]) throw new Error('Neplatný formát souboru');
       state.presets[1] = data.presets[1];
       state.presets[2] = data.presets[2];
+      // Dynamický layout sedadel — aplikuj PŘED slot poli (ta jsou v jeho pořadí/délce)
+      if (data.seatLayout && Array.isArray(data.seatLayout.left) && Array.isArray(data.seatLayout.right)) {
+        SEAT_LAYOUT = _deepCopyLayout(data.seatLayout);
+        _rebuildSeatMaps();
+        _saveSeatLayout();
+      }
       if (Array.isArray(data.slotAssignments)) {
         slotAssignments = _fitSeatArray(data.slotAssignments);
         try { localStorage.setItem('ptz_slot_assignments', JSON.stringify(slotAssignments)); } catch(e) {}
@@ -3477,8 +3516,10 @@ function importPresets(e) {
       }
       await savePresetsStorage();
       renderPresets();
+      if (window.applyZoom) window.applyZoom();
       if (seatLayoutActive) renderSeatLayout();
       const bits = ['presety'];
+      if (data.seatLayout) bits.push('layout sedadel');
       if (Array.isArray(data.slotCoords)) bits.push('souřadnice');
       if (Array.isArray(data.slotDefaultCoords)) bits.push('výchozí pozice');
       if (data.settings) bits.push('nastavení');
@@ -3660,8 +3701,9 @@ let slotAssignments = null; // pole indexů do state.presets[2], nebo null
 // Ukládaný do localStorage jako JSON
 // Struktura: { sections: [ { id, name, rows: [ [seatNum, ...], ... ] } ] }
 
-// ── SEAT LAYOUT — původní struktura (rows + margin-left) ──
-const SEAT_LAYOUT = {
+// ── SEAT LAYOUT — řádková struktura (DYNAMICKÁ: lze přidat/smazat sedadlo) ──
+// Výchozí (tovární) rozložení sálu — záloha pro „obnovit výchozí layout".
+const _SEAT_LAYOUT_DEFAULT = {
   left: [
     [16, 15, 14, 13, 12, 11],
     [27, 26, 25, 24, 23, 22, 21],
@@ -3680,22 +3722,51 @@ const SEAT_LAYOUT = {
     [161, 162, 163, 164, 165, 166, 167],
   ],
 };
+function _deepCopyLayout(L) {
+  return {
+    left:  L.left.map(r => Array.isArray(r) ? r.slice() : r),
+    right: L.right.map(r => r.slice()),
+  };
+}
+// Načte uložený layout z localStorage (ptz_seat_layout), jinak výchozí.
+function _loadSeatLayout() {
+  try {
+    const raw = localStorage.getItem('ptz_seat_layout');
+    if (raw) {
+      const L = JSON.parse(raw);
+      if (L && Array.isArray(L.left) && Array.isArray(L.right)
+          && L.left.every(r => Array.isArray(r)) && L.right.every(r => Array.isArray(r))) {
+        return L;
+      }
+    }
+  } catch (e) {}
+  return _deepCopyLayout(_SEAT_LAYOUT_DEFAULT);
+}
+function _saveSeatLayout() {
+  try { localStorage.setItem('ptz_seat_layout', JSON.stringify(SEAT_LAYOUT)); } catch (e) {}
+}
 
-const SEAT_NUMBERS = (() => {
+let SEAT_LAYOUT = _loadSeatLayout();
+let SEAT_NUMBERS = [];
+let SEAT_NUM_TO_IDX = {};
+let TOTAL_SEATS = 0;
+
+// Přepočítá SEAT_NUMBERS / SEAT_NUM_TO_IDX / TOTAL_SEATS z aktuálního SEAT_LAYOUT.
+function _rebuildSeatMaps() {
   const arr = [];
   SEAT_LAYOUT.left.forEach(row => {
     if (Array.isArray(row)) arr.push(...row);
     else arr.push(...row.left, ...row.right);
   });
   SEAT_LAYOUT.right.forEach(row => arr.push(...row));
-  return arr;
-})();
+  SEAT_NUMBERS = arr;
+  SEAT_NUM_TO_IDX = {};
+  SEAT_NUMBERS.forEach((sn, i) => { SEAT_NUM_TO_IDX[sn] = i; });
+  TOTAL_SEATS = SEAT_NUMBERS.length;
+}
+_rebuildSeatMaps();
 
-const SEAT_NUM_TO_IDX = {};
-SEAT_NUMBERS.forEach((sn, i) => { SEAT_NUM_TO_IDX[sn] = i; });
-const TOTAL_SEATS = SEAT_NUMBERS.length;
-
-// Dummy pro kompatibilitu s novým kódem
+// Dummy pro kompatibilitu se starým (uspaným) 2D systémem
 function _loadSeatLayoutDef() { return null; }
 function _saveSeatLayoutDef() {}
 function _computeSeatMaps() {}
@@ -3703,6 +3774,118 @@ function _recomputeSeats() {}
 let _seatLayoutDef = null;
 
 function getTotalSlots() { return TOTAL_SEATS; }
+
+// ── DYNAMICKÝ LAYOUT: přidat/smazat sedadlo (úložiště keyované ČÍSLEM sedadla) ──
+// Po změně layoutu přemapuje slot* pole podle čísla sedadla, takže kalibrace,
+// souřadnice, presety a přiřazení fotek „drží" u svého sedadla (co zmizí, zahodí se).
+function _remapSeatStorageByNumber(oldNums) {
+  const remap = (arr) => {
+    const out = new Array(TOTAL_SEATS).fill(null);
+    if (!Array.isArray(arr)) return out;
+    for (let i = 0; i < TOTAL_SEATS; i++) {
+      const oldIdx = oldNums.indexOf(SEAT_NUMBERS[i]);
+      out[i] = (oldIdx >= 0 && oldIdx < arr.length) ? arr[oldIdx] : null;
+    }
+    return out;
+  };
+  if (slotCoords)        { slotCoords = remap(slotCoords);               saveSlotCoordsStorage(); }
+  if (slotPresets)       { slotPresets = remap(slotPresets);             saveSlotPresetsStorage(); }
+  if (slotDefaultCoords) { slotDefaultCoords = remap(slotDefaultCoords); saveSlotDefaultCoordsStorage(); }
+  if (slotAssignments)   { slotAssignments = remap(slotAssignments);
+    try { localStorage.setItem('ptz_slot_assignments', JSON.stringify(slotAssignments)); } catch (e) {} }
+}
+
+// Přidá sedadlo `seatNum` do bloku ('left'/'right'), na konec řady `rowIdx`.
+function _addSeatToLayout(seatNum, block, rowIdx) {
+  const oldNums = [...SEAT_NUMBERS];
+  SEAT_LAYOUT[block][rowIdx].push(seatNum);
+  _rebuildSeatMaps();
+  _remapSeatStorageByNumber(oldNums);
+  _saveSeatLayout();
+}
+// Smaže sedadlo `seatNum` (z libovolné řady/bloku).
+function _removeSeatFromLayout(seatNum) {
+  const oldNums = [...SEAT_NUMBERS];
+  ['left', 'right'].forEach(block => {
+    SEAT_LAYOUT[block].forEach(row => {
+      if (!Array.isArray(row)) return;
+      const idx = row.indexOf(seatNum);
+      if (idx !== -1) row.splice(idx, 1);
+    });
+  });
+  _rebuildSeatMaps();
+  _remapSeatStorageByNumber(oldNums);
+  _saveSeatLayout();
+}
+function _refreshAfterLayoutChange() {
+  if (window.applyZoom) window.applyZoom();
+  if (seatLayoutActive) renderSeatLayout();
+}
+
+// ── Dialog „Upravit sedadla" (přidat/smazat) ──
+function openSeatEditor() {
+  const ov = document.getElementById('seatEditorOverlay');
+  if (!ov) return;
+  _seatEditorFillRows();
+  const addNum = document.getElementById('seatEditAddNum');
+  const delNum = document.getElementById('seatEditDelNum');
+  if (addNum) addNum.value = '';
+  if (delNum) delNum.value = '';
+  const msg = document.getElementById('seatEditMsg');
+  if (msg) { msg.textContent = ''; msg.style.color = ''; }
+  ov.classList.add('show');
+}
+function closeSeatEditor() {
+  const ov = document.getElementById('seatEditorOverlay');
+  if (ov) ov.classList.remove('show');
+}
+function _seatEditMsg(text, ok) {
+  const msg = document.getElementById('seatEditMsg');
+  if (msg) { msg.textContent = text; msg.style.color = ok ? '#16a34a' : 'var(--red)'; }
+}
+// Naplní výběr řad podle zvoleného bloku.
+function _seatEditorFillRows() {
+  const block = (document.getElementById('seatEditBlock') || {}).value || 'left';
+  const sel = document.getElementById('seatEditRow');
+  if (!sel) return;
+  const n = SEAT_LAYOUT[block].length;
+  const prev = sel.value;
+  sel.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = `Řada ${i + 1}  (${SEAT_LAYOUT[block][i].join(', ') || '—'})`;
+    sel.appendChild(o);
+  }
+  if (prev && prev < n) sel.value = prev;
+}
+function seatEditorAdd() {
+  const numRaw = (document.getElementById('seatEditAddNum') || {}).value;
+  const block = (document.getElementById('seatEditBlock') || {}).value || 'left';
+  const rowIdx = parseInt((document.getElementById('seatEditRow') || {}).value, 10);
+  const num = parseInt(numRaw, 10);
+  if (numRaw === '' || isNaN(num) || num < 0) { _seatEditMsg('Zadej platné číslo sedadla (≥ 0).', false); return; }
+  if (SEAT_NUM_TO_IDX[num] !== undefined) { _seatEditMsg(`Sedadlo ${num} už existuje.`, false); return; }
+  if (isNaN(rowIdx)) { _seatEditMsg('Vyber řadu.', false); return; }
+  _addSeatToLayout(num, block, rowIdx);
+  _refreshAfterLayoutChange();
+  logMsg('info', `Sedadlo ${num} přidáno (blok ${block === 'left' ? 'A' : 'B'}, řada ${rowIdx + 1}).`);
+  _seatEditMsg(`Sedadlo ${num} přidáno. Celkem ${TOTAL_SEATS} sedadel.`, true);
+  _seatEditorFillRows();
+  const addNum = document.getElementById('seatEditAddNum'); if (addNum) addNum.value = '';
+}
+function seatEditorRemove() {
+  const numRaw = (document.getElementById('seatEditDelNum') || {}).value;
+  const num = parseInt(numRaw, 10);
+  if (numRaw === '' || isNaN(num)) { _seatEditMsg('Zadej číslo sedadla ke smazání.', false); return; }
+  if (SEAT_NUM_TO_IDX[num] === undefined) { _seatEditMsg(`Sedadlo ${num} v layoutu není.`, false); return; }
+  _removeSeatFromLayout(num);
+  _refreshAfterLayoutChange();
+  logMsg('info', `Sedadlo ${num} smazáno z layoutu.`);
+  _seatEditMsg(`Sedadlo ${num} smazáno. Celkem ${TOTAL_SEATS} sedadel.`, true);
+  _seatEditorFillRows();
+  const delNum = document.getElementById('seatEditDelNum'); if (delNum) delNum.value = '';
+}
 
 // ── SLOT EDIT MÓD ──
 function toggleSlotEditMode() {

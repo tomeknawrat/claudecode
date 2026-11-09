@@ -32,6 +32,12 @@
 
 ## Záznamy dne
 
+### 9. 11. 2026 — ikonový toolbar CAM2 + zápatí „Ovládání kamer 2.0"
+1. **CAM2 toolbar na icon-only.** Tlačítka Skenovat / Přidat sedadlo / Přesunout / Uložit preset / Výchozí pozice / Smazat všechny fotky mají **jen ikonu** (textové popisky pryč), popisek je jen **tooltip** (`title`). Sladěno na **čtverec 42×42** (třída `icon-only`, ikona 20px); pose tlačítka 🧍🪑 taky 42×42. **„Kompaktní zobrazení" ponecháno s textem** (dle zadání). „Přidat sedadlo" dostalo `+` ikonu, „Přesunout" move ikonu. Přepínání režimu výchozích pozic teď mění `title` tlačítek (ne text).
+2. **Zápatí v Nastavení** → **„Ovládání kamer 2.0"**, „Poslední aktualizace 9. 11. 2026", odstraněn řádek „HTTP CGI · IP/LAN".
+
+Další na řadě: **dynamický layout sedadel** (přidávání/mazání/přečíslování z UI).
+
 ### 7. 11. 2026 (pokračování) — vycentrování sektorů + přepracování CAM1 Pódium
 1. **Vycentrování sektorů (Komentáře).** Řady v obou blocích jsou teď **vycentrované** (symetrická pyramida místo zarovnání vlevo) — `align-items:center` na blocích, odsazení `INDENT_L/R` vynulováno. Celá skupina sektorů vycentrovaná v panelu (`.seat-hall-live` `justify-content:center`; ve stacked `align-items:center`). **Výjimka: řada [0,1]** zůstává vlevo (`align-self:flex-start`). Pozor na úskalí: inline `align-items` na hall dřív přebíjel CSS → layout přesunut celý do CSS třídy `.seat-hall-live`.
 2. **CAM1 Pódium přepracováno:** „Přidat preset" **úplně odstraněno** (tlačítko + viditelnost). 5 presetů je teď **ikonový pruh s malými mezerami (6px, jako mezi sedadly) a bez textových popisků** (jméno jen tooltip), ikony **zmenšené**. **Ikony 3 „osobních" presetů** (`_cam1Icon`) = jednotný panáček v saku s kravatou (`_CAM1_SUIT`): **předsedající** + čárka (pultík) pod ním; **řečník vyšší** + šipka nahoru vpravo; **řečník nižší** + šipka dolů vlevo. Na úzkém okně se pruh **zalomí pod tlačítko „Uložit preset"** (`flex-wrap`). `equalizeCam1Tiles`/`layoutCam1Scenes` → no-op (layout řeší CSS). Tím zmizel i starý překryv „Scénka sedící" × „Uložit preset" na úzkém okně.

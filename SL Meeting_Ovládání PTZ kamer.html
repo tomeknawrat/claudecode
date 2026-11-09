@@ -533,7 +533,7 @@ console.warn = (...args) => {
      výplň = výplň toho boxu (#fef3c7), rámeček i ikona = barva slov (#92400e).
      Výška sjednocená s ostatními tlačítky lišty. */
   .cam2-pose .pose-btn {
-    width: auto; min-width: 0; height: 42px; padding: 0 11px;
+    width: 42px; min-width: 42px; height: 42px; padding: 0; justify-content: center;
     background: #fef3c7;
     border-color: #92400e;
     box-shadow: none;
@@ -1293,6 +1293,11 @@ console.warn = (...args) => {
   /* Aktivní přepínač (režim výchozích pozic) — vyplněný barvou */
   .cam-presets-section .cam2-tool-btn.active { background: var(--btn-text); color: #fff; }
   .cam-presets-section .cam2-tool-btn.active svg { stroke: #fff; }
+  /* Ikonová tlačítka CAM2 — bez textu, čtverec 42×42, sladěná velikost ikony */
+  .cam-presets-section .cam2-tool-btn.icon-only {
+    width: 42px; min-width: 42px; padding: 0; gap: 0; justify-content: center;
+  }
+  .cam-presets-section .cam2-tool-btn.icon-only svg { width: 20px; height: 20px; }
   /* Banner režimu výchozích pozic */
   .default-mode-banner {
     display: flex; align-items: center; gap: 8px;
@@ -1846,14 +1851,9 @@ console.warn = (...args) => {
     </div>
   </div>
   <div class="drawer-app-info">
-    <div class="drawer-app-info-name">Ovládání kamer</div>
+    <div class="drawer-app-info-name">Ovládání kamer 2.0</div>
     <div class="drawer-app-info-meta">
-      <span>Verze 1.2</span>
-      <span class="drawer-app-info-dot">·</span>
-      <span>Poslední aktualizace 28. 5. 2026</span>
-    </div>
-    <div class="drawer-app-info-meta" style="margin-top:2px">
-      <span>HTTP CGI · IP/LAN</span>
+      <span>Poslední aktualizace 9. 11. 2026</span>
     </div>
   </div>
 </div>
@@ -2026,23 +2026,23 @@ console.warn = (...args) => {
     <div class="cam-presets-section" style="position:relative;">
       <div class="cam-presets-header">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
-          <button class="scan-btn cam2-tool-btn" id="scanBtn" onclick="openScanModal()" style="--btn-bg:#f5f3ff;--btn-border:#ddd6fe;--btn-text:#6d28d9">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
-            Skenovat hlediště
+          <button class="scan-btn cam2-tool-btn icon-only" id="scanBtn" onclick="openScanModal()" title="Skenovat hlediště" style="--btn-bg:#f5f3ff;--btn-border:#ddd6fe;--btn-text:#6d28d9">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
           </button>
-          <button class="add-preset-btn cam2-tool-btn" id="addPresetBtn2" onclick="openAddPreset(2)" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">＋ Přidat sedadlo</button>
-          <button class="edit-order-btn" id="editOrderBtn2" onclick="toggleEditOrder(2)">⇅ Přesunout</button>
-          <button class="cam2-tool-btn" id="savePresetBtn2" onclick="saveSeatPresetManual()" title="Uložit aktuální (ručně upravenou) pozici kamery do presetu posledního vyvolaného sedadla" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span id="savePresetLabel2">Uložit preset</span>
+          <button class="add-preset-btn cam2-tool-btn icon-only" id="addPresetBtn2" onclick="openAddPreset(2)" title="Přidat sedadlo" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
-          <button class="cam2-tool-btn" id="defaultModeBtn2" onclick="toggleDefaultPosMode()" title="Režim nastavení výchozích pozic: klikni na sedadlo, dolaď joystickem a dej Uložit výchozí" style="--btn-bg:#f0fdfa;--btn-border:#5eead4;--btn-text:#0f766e">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
-            <span class="btn-label">Výchozí pozice</span>
+          <button class="edit-order-btn cam2-tool-btn icon-only" id="editOrderBtn2" onclick="toggleEditOrder(2)" title="Přesunout / přeuspořádat sedadla" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><polyline points="8 7 12 3 16 7"/><polyline points="8 17 12 21 16 17"/></svg>
           </button>
-          <button class="hide-presets-btn cam2-tool-btn" id="clearAllBtn2" onclick="openClearResetDialog()" title="Smazat uložené fotky/karty na CAM2 (volitelně i vrátit pozice na výchozí)" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
-            Smazat všechny fotky
+          <button class="cam2-tool-btn icon-only" id="savePresetBtn2" onclick="saveSeatPresetManual()" title="Uložit aktuální (ručně upravenou) polohu kamery do presetu posledního sedadla" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          </button>
+          <button class="cam2-tool-btn icon-only" id="defaultModeBtn2" onclick="toggleDefaultPosMode()" title="Výchozí pozice (nastavit baseline pozice sedadel)" style="--btn-bg:#f0fdfa;--btn-border:#5eead4;--btn-text:#0f766e">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
+          </button>
+          <button class="hide-presets-btn cam2-tool-btn icon-only" id="clearAllBtn2" onclick="openClearResetDialog()" title="Smazat všechny fotky (volitelně i vrátit pozice na výchozí)" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
           </button>
           <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()" style="margin-left:auto">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="10" y="4" width="4" height="4" rx="1"/><rect x="17" y="4" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="10" y="11" width="4" height="4" rx="1"/><rect x="17" y="11" width="4" height="4" rx="1"/><rect x="3" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="17" y="18" width="4" height="4" rx="1"/></svg>
@@ -3113,11 +3113,12 @@ function toggleDefaultPosMode() {
   const btn = document.getElementById('defaultModeBtn2');
   if (btn) {
     btn.classList.toggle('active', defaultPosMode);
-    const lbl = btn.querySelector('.btn-label');
-    if (lbl) lbl.textContent = defaultPosMode ? 'Hotovo' : 'Výchozí pozice';
+    btn.title = defaultPosMode ? 'Hotovo — ukončit režim výchozích pozic' : 'Výchozí pozice (nastavit baseline pozice sedadel)';
   }
-  const saveLbl = document.getElementById('savePresetLabel2');
-  if (saveLbl) saveLbl.textContent = defaultPosMode ? 'Uložit výchozí' : 'Uložit preset';
+  const saveBtn = document.getElementById('savePresetBtn2');
+  if (saveBtn) saveBtn.title = defaultPosMode
+    ? 'Uložit aktuální polohu kamery jako VÝCHOZÍ pozici sedadla'
+    : 'Uložit aktuální (ručně upravenou) polohu kamery do presetu posledního sedadla';
   const banner = document.getElementById('defaultModeBanner');
   if (banner) banner.style.display = defaultPosMode ? 'flex' : 'none';
   const grid = document.getElementById('seatLayoutGrid2');

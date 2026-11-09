@@ -2,7 +2,7 @@
 
 > Přehled hotového, rozpracovaného a dalšího směru. Doplňuje
 > `KONTEXT_PRO_NOVY_CHAT.md` (popis projektu) a `SESSION_HANDOFF.md` (stav práce).
-> Aktualizováno: **8. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
+> Aktualizováno: **9. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
 > Hlavní soubor appky: **`SL Meeting_Ovládání PTZ kamer.html`**.
 
 ---
@@ -81,6 +81,11 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 - Tažení se spustí až po pohybu nad práh (6 px) — krátký klik (vyvolat preset) i hold (uložit pozici) zůstávají funkční.
 - Tlačítko „Přesunout" je v seat layoutu skryté (v klasickém/kompaktním gridu zůstává).
 - Ověřeno simulací v Playwrightu (přesun přiřazení + nulový posun při kliku).
+
+## ✅ CAM2 toolbar na ikony + zápatí 2.0 (hotovo 9. 11.)
+
+- **Toolbar CAM2 = jen ikony** (bez textových popisků), popisek jako **tooltip**. Sladěno na **čtverec 42×42** (třída `icon-only`), pose 🧍🪑 taky 42×42. **„Kompaktní zobrazení" ponecháno s textem.** Přepínání režimu výchozích pozic mění `title` (ne text).
+- **Zápatí v Nastavení** → „Ovládání kamer 2.0", datum 9. 11. 2026, bez „HTTP CGI · IP/LAN".
 
 ## ✅ UI lišta CAM2 + „Uložit preset" (hotovo)
 

@@ -119,8 +119,8 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - Modely se stáhnou z CDN při prvním použití (~12MB)
 - Rozpoznané osoby = presety (fotka + jméno), uložené v IndexedDB
 
-### Osoby (rozpoznávání tváří)
-- Sekce v nastavení (boční panel)
+### Osoby (rozpoznávání tváří) — modal „Databáze osob"
+- **Samostatný modal** (`#personsDbOverlay`, otevírá tlačítko `personsDbBtn` v hlavičce přes `openPersonsDb()`); **přesunuto z bočního panelu Nastavení** (10. 11. 2026). Zatím velmi basic, další práce ve v3.0.
 - Přidání osoby: jméno + fotka + automatický facial embedding
 - Threshold slider 0.3–0.8 (default 0.5)
 - Osoby uložené v IndexedDB (`ptz_persons`)
@@ -131,8 +131,9 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - Kamera 1 – IP, user, pass, rychlosti, test připojení
 - Kamera 2 – IP, user, pass, rychlosti, test, RTSP URL, „✓ Použít RTSP URL" (spustí MediaMTX)
 - Pozice sedí/stojí (čísla presetů pro speciální pozice)
-- Osoby (rozpoznávání)
 - Log
+
+> Pozn.: **Osoby (rozpoznávání)** už nejsou v Nastavení — přesunuty do samostatného modalu „Databáze osob" (viz výše).
 
 ---
 

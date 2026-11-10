@@ -1643,7 +1643,7 @@ console.warn = (...args) => {
     <div class="status-pill status-pill--dot" id="headerStatusPill" title="Server nepřipojen">
       <div class="status-dot err" id="statusDot"></div>
     </div>
-    <button class="settings-btn" id="personsDbBtn" onclick="showToast('Databáze osob — zatím nedostupné (připravujeme)')" title="Databáze osob — připravujeme" style="opacity:.6">
+    <button class="settings-btn" id="personsDbBtn" onclick="openPersonsDb()" title="Databáze osob">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Databáze osob
     </button>
@@ -1798,57 +1798,6 @@ console.warn = (...args) => {
       </div>
     </div>
 
-    <!-- OSOBY — rozpoznávání tváří -->
-    <div class="drawer-section-divider"></div>
-    <div class="drawer-section">
-      <div class="drawer-collapsible-header" onclick="toggleDrawerSection(this)">
-        <span class="drawer-collapsible-label">Osoby (rozpoznávání tváří)</span>
-        <span class="drawer-collapsible-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      </div>
-      <div class="drawer-collapsible-body">
-        <div class="drawer-collapsible-inner">
-          <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;line-height:1.6;">
-            Nahrajte oficiální fotky osob. Při skenování aplikace rozpozná tvář a použije oficiální fotku místo screenshotu.
-          </div>
-
-          <!-- Seznam osob -->
-          <div id="personsList"></div>
-
-          <!-- Přidání osoby -->
-          <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
-            <input type="text" id="newPersonName" placeholder="Jméno osoby"
-              style="width:100%;padding:7px 10px;border-radius:var(--r-xs);border:1.5px solid var(--border);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;"
-              onkeydown="if(event.key==='Enter')addPersonFromInput()">
-            <div style="display:flex;gap:6px;">
-              <button onclick="document.getElementById('personPhotoInput').click()"
-                style="flex:1;padding:7px;border-radius:var(--r-xs);border:1.5px solid var(--border2);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-2)">
-                📷 Vybrat fotku
-              </button>
-              <button onclick="addPersonFromInput()"
-                style="flex:1;padding:7px;border-radius:var(--r-xs);border:1.5px solid var(--blue-mid);background:var(--blue-soft);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--blue)">
-                ＋ Přidat osobu
-              </button>
-            </div>
-            <input type="file" id="personPhotoInput" accept="image/*" style="display:none" onchange="handlePersonPhoto(event)">
-            <div id="personPhotoPreviewWrap" style="display:none;position:relative;width:60px;">
-              <img id="personPhotoPreview" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border2);">
-              <button onclick="clearPersonPhoto()" style="position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;border:none;background:var(--red);color:white;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
-            </div>
-          </div>
-
-          <div id="personsStatus" style="margin-top:8px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3);min-height:16px;"></div>
-
-          <div class="drawer-section-divider" style="margin:12px 0"></div>
-          <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Práh rozpoznávání (0.0–1.0, nižší = přísnější)</div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="range" id="faceMatchThreshold" min="0.3" max="0.8" step="0.05" value="0.5"
-              style="flex:1;accent-color:#7c3aed"
-              oninput="document.getElementById('faceMatchThresholdVal').textContent=this.value;saveSettings()">
-            <span id="faceMatchThresholdVal" style="font-family:'DM Mono',monospace;font-size:12px;min-width:30px;">0.5</span>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- LOG -->
     <div class="drawer-section-divider"></div>
@@ -2173,6 +2122,55 @@ console.warn = (...args) => {
   </div>
 </div>
 
+
+<!-- ══ DATABÁZE OSOB (rozpoznávání tváří) ══ -->
+<div class="modal-overlay" id="personsDbOverlay" onclick="if(event.target===this)closePersonsDb()">
+  <div class="modal" style="width:360px">
+    <div class="modal-title">Databáze osob</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;line-height:1.6;">
+            Nahrajte oficiální fotky osob. Při skenování aplikace rozpozná tvář a použije oficiální fotku místo screenshotu.
+          </div>
+
+          <!-- Seznam osob -->
+          <div id="personsList"></div>
+
+          <!-- Přidání osoby -->
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+            <input type="text" id="newPersonName" placeholder="Jméno osoby"
+              style="width:100%;padding:7px 10px;border-radius:var(--r-xs);border:1.5px solid var(--border);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;"
+              onkeydown="if(event.key==='Enter')addPersonFromInput()">
+            <div style="display:flex;gap:6px;">
+              <button onclick="document.getElementById('personPhotoInput').click()"
+                style="flex:1;padding:7px;border-radius:var(--r-xs);border:1.5px solid var(--border2);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-2)">
+                📷 Vybrat fotku
+              </button>
+              <button onclick="addPersonFromInput()"
+                style="flex:1;padding:7px;border-radius:var(--r-xs);border:1.5px solid var(--blue-mid);background:var(--blue-soft);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--blue)">
+                ＋ Přidat osobu
+              </button>
+            </div>
+            <input type="file" id="personPhotoInput" accept="image/*" style="display:none" onchange="handlePersonPhoto(event)">
+            <div id="personPhotoPreviewWrap" style="display:none;position:relative;width:60px;">
+              <img id="personPhotoPreview" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border2);">
+              <button onclick="clearPersonPhoto()" style="position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;border:none;background:var(--red);color:white;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+            </div>
+          </div>
+
+          <div id="personsStatus" style="margin-top:8px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3);min-height:16px;"></div>
+
+          <div class="drawer-section-divider" style="margin:12px 0"></div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Práh rozpoznávání (0.0–1.0, nižší = přísnější)</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="range" id="faceMatchThreshold" min="0.3" max="0.8" step="0.05" value="0.5"
+              style="flex:1;accent-color:#7c3aed"
+              oninput="document.getElementById('faceMatchThresholdVal').textContent=this.value;saveSettings()">
+            <span id="faceMatchThresholdVal" style="font-family:'DM Mono',monospace;font-size:12px;min-width:30px;">0.5</span>
+          </div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closePersonsDb()">Zavřít</button>
+    </div>
+  </div>
+</div>
 <!-- ══ SCAN MODÁL ══ -->
 <div class="scan-overlay" id="scanOverlay">
   <div class="scan-modal">
@@ -6094,6 +6092,21 @@ async function _recognizeFace(face) {
   const descriptor = await _computeDescriptor(tmp);
   if (!descriptor) return { noFace: true }; // v ořezu se nepodařilo detekovat tvář
   return _findBestMatch(descriptor); // { person, distance, matched, threshold } nebo null
+}
+
+// ── Databáze osob (modal) ──
+function openPersonsDb() {
+  const ov = document.getElementById('personsDbOverlay');
+  if (!ov) return;
+  if (window._renderPersonsList) _renderPersonsList();
+  const thr = document.getElementById('faceMatchThreshold');
+  const thrVal = document.getElementById('faceMatchThresholdVal');
+  if (thr && thrVal) thrVal.textContent = thr.value;
+  ov.classList.add('show');
+}
+function closePersonsDb() {
+  const ov = document.getElementById('personsDbOverlay');
+  if (ov) ov.classList.remove('show');
 }
 
 // ── UI: render seznamu osob ──

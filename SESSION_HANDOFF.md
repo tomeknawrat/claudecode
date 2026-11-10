@@ -52,13 +52,18 @@
   - **Zoom-in sken napevno jako default** (`_scan.zoomScan = true`); zaškrtávátko `#zoomScanToggle` + hláška smazány. Tuning inputy (tilt před zoomem, min. jistota obličeje) zůstaly.
 - Ověřeno `node --check` (OK) + Playwright render.
 
+### 10. 11. 2026 (pokračování 3) — Databáze osob (modal) + designové odstupy
+- **„Databáze osob" zprovozněna:** sekce „Osoby (rozpoznávání tváří)" **přesunuta z Nastavení** do samostatného modalu `#personsDbOverlay` (vzor `.modal-overlay`/`.modal`). Tlačítko `personsDbBtn` v hlavičce teď volá `openPersonsDb()` (dřív toast; opacity .6 zrušena), `closePersonsDb()` zavírá. Obsah 1:1 (seznam osob, přidání jméno+fotka, status, práh rozpoznávání). `openPersonsDb` při otevření volá `_renderPersonsList()` + sync hodnoty slideru. Zatím basic — další práce plánovaná na **v3.0**.
+- **Manuální ovládání — symetrie 8 px** (viz pokračování 2): `.controls-row` `padding-bottom:8px` + `.panel--cam2 .controls-row { padding-top:8px }`.
+- **Žlutá pod dashed hranou** (viz pokračování 2): `.default-pos-mode` `margin-bottom:6px`.
+
 ### 10. 11. 2026 — UI úpravy po lokálním testu layoutu
 - **Stacked:** odstraněna dělicí lajna mezi sektory (gap zvětšen na 26px).
 - **Fix:** tužka/koš se už nezmenšují na úzkém okně — v `@media max-width:1100px` přidán override `.icon-only svg` (26px, scan 30px) přes `!important` (předtím `.add-preset-btn svg`/`.hide-presets-btn svg` 13px !important vyhrávalo).
 - **Tooltipy:** Uložit → „Uložit aktuální pozici do posledního vybraného presetu"; Výchozí pozice → „Nastavit výchozí pozice sedadel"; Koš → „Smazat všechny fotky" (i v `toggleDefaultPosMode`).
 - **Dialog „Smazat všechny fotky":** titulek s otazníkem, text zkrácen na „Smažou se všechny momentálně uložené fotky na sedadlech.", odstraněno „Akce je nevratná.", checkbox **vždy viditelný** s textem „Vrátit presety na výchozí pozice?".
 - **Přepínač zobrazení:** „Detailní"/„Kompaktní" (vyhozeno „ZOBRAZENÍ").
-- **Hlavička:** přidáno **neaktivní tlačítko „Databáze osob"** (`personsDbBtn`, users ikona, opacity .6) mezi stavovou tečku a Nastavení — zaparkované místo pro budoucí správu osob/rozpoznávání (klik = toast „zatím nedostupné").
+- **Hlavička:** tlačítko **„Databáze osob"** (`personsDbBtn`, users ikona) mezi stavovou tečku a Nastavení. **10. 11. 2026 zprovozněno** — otevírá modal „Databáze osob" (`openPersonsDb()`), do kterého byla přesunuta sekce „Osoby (rozpoznávání tváří)" z Nastavení (dřív jen toast „zatím nedostupné"; opacity .6 zrušena).
 - **Dialog sedadel:** titulek „Přidat/smazat sedadlo", odstraněna věta pod ním.
 - **Fix kompaktní lišty:** tlačítko „Přesunout" (`editOrderBtn2`) **skryto** z lišty (`_updateCam2BtnVisibility` ho vždy `hide`) — pozůstatek starého workflow, v kompaktním gridu se mu přepisoval obsah na text a rozbíjelo lištu. Funkce (reorder karet) zůstává v kódu „uspaná".
 - **Kompaktní zobrazení — jen „Uložit":** nástroje nad hledištěm (scan / upravit sedadla / výchozí pozice / smazat fotky) se v kompaktním gridu **skryjí** (patří k detailnímu zobrazení), zůstane jen Uložit + pose + přepínač. V detailním se ukážou všechny. (Pozn.: karty v kompaktním se řadí podle pořadí v `state.presets[2]`, číslované dle pozice; drag&drop byl jen v režimu „Přesunout" = teď neaktivní.)

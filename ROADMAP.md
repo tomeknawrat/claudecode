@@ -141,6 +141,7 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 
 - **Dynamický layout — rozšíření:** přesun sedadel (drag&drop / přečíslování), přejmenování, „obnovit výchozí layout", čištění osiřelých karet. Případně plný 2D editor (uspaný `_sed…` systém).
 - **Víc referenčních fotek na osobu** — robustnější rozpoznávání (v3.0, AI rozpoznávání).
+- **Databáze osob (v3.0)** — modal „Databáze osob" (přesunuto z Nastavení 10. 11. 2026) je zatím velmi basic (jméno + 1 fotka + práh); plánuje se rozšíření ve v3.0 (správa osob, víc fotek, propojení s rozpoznáváním při skenu).
 
 ---
 

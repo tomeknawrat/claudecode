@@ -114,7 +114,7 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - Kamera projíždí kalibrovanými sedadly (**po VISCA souřadnicích** `slotCoords`, fallback preset) a fotí tváře
 - Výběr tváře: nejblíž **top-center** (`_pickSeatFace`), brána obsazenosti
 - Fotka sedadla: 4:3 ořez vycentrovaný na obličej, top-center, **bez detekčního rámečku** (`_faceCropPhoto`)
-- Opt-in **zoom-in sken** (`_scan.zoomScan`) — přiblíží a od nejtěsnějšího oddaluje
+- **Zoom-in sken** (`_scan.zoomScan`) — defaultně zapnutý napevno (zaškrtávátko zrušeno) — přiblíží a od nejtěsnějšího oddaluje
 - Rozpoznávání tváří přes face-api.js (ssdMobilenetv1 + faceLandmark68Net + faceRecognitionNet)
 - Modely se stáhnou z CDN při prvním použití (~12MB)
 - Rozpoznané osoby = presety (fotka + jméno), uložené v IndexedDB

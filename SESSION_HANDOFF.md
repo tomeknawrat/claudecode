@@ -11,7 +11,7 @@
 - ✅ **Face recognition opraveno** — appka už nezamrzá na „Počítám embedding".
 - ✅ **UI přepracování hotové** — karty sedadel, seat layout, hlavička CAM2, pose ikonky.
 - ⏳ **Sken „po souřadnicích" (VISCA-over-IP) hotový v kódu** — čeká na živý test ve čtvrtek (restart serveru + překalibrace sedadel). Vznikl proto, že hardware joystick (AVMatrix PKC3500) přepsal sdílenou preset paměť kamery.
-- ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro.
+- ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro. **10. 11.: zoom-in sken je teď defaultní auto funkce napevno v kódu (`_scan.zoomScan = true`); zaškrtávátko + hláška ve scan modalu zrušeny.**
 - ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
 - ✅ **Zrušen mód „Editace presetů sedadel"** — workflow bez módů (Uložit preset / drag&drop). Funkce módu zůstávají v kódu uspané.
 - ✅ **Mazání jedné fotky = pravý klik na kartě** (7. 11.) — ikonka koše na kartě zrušena.
@@ -38,6 +38,17 @@
 - **Sjednocení CAM1 podle CAM2:** skupina „Pozice" v manuálním ovládání CAM1 skryta (`hideCam1PoseGroup`) — CAM2 ji taky nemá (pose přesunuto do lišty). `#pose1-sit/#pose1-stand img` **zůstávají v DOM** (display:none) jako zdroj obrázků pro scénka presety v Pódiu.
 - **Odstup:** `.ctrl-divider` margin 16→3px (čára blíž k tlačítkům), banner výchozích pozic margin symetricky (8px nahoře i dole).
 - **Footer:** datum aktualizace 10. 11. 2026.
+
+### 10. 11. 2026 (pokračování) — doladění manuálního ovládání + scan modal
+- **AF/MF tooltipy** (upřesnění oproti výše): velké první písmeno → „Automatické zaostření" / „Manuální zaostření" (`fm1auto/fm1manual/fm2auto/fm2manual`, oba panely).
+- **Focus tlačítka Blíže/Dále:** `title` úplně odstraněn z `.focus-btn` (`focusnear`/`focusfar`) v obou panelech — při přepnutí na MF se už hláška neukazuje.
+- **Divider-mezera (náhrada margin triku výše):** `.controls-row` změněn na `align-items: center` → kratší skupiny (zoom, focus) se vertikálně vycentrují, takže přerušovaná čára (`.ctrl-divider`, `align-self:stretch`) má stejnou mezeru nad i pod tlačítky (ověřeno Playwrightem: zoom 26 px nahoře i dole, focus 33 px). Platí pro CAM1 i CAM2 (sdílené CSS).
+- **Banner výchozích pozic:** spodní margin 8→16 px, aby přerušovaný outline seat gridu (`outline-offset:6px`) seděl 8 px pod boxem = stejně jako mezera nad boxem (dřív outline nalepený přesně na spodní hranu, mezera 0 px).
+- **Scan modal „Skenování hlediště":**
+  - Titulek zkrácen: „Skenování hlediště — Kamera pro komentáře" → „Skenování hlediště".
+  - **Smazáno** kompaktní manuální PTZ ovládání (Pohyb kamery + Zoom) uvnitř modalu — při automatickém skenu není potřeba.
+  - **Zoom-in sken napevno jako default** (`_scan.zoomScan = true`); zaškrtávátko `#zoomScanToggle` + hláška smazány. Tuning inputy (tilt před zoomem, min. jistota obličeje) zůstaly.
+- Ověřeno `node --check` (OK) + Playwright render.
 
 ### 10. 11. 2026 — UI úpravy po lokálním testu layoutu
 - **Stacked:** odstraněna dělicí lajna mezi sektory (gap zvětšen na 26px).

@@ -408,7 +408,7 @@ console.warn = (...args) => {
     width: 1px;
     align-self: stretch;
     background: var(--border2);
-    margin: 16px 14px;
+    margin: 3px 14px;
     flex-shrink: 0;
     border-radius: 1px;
   }
@@ -1304,7 +1304,7 @@ console.warn = (...args) => {
   /* Banner režimu výchozích pozic */
   .default-mode-banner {
     display: flex; align-items: center; gap: 8px;
-    margin: 8px 0 6px; padding: 8px 12px; border-radius: var(--r-xs);
+    margin: 8px 0; padding: 8px 12px; border-radius: var(--r-xs);
     background: #f0fdfa; border: 1.5px solid #5eead4; color: #0f766e;
     font-size: 12.5px; font-weight: 600; line-height: 1.3;
   }
@@ -1864,7 +1864,7 @@ console.warn = (...args) => {
   <div class="drawer-app-info">
     <div class="drawer-app-info-name">Ovládání kamer 2.0</div>
     <div class="drawer-app-info-meta">
-      <span>Poslední aktualizace 9. 11. 2026</span>
+      <span>Poslední aktualizace 10. 11. 2026</span>
     </div>
   </div>
 </div>
@@ -1886,17 +1886,17 @@ console.warn = (...args) => {
       <!-- Pohyb kamery -->
       <div class="ctrl-group">
         <div class="ptz-grid">
-        <div class="ptz-btn" data-cam="1" data-cmd="ul" title="Levý horní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V7h10M7 7l10 10"/></svg></div>
-        <div class="ptz-btn" data-cam="1" data-cmd="up" title="Nahor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
-        <div class="ptz-btn" data-cam="1" data-cmd="ur" title="Pravý horní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17V7H7M17 7L7 17"/></svg></div>
-        <div class="ptz-btn" data-cam="1" data-cmd="left" title="Doleva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
-        <div class="ptz-btn ptz-center" onclick="sendCmd(1,'gotopreset',0)" title="Domů (preset 0)">
+        <div class="ptz-btn" data-cam="1" data-cmd="ul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V7h10M7 7l10 10"/></svg></div>
+        <div class="ptz-btn" data-cam="1" data-cmd="up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+        <div class="ptz-btn" data-cam="1" data-cmd="ur"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17V7H7M17 7L7 17"/></svg></div>
+        <div class="ptz-btn" data-cam="1" data-cmd="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+        <div class="ptz-btn ptz-center" onclick="sendCmd(1,'gotopreset',0)">
           <span style="font-size:18px">🏠</span>
         </div>
-        <div class="ptz-btn" data-cam="1" data-cmd="right" title="Doprava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
-        <div class="ptz-btn" data-cam="1" data-cmd="dl" title="Levý dolní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7v10h10M7 17L17 7"/></svg></div>
-        <div class="ptz-btn" data-cam="1" data-cmd="down" title="Nadol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
-        <div class="ptz-btn" data-cam="1" data-cmd="dr" title="Pravý dolní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7v10H7M17 17L7 7"/></svg></div>
+        <div class="ptz-btn" data-cam="1" data-cmd="right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="ptz-btn" data-cam="1" data-cmd="dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7v10h10M7 17L17 7"/></svg></div>
+        <div class="ptz-btn" data-cam="1" data-cmd="down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
+        <div class="ptz-btn" data-cam="1" data-cmd="dr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7v10H7M17 17L7 7"/></svg></div>
         </div>
       </div>
 
@@ -1905,8 +1905,8 @@ console.warn = (...args) => {
       <!-- Zoom -->
       <div class="ctrl-group">
         <div class="zoom-btns">
-            <div class="zoom-btn" data-cam="1" data-cmd="zoomin" title="Přiblížit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg></div>
-            <div class="zoom-btn" data-cam="1" data-cmd="zoomout" title="Oddálit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></div>
+            <div class="zoom-btn" data-cam="1" data-cmd="zoomin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg></div>
+            <div class="zoom-btn" data-cam="1" data-cmd="zoomout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></div>
         </div>
       </div>
 
@@ -1916,8 +1916,8 @@ console.warn = (...args) => {
       <div class="ctrl-group">
         <div class="focus-col" id="focusRow1">
             <div class="focus-mode-pills" style="margin-bottom:6px">
-              <div class="focus-pill active" id="fm1auto" onclick="setFocusMode(1,'auto')" title="Auto Focus">AF</div>
-              <div class="focus-pill" id="fm1manual" onclick="setFocusMode(1,'manual')" title="Manuální zaostřování">MF</div>
+              <div class="focus-pill active" id="fm1auto" onclick="setFocusMode(1,'auto')" title="automatické zaostření">AF</div>
+              <div class="focus-pill" id="fm1manual" onclick="setFocusMode(1,'manual')" title="manuální zaostření">MF</div>
             </div>
             <div class="focus-btns-pair">
               <div class="focus-btn" data-cam="1" data-cmd="focusnear" title="Blíže"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5M11 8v6M8 11h6"/></svg></div>
@@ -1969,17 +1969,17 @@ console.warn = (...args) => {
       <!-- Pohyb kamery -->
       <div class="ctrl-group">
         <div class="ptz-grid">
-        <div class="ptz-btn" data-cam="2" data-cmd="ul" title="Levý horní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V7h10M7 7l10 10"/></svg></div>
-        <div class="ptz-btn" data-cam="2" data-cmd="up" title="Nahor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
-        <div class="ptz-btn" data-cam="2" data-cmd="ur" title="Pravý horní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17V7H7M17 7L7 17"/></svg></div>
-        <div class="ptz-btn" data-cam="2" data-cmd="left" title="Doleva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
-        <div class="ptz-btn ptz-center" onclick="sendCmd(2,'gotopreset',0)" title="Domů (preset 0)">
+        <div class="ptz-btn" data-cam="2" data-cmd="ul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V7h10M7 7l10 10"/></svg></div>
+        <div class="ptz-btn" data-cam="2" data-cmd="up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+        <div class="ptz-btn" data-cam="2" data-cmd="ur"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17V7H7M17 7L7 17"/></svg></div>
+        <div class="ptz-btn" data-cam="2" data-cmd="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+        <div class="ptz-btn ptz-center" onclick="sendCmd(2,'gotopreset',0)">
           <span style="font-size:18px">🏠</span>
         </div>
-        <div class="ptz-btn" data-cam="2" data-cmd="right" title="Doprava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
-        <div class="ptz-btn" data-cam="2" data-cmd="dl" title="Levý dolní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7v10h10M7 17L17 7"/></svg></div>
-        <div class="ptz-btn" data-cam="2" data-cmd="down" title="Nadol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
-        <div class="ptz-btn" data-cam="2" data-cmd="dr" title="Pravý dolní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7v10H7M17 17L7 7"/></svg></div>
+        <div class="ptz-btn" data-cam="2" data-cmd="right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="ptz-btn" data-cam="2" data-cmd="dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7v10h10M7 17L17 7"/></svg></div>
+        <div class="ptz-btn" data-cam="2" data-cmd="down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
+        <div class="ptz-btn" data-cam="2" data-cmd="dr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7v10H7M17 17L7 7"/></svg></div>
         </div>
       </div>
 
@@ -1988,8 +1988,8 @@ console.warn = (...args) => {
       <!-- Zoom -->
       <div class="ctrl-group">
         <div class="zoom-btns">
-          <div class="zoom-btn" data-cam="2" data-cmd="zoomin" title="Přiblížit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg></div>
-          <div class="zoom-btn" data-cam="2" data-cmd="zoomout" title="Oddálit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></div>
+          <div class="zoom-btn" data-cam="2" data-cmd="zoomin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/></svg></div>
+          <div class="zoom-btn" data-cam="2" data-cmd="zoomout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35M8 11h6"/></svg></div>
         </div>
       </div>
 
@@ -1999,8 +1999,8 @@ console.warn = (...args) => {
       <div class="ctrl-group">
         <div class="focus-col" id="focusRow2">
           <div class="focus-mode-pills" style="margin-bottom:6px">
-            <div class="focus-pill active" id="fm2auto" onclick="setFocusMode(2,'auto')" title="Auto Focus">AF</div>
-            <div class="focus-pill" id="fm2manual" onclick="setFocusMode(2,'manual')" title="Manuální zaostřování">MF</div>
+            <div class="focus-pill active" id="fm2auto" onclick="setFocusMode(2,'auto')" title="automatické zaostření">AF</div>
+            <div class="focus-pill" id="fm2manual" onclick="setFocusMode(2,'manual')" title="manuální zaostření">MF</div>
           </div>
           <div class="focus-btns-pair">
             <div class="focus-btn" data-cam="2" data-cmd="focusnear" title="Blíže"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5M11 8v6M8 11h6"/></svg></div>
@@ -2199,17 +2199,17 @@ console.warn = (...args) => {
           <div class="ctrl-group">
             <span class="ctrl-label">Pohyb kamery</span>
             <div class="ptz-grid">
-              <div class="ptz-btn" data-cam="2" data-cmd="ul" title="Levý horní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V7h10M7 7l10 10"/></svg></div>
-              <div class="ptz-btn" data-cam="2" data-cmd="up" title="Nahor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
-              <div class="ptz-btn" data-cam="2" data-cmd="ur" title="Pravý horní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17V7H7M17 7L7 17"/></svg></div>
-              <div class="ptz-btn" data-cam="2" data-cmd="left" title="Doleva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
-              <div class="ptz-btn ptz-center" onclick="sendCmd(2,'gotopreset',0)" title="Domů (preset 0)">
+              <div class="ptz-btn" data-cam="2" data-cmd="ul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V7h10M7 7l10 10"/></svg></div>
+              <div class="ptz-btn" data-cam="2" data-cmd="up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+              <div class="ptz-btn" data-cam="2" data-cmd="ur"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17V7H7M17 7L7 17"/></svg></div>
+              <div class="ptz-btn" data-cam="2" data-cmd="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+              <div class="ptz-btn ptz-center" onclick="sendCmd(2,'gotopreset',0)">
                 <span style="font-size:18px">🏠</span>
               </div>
-              <div class="ptz-btn" data-cam="2" data-cmd="right" title="Doprava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
-              <div class="ptz-btn" data-cam="2" data-cmd="dl" title="Levý dolní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7v10h10M7 17L17 7"/></svg></div>
-              <div class="ptz-btn" data-cam="2" data-cmd="down" title="Nadol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
-              <div class="ptz-btn" data-cam="2" data-cmd="dr" title="Pravý dolní"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7v10H7M17 17L7 7"/></svg></div>
+              <div class="ptz-btn" data-cam="2" data-cmd="right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+              <div class="ptz-btn" data-cam="2" data-cmd="dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7v10h10M7 17L17 7"/></svg></div>
+              <div class="ptz-btn" data-cam="2" data-cmd="down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
+              <div class="ptz-btn" data-cam="2" data-cmd="dr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7v10H7M17 17L7 7"/></svg></div>
             </div>
           </div>
 
@@ -2959,6 +2959,23 @@ function resetPose(cam) {
       row.insertBefore(poseBtns, seatBtn);             // pose vlevo od „Kompaktní zobrazení"
     }
     if (ctrlGroup) {                                   // skryj zbylou skupinu „Pozice" + její oddělovač
+      const prev = ctrlGroup.previousElementSibling;
+      if (prev && prev.classList.contains('ctrl-divider')) prev.style.display = 'none';
+      ctrlGroup.style.display = 'none';
+    }
+  } catch (e) {}
+})();
+
+// Sjednocení CAM1 s CAM2: skryj „Pozice" skupinu v manuálním ovládání CAM1
+// (CAM2 ji taky nemá — pose přesunuto do lišty). img #pose1-sit/#pose1-stand
+// ale ZŮSTÁVAJÍ v DOM (display:none) — slouží jako zdroj obrázků pro scénka
+// presety v Pódiu (renderCam1FixedPresets je čte z #pose1-sit img).
+(function hideCam1PoseGroup() {
+  try {
+    const sit = document.getElementById('pose1-sit');
+    if (!sit) return;
+    const ctrlGroup = sit.closest('.ctrl-group');
+    if (ctrlGroup) {
       const prev = ctrlGroup.previousElementSibling;
       if (prev && prev.classList.contains('ctrl-divider')) prev.style.display = 'none';
       ctrlGroup.style.display = 'none';

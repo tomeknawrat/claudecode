@@ -32,6 +32,13 @@
 
 ## Záznamy dne
 
+### 10. 11. 2026 — manuální ovládání kamer: čištění + sjednocení CAM1↔CAM2
+- **Popisky sekcí** „Pohyb kamery"/„Zoom"/„Zaostřování" odstraněny v obou cam (`ctrl-label`).
+- **Tooltipy:** AF → „automatické zaostření", MF → „manuální zaostření". **Smazané tooltipy** šipek + domečku (`.ptz-btn`) a zoom +/- (`.zoom-btn`) v obou panelech (scan modal beze změny).
+- **Sjednocení CAM1 podle CAM2:** skupina „Pozice" v manuálním ovládání CAM1 skryta (`hideCam1PoseGroup`) — CAM2 ji taky nemá (pose přesunuto do lišty). `#pose1-sit/#pose1-stand img` **zůstávají v DOM** (display:none) jako zdroj obrázků pro scénka presety v Pódiu.
+- **Odstup:** `.ctrl-divider` margin 16→3px (čára blíž k tlačítkům), banner výchozích pozic margin symetricky (8px nahoře i dole).
+- **Footer:** datum aktualizace 10. 11. 2026.
+
 ### 10. 11. 2026 — UI úpravy po lokálním testu layoutu
 - **Stacked:** odstraněna dělicí lajna mezi sektory (gap zvětšen na 26px).
 - **Fix:** tužka/koš se už nezmenšují na úzkém okně — v `@media max-width:1100px` přidán override `.icon-only svg` (26px, scan 30px) přes `!important` (předtím `.add-preset-btn svg`/`.hide-presets-btn svg` 13px !important vyhrávalo).

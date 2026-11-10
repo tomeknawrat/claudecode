@@ -3602,10 +3602,17 @@ function _updateCam2BtnVisibility() {
   } else if (slotEditing) {
     hide('addPresetBtn2'); hide('editOrderBtn2'); hide('hidePresetsBtn2'); hide('seatLayoutBtn2'); hide('camHeaderDivider2'); hide('savePresetBtn2'); hide('defaultModeBtn2');
   } else {
-    show('addPresetBtn2'); show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('camHeaderDivider2'); show('savePresetBtn2'); show('defaultModeBtn2');
+    show('hidePresetsBtn2'); show('seatLayoutBtn2'); show('camHeaderDivider2'); show('savePresetBtn2');
     // „Přesunout" (přeuspořádání karet) zrušeno z lišty — pozůstatek starého
     // workflow, rozbíjelo kompaktní lištu. Funkce zůstává v kódu „uspaná".
     hide('editOrderBtn2');
+    // Nástroje nad hledištěm (scan / upravit sedadla / výchozí pozice / smazat fotky)
+    // patří k DETAILNÍMU zobrazení. V kompaktním zůstane jen „Uložit".
+    if (seatLayoutActive) {
+      show('scanBtn'); show('addPresetBtn2'); show('defaultModeBtn2'); show('clearAllBtn2');
+    } else {
+      hide('scanBtn'); hide('addPresetBtn2'); hide('defaultModeBtn2'); hide('clearAllBtn2');
+    }
   }
 }
 

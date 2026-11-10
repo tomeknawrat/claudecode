@@ -41,6 +41,7 @@
 - **Hlavička:** přidáno **neaktivní tlačítko „Databáze osob"** (`personsDbBtn`, users ikona, opacity .6) mezi stavovou tečku a Nastavení — zaparkované místo pro budoucí správu osob/rozpoznávání (klik = toast „zatím nedostupné").
 - **Dialog sedadel:** titulek „Přidat/smazat sedadlo", odstraněna věta pod ním.
 - **Fix kompaktní lišty:** tlačítko „Přesunout" (`editOrderBtn2`) **skryto** z lišty (`_updateCam2BtnVisibility` ho vždy `hide`) — pozůstatek starého workflow, v kompaktním gridu se mu přepisoval obsah na text a rozbíjelo lištu. Funkce (reorder karet) zůstává v kódu „uspaná".
+- **Kompaktní zobrazení — jen „Uložit":** nástroje nad hledištěm (scan / upravit sedadla / výchozí pozice / smazat fotky) se v kompaktním gridu **skryjí** (patří k detailnímu zobrazení), zůstane jen Uložit + pose + přepínač. V detailním se ukážou všechny. (Pozn.: karty v kompaktním se řadí podle pořadí v `state.presets[2]`, číslované dle pozice; drag&drop byl jen v režimu „Přesunout" = teď neaktivní.)
 
 ### 9. 11. 2026 — ikonový toolbar CAM2 + zápatí „Ovládání kamer 2.0"
 1. **CAM2 toolbar na icon-only.** Tlačítka Skenovat / Přidat sedadlo / Přesunout / Uložit preset / Výchozí pozice / Smazat všechny fotky mají **jen ikonu** (textové popisky pryč), popisek je jen **tooltip** (`title`). Sladěno na **čtverec 42×42** (třída `icon-only`, ikona 20px); pose tlačítka 🧍🪑 taky 42×42. **„Kompaktní zobrazení" ponecháno s textem** (dle zadání). „Přidat sedadlo" dostalo `+` ikonu, „Přesunout" move ikonu. Přepínání režimu výchozích pozic teď mění `title` tlačítek (ne text).

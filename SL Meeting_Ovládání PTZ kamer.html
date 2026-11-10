@@ -974,8 +974,7 @@ console.warn = (...args) => {
      půl controller) by sedadla vedle sebe byla moc malá. Třídu `seat-stacked`
      zapíná JS (applyZoom), který zároveň sedadla ZVĚTŠÍ (vejdou se, protože je
      jen jeden sektor na šířku). Pravý sektor pak spadne POD levý (nad sebou). */
-  .seat-stacked .seat-hall-live { flex-direction: column; gap: 22px; align-items: center; }
-  .seat-stacked .seat-hall-live > div + div { border-top: 1px dashed var(--border); padding-top: 18px; }
+  .seat-stacked .seat-hall-live { flex-direction: column; gap: 26px; align-items: center; }
 
   .seat-layout-block { display: flex; flex-direction: column; gap: var(--seat-gap); }
   .seat-layout-row { display: flex; gap: var(--seat-gap); }
@@ -1245,6 +1244,9 @@ console.warn = (...args) => {
     .hide-presets-btn svg,
     .seat-layout-btn svg,
     .slot-edit-btn svg { width: 13px !important; height: 13px !important; }
+    /* Ikonová tlačítka CAM2 si drží velikost i na úzkém okně */
+    .cam-presets-section .cam2-tool-btn.icon-only svg { width: 26px !important; height: 26px !important; }
+    .cam-presets-section #scanBtn.icon-only svg { width: 30px !important; height: 30px !important; }
     .cam-presets-header { gap: 4px !important; margin-bottom: 8px !important; }
     .cam-presets-section { padding: 8px 12px 10px !important; }
   }
@@ -1635,6 +1637,10 @@ console.warn = (...args) => {
     <div class="status-pill status-pill--dot" id="headerStatusPill" title="Server nepřipojen">
       <div class="status-dot err" id="statusDot"></div>
     </div>
+    <button class="settings-btn" id="personsDbBtn" onclick="showToast('Databáze osob — zatím nedostupné (připravujeme)')" title="Databáze osob — připravujeme" style="opacity:.6">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Databáze osob
+    </button>
     <button class="settings-btn" id="settingsBtn" onclick="toggleDrawer()">
       <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
         <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
@@ -2040,18 +2046,18 @@ console.warn = (...args) => {
           <button class="edit-order-btn cam2-tool-btn icon-only" id="editOrderBtn2" onclick="toggleEditOrder(2)" title="Přesunout / přeuspořádat sedadla" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><polyline points="8 7 12 3 16 7"/><polyline points="8 17 12 21 16 17"/></svg>
           </button>
-          <button class="cam2-tool-btn icon-only" id="savePresetBtn2" onclick="saveSeatPresetManual()" title="Uložit aktuální (ručně upravenou) polohu kamery do presetu posledního sedadla" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
+          <button class="cam2-tool-btn icon-only" id="savePresetBtn2" onclick="saveSeatPresetManual()" title="Uložit aktuální pozici do posledního vybraného presetu" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           </button>
-          <button class="cam2-tool-btn icon-only" id="defaultModeBtn2" onclick="toggleDefaultPosMode()" title="Výchozí pozice (nastavit baseline pozice sedadel)" style="--btn-bg:#f0fdfa;--btn-border:#5eead4;--btn-text:#0f766e">
+          <button class="cam2-tool-btn icon-only" id="defaultModeBtn2" onclick="toggleDefaultPosMode()" title="Nastavit výchozí pozice sedadel" style="--btn-bg:#f0fdfa;--btn-border:#5eead4;--btn-text:#0f766e">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
           </button>
-          <button class="hide-presets-btn cam2-tool-btn icon-only" id="clearAllBtn2" onclick="openClearResetDialog()" title="Smazat všechny fotky (volitelně i vrátit pozice na výchozí)" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
+          <button class="hide-presets-btn cam2-tool-btn icon-only" id="clearAllBtn2" onclick="openClearResetDialog()" title="Smazat všechny fotky" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
           </button>
           <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()" style="margin-left:auto">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="10" y="4" width="4" height="4" rx="1"/><rect x="17" y="4" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="10" y="11" width="4" height="4" rx="1"/><rect x="17" y="11" width="4" height="4" rx="1"/><rect x="3" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="17" y="18" width="4" height="4" rx="1"/></svg>
-            <span id="seatLayoutBtnLabel">Detailní zobrazení</span>
+            <span id="seatLayoutBtnLabel">Detailní</span>
           </button>
         </div>
       </div>
@@ -2121,19 +2127,16 @@ console.warn = (...args) => {
 <!-- ══ SMAZAT FOTKY / VRÁTIT VÝCHOZÍ ══ -->
 <div class="modal-overlay" id="clearResetOverlay">
   <div class="modal" style="width:360px">
-    <div class="modal-title" style="color:var(--red)">Smazat všechny fotky</div>
-    <div style="font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:8px;">
-      Smažou se <strong style="color:var(--text)">všechny uložené fotky/karty</strong> sedadel na kameře Komentáře.
-      Pozice presetů v kameře (čísla + souřadnice) <strong style="color:var(--text)">zůstanou</strong> zachované.
+    <div class="modal-title" style="color:var(--red)">Smazat všechny fotky?</div>
+    <div style="font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:10px;">
+      Smažou se <strong style="color:var(--text)">všechny momentálně uložené fotky</strong> na sedadlech.
     </div>
-    <label id="clearResetChkRow" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
-      <input type="checkbox" id="clearResetAlsoReset" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer;">
-      <span style="font-size:13px;color:var(--text-2);line-height:1.5;">
-        Vrátit i <strong style="color:var(--text)">pracovní pozice sedadel na uložené výchozí</strong>
-        — aktuální souřadnice se přepíšou baseline hodnotami (výchozí pozice).
+    <label id="clearResetChkRow" style="display:flex;gap:8px;align-items:center;cursor:pointer;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+      <input type="checkbox" id="clearResetAlsoReset" style="flex-shrink:0;width:16px;height:16px;cursor:pointer;">
+      <span style="font-size:13.5px;color:var(--text-2);line-height:1.4;">
+        <strong style="color:var(--text)">Vrátit presety na výchozí pozice?</strong>
       </span>
     </label>
-    <div style="font-size:13px;color:var(--text-3);margin-bottom:4px;">Akce je nevratná.</div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="clearResetResolve(false)">Zrušit</button>
       <button class="modal-btn modal-btn-danger" onclick="clearResetResolve(true)">Smazat</button>
@@ -3150,12 +3153,12 @@ function toggleDefaultPosMode() {
   const btn = document.getElementById('defaultModeBtn2');
   if (btn) {
     btn.classList.toggle('active', defaultPosMode);
-    btn.title = defaultPosMode ? 'Hotovo — ukončit režim výchozích pozic' : 'Výchozí pozice (nastavit baseline pozice sedadel)';
+    btn.title = defaultPosMode ? 'Hotovo — ukončit režim výchozích pozic' : 'Nastavit výchozí pozice sedadel';
   }
   const saveBtn = document.getElementById('savePresetBtn2');
   if (saveBtn) saveBtn.title = defaultPosMode
     ? 'Uložit aktuální polohu kamery jako VÝCHOZÍ pozici sedadla'
-    : 'Uložit aktuální (ručně upravenou) polohu kamery do presetu posledního sedadla';
+    : 'Uložit aktuální pozici do posledního vybraného presetu';
   const banner = document.getElementById('defaultModeBanner');
   if (banner) banner.style.display = defaultPosMode ? 'flex' : 'none';
   const grid = document.getElementById('seatLayoutGrid2');
@@ -3187,10 +3190,8 @@ let _clearResetHandler = null;
 function openClearResetDialog() {
   const chk = document.getElementById('clearResetAlsoReset');
   if (chk) chk.checked = false;
-  // Volbu „vrátit pozice" ukaž jen když nějaké výchozí pozice existují
-  const hasDef = slotDefaultCoords && slotDefaultCoords.some(c => c);
   const row = document.getElementById('clearResetChkRow');
-  if (row) row.style.display = hasDef ? 'flex' : 'none';
+  if (row) row.style.display = 'flex'; // checkbox vždy k dispozici
   document.getElementById('clearResetOverlay').classList.add('show');
   _clearResetHandler = e => {
     if (e.key === 'Escape') clearResetResolve(false);
@@ -4779,7 +4780,7 @@ function toggleSeatLayout() {
   const empty    = document.getElementById('presetsEmpty2');
 
   btn.classList.toggle('active', seatLayoutActive);
-  document.getElementById('seatLayoutBtnLabel').textContent = seatLayoutActive ? 'Kompaktní zobrazení' : 'Detailní zobrazení';
+  document.getElementById('seatLayoutBtnLabel').textContent = seatLayoutActive ? 'Kompaktní' : 'Detailní';
   document.querySelector('.panel--cam2').classList.toggle('seat-layout-active', seatLayoutActive);
 
   if (seatLayoutActive) {

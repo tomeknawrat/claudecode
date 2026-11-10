@@ -32,6 +32,14 @@
 
 ## Záznamy dne
 
+### 10. 11. 2026 — UI úpravy po lokálním testu layoutu
+- **Stacked:** odstraněna dělicí lajna mezi sektory (gap zvětšen na 26px).
+- **Fix:** tužka/koš se už nezmenšují na úzkém okně — v `@media max-width:1100px` přidán override `.icon-only svg` (26px, scan 30px) přes `!important` (předtím `.add-preset-btn svg`/`.hide-presets-btn svg` 13px !important vyhrávalo).
+- **Tooltipy:** Uložit → „Uložit aktuální pozici do posledního vybraného presetu"; Výchozí pozice → „Nastavit výchozí pozice sedadel"; Koš → „Smazat všechny fotky" (i v `toggleDefaultPosMode`).
+- **Dialog „Smazat všechny fotky":** titulek s otazníkem, text zkrácen na „Smažou se všechny momentálně uložené fotky na sedadlech.", odstraněno „Akce je nevratná.", checkbox **vždy viditelný** s textem „Vrátit presety na výchozí pozice?".
+- **Přepínač zobrazení:** „Detailní"/„Kompaktní" (vyhozeno „ZOBRAZENÍ").
+- **Hlavička:** přidáno **neaktivní tlačítko „Databáze osob"** (`personsDbBtn`, users ikona, opacity .6) mezi stavovou tečku a Nastavení — zaparkované místo pro budoucí správu osob/rozpoznávání (klik = toast „zatím nedostupné").
+
 ### 9. 11. 2026 — ikonový toolbar CAM2 + zápatí „Ovládání kamer 2.0"
 1. **CAM2 toolbar na icon-only.** Tlačítka Skenovat / Přidat sedadlo / Přesunout / Uložit preset / Výchozí pozice / Smazat všechny fotky mají **jen ikonu** (textové popisky pryč), popisek je jen **tooltip** (`title`). Sladěno na **čtverec 42×42** (třída `icon-only`, ikona 20px); pose tlačítka 🧍🪑 taky 42×42. **„Kompaktní zobrazení" ponecháno s textem** (dle zadání). „Přidat sedadlo" dostalo `+` ikonu, „Přesunout" move ikonu. Přepínání režimu výchozích pozic teď mění `title` tlačítek (ne text).
 2. **Zápatí v Nastavení** → **„Ovládání kamer 2.0"**, „Poslední aktualizace 9. 11. 2026", odstraněn řádek „HTTP CGI · IP/LAN".

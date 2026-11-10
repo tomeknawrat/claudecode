@@ -2040,7 +2040,7 @@ console.warn = (...args) => {
           <button class="scan-btn cam2-tool-btn icon-only" id="scanBtn" onclick="openScanModal()" title="Skenovat hlediště" style="--btn-bg:#f5f3ff;--btn-border:#ddd6fe;--btn-text:#6d28d9">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="10.3" r="2.5" fill="currentColor" stroke="none"/><path d="M8 17.2a4 4 0 0 1 8 0z" fill="currentColor" stroke="none"/></svg>
           </button>
-          <button class="add-preset-btn cam2-tool-btn icon-only" id="addPresetBtn2" onclick="openSeatEditor()" title="Upravit sedadla — přidat nebo smazat" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
+          <button class="add-preset-btn cam2-tool-btn icon-only" id="addPresetBtn2" onclick="openSeatEditor()" title="Přidat/smazat sedadlo" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/><path d="M15 5l4 4"/></svg>
           </button>
           <button class="edit-order-btn cam2-tool-btn icon-only" id="editOrderBtn2" onclick="toggleEditOrder(2)" title="Přesunout / přeuspořádat sedadla" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
@@ -2064,7 +2064,7 @@ console.warn = (...args) => {
       <div id="seatPoseHolder" class="seat-pose-holder"></div>
       <div id="defaultModeBanner" class="default-mode-banner" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 22V4h12l-2 4 2 4H4"/></svg>
-        <span><strong>Režim nastavení výchozích pozic</strong> — klikni na sedadlo, dolaď joystickem a dej „Uložit výchozí". Na výchozí pozice pak všechna sedadla vrátíš přes „Smazat všechny fotky" (zaškrtni volbu vrácení pozic).</span>
+        <span><strong>Režim nastavení výchozích pozic.</strong> Klikni na sedadlo, dolaď joystickem a klikni na ikonku „Uložit". Na výchozí pozice pak všechna sedadla vrátíš přes „Smazat všechny fotky" (zaškrtni volbu vrácení presetů na výchozí pozice).</span>
       </div>
       <div class="presets-grid" id="presetsGrid2"></div>
       <div class="seat-layout-grid" id="seatLayoutGrid2" style="display:none"></div>
@@ -3150,11 +3150,11 @@ function toggleDefaultPosMode() {
   const btn = document.getElementById('defaultModeBtn2');
   if (btn) {
     btn.classList.toggle('active', defaultPosMode);
-    btn.title = defaultPosMode ? 'Hotovo — ukončit režim výchozích pozic' : 'Nastavit výchozí pozice sedadel';
+    btn.title = defaultPosMode ? 'Hotovo – ukončit režim nastavování výchozích pozic' : 'Nastavit výchozí pozice sedadel';
   }
   const saveBtn = document.getElementById('savePresetBtn2');
   if (saveBtn) saveBtn.title = defaultPosMode
-    ? 'Uložit aktuální polohu kamery jako VÝCHOZÍ pozici sedadla'
+    ? 'Uložit aktuální polohu jako výchozí pozici presetu'
     : 'Uložit aktuální pozici do posledního vybraného presetu';
   const banner = document.getElementById('defaultModeBanner');
   if (banner) banner.style.display = defaultPosMode ? 'flex' : 'none';

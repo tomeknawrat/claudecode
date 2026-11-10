@@ -44,6 +44,8 @@
 - **Focus tlačítka Blíže/Dále:** `title` úplně odstraněn z `.focus-btn` (`focusnear`/`focusfar`) v obou panelech — při přepnutí na MF se už hláška neukazuje.
 - **Divider-mezera (náhrada margin triku výše):** `.controls-row` změněn na `align-items: center` → kratší skupiny (zoom, focus) se vertikálně vycentrují, takže přerušovaná čára (`.ctrl-divider`, `align-self:stretch`) má stejnou mezeru nad i pod tlačítky (ověřeno Playwrightem: zoom 26 px nahoře i dole, focus 33 px). Platí pro CAM1 i CAM2 (sdílené CSS).
 - **Banner výchozích pozic:** spodní margin 8→16 px, aby přerušovaný outline seat gridu (`outline-offset:6px`) seděl 8 px pod boxem = stejně jako mezera nad boxem (dřív outline nalepený přesně na spodní hranu, mezera 0 px).
+- **Žlutá pod spodní dashed hranou:** `.seat-layout-grid.default-pos-mode` dostal `margin-bottom: 6px` → žlutý panel (`.cam-presets-section`) pokračuje 8 px pod spodní přerušovanou hranou (symetricky k horní mezeře čára↔banner).
+- **Odstup šipek od hran boxu manuálního ovládání (obě cam, symetrie 8 px):** `.controls-row` dostal `padding-bottom: 8px` (spodní šipky byly nalepené na spodní čáru boxu). CAM2 má titulek UVNITŘ panel-body (CAM1 venku), takže horních 8 px chybělo → přidáno `.panel--cam2 .controls-row { padding-top: 8px }`. Ověřeno Playwrightem: obě cam 8 px nahoře i dole.
 - **Scan modal „Skenování hlediště":**
   - Titulek zkrácen: „Skenování hlediště — Kamera pro komentáře" → „Skenování hlediště".
   - **Smazáno** kompaktní manuální PTZ ovládání (Pohyb kamery + Zoom) uvnitř modalu — při automatickém skenu není potřeba.

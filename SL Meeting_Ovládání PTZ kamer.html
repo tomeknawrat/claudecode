@@ -392,7 +392,11 @@ console.warn = (...args) => {
     align-items: center;
     justify-content: center;
     gap: 0;
+    padding-bottom: 8px;
   }
+  /* CAM2 má titulek uvnitř panel-body (CAM1 venku) → horní 8px mezera k čáře
+     titulku chybí, dorovnáme ji zde, aby šipky měly stejný odstup jako CAM1. */
+  .panel--cam2 .controls-row { padding-top: 8px; }
 
   .ctrl-group {
     display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -1310,7 +1314,9 @@ console.warn = (...args) => {
   }
   .default-mode-banner svg { flex-shrink: 0; }
   /* Jemné zvýraznění seat gridu v režimu výchozích pozic */
-  .seat-layout-grid.default-pos-mode { outline: 2px dashed #5eead4; outline-offset: 6px; border-radius: 6px; }
+  /* margin-bottom: aby žlutý panel pokračoval ~8px pod spodní přerušovanou
+     hranou (stejně jako mezera mezi horní čarou a bannerem). */
+  .seat-layout-grid.default-pos-mode { outline: 2px dashed #5eead4; outline-offset: 6px; border-radius: 6px; margin-bottom: 6px; }
 
   /* ── CAM1 (Pódium): tlačítko „Uložit preset" vlevo + 5 malých ikonových presetů ──
      Presety vedle sebe BEZ MEZER (segmentový pruh), bez textových popisků, ikony

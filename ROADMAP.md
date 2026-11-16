@@ -64,7 +64,7 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 
 ## ✅ Mazání fotky + sloučené „Smazat všechny fotky" (hotovo 7. 11.)
 
-- **Pravý klik na sedadlo = kontextové menu** (`_showSeatCtxMenu`). Sedadlo s fotkou → „Smazat fotku" + „Vrátit na výchozí pozici" (`_resetSeatToDefault`); sedadlo bez fotky → „Skenovat a přidat fotku" (`scanSingleSeat` → `startScan(si)` jen pro jedno sedadlo). Ikonka koše na kartě odstraněna.
+- **Pravý klik na sedadlo** (`_showSeatCtxMenu`). Sedadlo **s fotkou** → dialog „Smazat fotku?" (`#deletePhotoOverlay` — smaže fotku + checkbox „Vrátit preset na výchozí pozici?"); sedadlo **bez fotky** → kontextové menu „Skenovat a přidat fotku" (`scanSingleSeat` → `startScan(si)` jen pro jedno sedadlo). Ikonka koše na kartě odstraněna.
 - **Tlačítko „Vrátit výchozí" sloučeno do „Smazat všechny fotky".** Klik otevře dialog (`openClearResetDialog` / `clearResetResolve`, overlay `#clearResetOverlay`) s vysvětlením:
   - Vždy: hromadné smazání všech uložených fotek/karet CAM2 (pozice presetů v kameře zůstávají).
   - **Checkbox** (`#clearResetAlsoReset`, defaultně nezaškrtnutý): *„Vrátit i pracovní pozice sedadel na uložené výchozí"* → navíc `slotCoords ← slotDefaultCoords` (`_applyResetSeatsToDefault`). Volba se zobrazí jen když existují uložené výchozí pozice.

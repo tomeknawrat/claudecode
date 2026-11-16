@@ -14,7 +14,7 @@
 - ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro. **10. 11.: zoom-in sken je teď defaultní auto funkce napevno v kódu (`_scan.zoomScan = true`); zaškrtávátko + hláška ve scan modalu zrušeny.**
 - ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
 - ✅ **Zrušen mód „Editace presetů sedadel"** — workflow bez módů (Uložit preset / drag&drop). Funkce módu zůstávají v kódu uspané.
-- ✅ **Pravý klik na sedadlo = kontextové menu** (16. 11.) — s fotkou: „Smazat fotku" + „Vrátit na výchozí pozici"; bez fotky: „Skenovat a přidat fotku" (sken jen jednoho sedadla). Dřív pravý klik rovnou mazal fotku.
+- ✅ **Pravý klik na sedadlo** (16. 11.) — s fotkou: dialog „Smazat fotku?" (smazat + checkbox „Vrátit preset na výchozí pozici?"); bez fotky: menu „Skenovat a přidat fotku" (sken jen jednoho sedadla). Dřív pravý klik rovnou mazal fotku.
 - ✅ **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** (7. 11.) — dialog s checkboxem (hromadné mazání fotek vždy; volitelně i vrácení pozic na výchozí).
 - ✅ **Responsivní viewport CAM2** (7. 11.) — na úzkém okně (split-screen) pravý sektor pod levý + zvětšená sedadla (stacked režim).
 - ✅ **Layout sedadel upraven** (7. 11.) — přidána 16, 116, 127, 138; odebrána 168 (TOTAL_SEATS 81). Bez migrace → **po nasazení překalibrovat**.
@@ -31,6 +31,12 @@
 ---
 
 ## Záznamy dne
+
+### 16. 11. 2026 — mazání fotky sedadla = dialog (místo položek v menu)
+- Situace „sedadlo s fotkou" už **neukazuje dvoupoložkové kontextové menu**, ale rovnou **dialog „Smazat fotku?"** (`#deletePhotoOverlay`, `openDeletePhotoDialog`/`deletePhotoResolve`) — modelovaný podle hromadného „Smazat všechny fotky?", ale pro jedno sedadlo: text o jedné fotce + checkbox „Vrátit preset na výchozí pozici?". Potvrzení = `deleteSlotPhoto` (+ volitelně `_resetSeatToDefault`).
+- `_resetSeatToDefault` už **nehýbe kamerou** (jen přepíše uloženou pracovní pozici na výchozí, jako hromadný `_applyResetSeatsToDefault`).
+- Sedadlo bez fotky zůstává kontextové menu „Skenovat a přidat fotku". Nepoužité ikony `_ICON_TRASH`/`_ICON_RESET` odstraněny.
+- Ověřeno `node --check` + Playwright (dialog obsah + akce, prázdné sedadlo menu, bez chyb).
 
 ### 16. 11. 2026 — fix bílého pruhu pod PÓDIUM
 - Mezi titulkem **PÓDIUM** a modrým pruhem presetů byl **8px bílý pruh** = prázdné `.panel--cam1 .panel-body` (padding-top 8px) obalující SBALENÉ manuální ovládání (0 px). CAM2 problém nemá (titulek je uvnitř body).

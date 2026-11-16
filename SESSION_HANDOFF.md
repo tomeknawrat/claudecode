@@ -32,6 +32,10 @@
 
 ## Záznamy dne
 
+### 16. 11. 2026 — symetrické okraje layoutu + zarovnání hlavičky
+- `.app` padding `16px 16px 16px 0` → **`16px`** (dřív byly boxy Pódium/Komentáře vlevo nalepené, vpravo 16px). `header` padding `0 24px` → **`0 16px`**.
+- Výsledek: title „Ovládání kamer" i levé hrany obou boxů = 16px zleva; NASTAVENÍ i pravé hrany boxů = okraj−16px. Databáze osob + stavová tečka se posunuly s header-right (gap 10px zachován). Ověřeno Playwrightem (vše na 16 / W−16).
+
 ### 16. 11. 2026 — mazání fotky sedadla = dialog (místo položek v menu)
 - Situace „sedadlo s fotkou" už **neukazuje dvoupoložkové kontextové menu**, ale rovnou **dialog „Smazat fotku?"** (`#deletePhotoOverlay`, `openDeletePhotoDialog`/`deletePhotoResolve`) — modelovaný podle hromadného „Smazat všechny fotky?", ale pro jedno sedadlo: text o jedné fotce + checkbox „Vrátit preset na výchozí pozici?". Potvrzení = `deleteSlotPhoto` (+ volitelně `_resetSeatToDefault`).
 - `_resetSeatToDefault` už **nehýbe kamerou** (jen přepíše uloženou pracovní pozici na výchozí, jako hromadný `_applyResetSeatsToDefault`).

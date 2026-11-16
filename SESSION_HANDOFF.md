@@ -38,6 +38,7 @@
   - sedadlo **s fotkou** → „Smazat fotku" (`deleteSlotPhoto(2, presetIdx)`) + „Vrátit na výchozí pozici" (`_resetSeatToDefault(si, seatNum)` — `slotCoords[si] ← slotDefaultCoords[si]`, uloží a `_wsAbsMove` fyzicky najede; když chybí výchozí pozice → toast/log, nic se nestane);
   - sedadlo **bez fotky** → „Skenovat a přidat fotku" (`scanSingleSeat(si, seatNum)` → `openScanModal()` + `startScan(si)`).
 - **`startScan(targetSlotIdx = null)`** — nový parametr: když je zadán, do `calibrated` jde jen to jedno sedadlo; nekalibrované (bez coords i preset) → log err a konec. `scanSingleSeat` předem ověří kalibraci (jinak toast, scan se neotevře).
+- **Ikonky menu** sladěné s hlavním layoutem: „Vrátit na výchozí pozici" = vlajka (jako `defaultModeBtn2`), „Skenovat a přidat fotku" = scan ikona (osoba v rámečku, jako `scanBtn`).
 - Ověřeno `node --check` + Playwright: menu se v obou situacích renderuje správně, akce (smazat/reset/guard scanu) fungují bez chyb.
 
 ### 10. 11. 2026 — manuální ovládání kamer: čištění + sjednocení CAM1↔CAM2

@@ -392,11 +392,14 @@ console.warn = (...args) => {
     align-items: center;
     justify-content: center;
     gap: 0;
+    padding-top: 8px;
     padding-bottom: 8px;
   }
-  /* CAM2 má titulek uvnitř panel-body (CAM1 venku) → horní 8px mezera k čáře
-     titulku chybí, dorovnáme ji zde, aby šipky měly stejný odstup jako CAM1. */
-  .panel--cam2 .controls-row { padding-top: 8px; }
+  /* Horní 8px mezeru šipek od čáry titulku dává padding-top .controls-row (výše,
+     sdíleně pro obě cam). CAM1 proto NEMÁ horní padding na panel-body — jinak by
+     při SBALENÉM manuálním ovládání vznikl prázdný bílý pruh mezi titulkem PÓDIUM
+     a modrým pruhem presetů (CAM2 má titulek uvnitř body, tam problém není). */
+  .panel--cam1 .panel-body { padding-top: 0; }
 
   .ctrl-group {
     display: flex; flex-direction: column; align-items: center; gap: 4px;

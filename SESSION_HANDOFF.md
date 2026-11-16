@@ -32,6 +32,10 @@
 
 ## Záznamy dne
 
+### 16. 11. 2026 — fix bílého pruhu pod PÓDIUM
+- Mezi titulkem **PÓDIUM** a modrým pruhem presetů byl **8px bílý pruh** = prázdné `.panel--cam1 .panel-body` (padding-top 8px) obalující SBALENÉ manuální ovládání (0 px). CAM2 problém nemá (titulek je uvnitř body).
+- Fix: horní 8px mezera šipek se přesunula z panel-body do `.controls-row` (`padding-top: 8px`, teď sdíleně obě cam) a `.panel--cam1 .panel-body { padding-top: 0 }`. Sbalené manuální ovládání tak nezabírá → modrý pruh jde rovnou pod titulek (jako amber u CAM2). Rozbalené: šipky pořád 8 px nahoře i dole (ověřeno).
+
 ### 16. 11. 2026 — kontextové menu sedadla (pravý klik)
 - **Pravý klik na sedadlo** (dřív rovnou mazal fotku) teď otevírá **kontextové menu** `_showSeatCtxMenu` (reuse `.ctx-menu`/`_closeCtxMenu`), navázané na úrovni `.seat-slot` ve `_makeViewSlotOld` (ne na kartě — starý `contextmenu` handler na kartě odstraněn, aby nekradl event přes stopPropagation).
 - **Dvě situace:**

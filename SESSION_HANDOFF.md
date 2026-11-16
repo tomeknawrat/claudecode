@@ -14,7 +14,7 @@
 - ⏳ **Zoom-in sken + fotky top-center/bez rámečku** — hotové v kódu, čeká na doladění naostro. **10. 11.: zoom-in sken je teď defaultní auto funkce napevno v kódu (`_scan.zoomScan = true`); zaškrtávátko + hláška ve scan modalu zrušeny.**
 - ✅ **Drag&drop fotek mezi sedadly** ve výchozím zobrazení (bez módu „Přesunout") — hotovo.
 - ✅ **Zrušen mód „Editace presetů sedadel"** — workflow bez módů (Uložit preset / drag&drop). Funkce módu zůstávají v kódu uspané.
-- ✅ **Mazání jedné fotky = pravý klik na kartě** (7. 11.) — ikonka koše na kartě zrušena.
+- ✅ **Pravý klik na sedadlo = kontextové menu** (16. 11.) — s fotkou: „Smazat fotku" + „Vrátit na výchozí pozici"; bez fotky: „Skenovat a přidat fotku" (sken jen jednoho sedadla). Dřív pravý klik rovnou mazal fotku.
 - ✅ **„Vrátit výchozí" sloučeno do „Smazat všechny fotky"** (7. 11.) — dialog s checkboxem (hromadné mazání fotek vždy; volitelně i vrácení pozic na výchozí).
 - ✅ **Responsivní viewport CAM2** (7. 11.) — na úzkém okně (split-screen) pravý sektor pod levý + zvětšená sedadla (stacked režim).
 - ✅ **Layout sedadel upraven** (7. 11.) — přidána 16, 116, 127, 138; odebrána 168 (TOTAL_SEATS 81). Bez migrace → **po nasazení překalibrovat**.
@@ -31,6 +31,14 @@
 ---
 
 ## Záznamy dne
+
+### 16. 11. 2026 — kontextové menu sedadla (pravý klik)
+- **Pravý klik na sedadlo** (dřív rovnou mazal fotku) teď otevírá **kontextové menu** `_showSeatCtxMenu` (reuse `.ctx-menu`/`_closeCtxMenu`), navázané na úrovni `.seat-slot` ve `_makeViewSlotOld` (ne na kartě — starý `contextmenu` handler na kartě odstraněn, aby nekradl event přes stopPropagation).
+- **Dvě situace:**
+  - sedadlo **s fotkou** → „Smazat fotku" (`deleteSlotPhoto(2, presetIdx)`) + „Vrátit na výchozí pozici" (`_resetSeatToDefault(si, seatNum)` — `slotCoords[si] ← slotDefaultCoords[si]`, uloží a `_wsAbsMove` fyzicky najede; když chybí výchozí pozice → toast/log, nic se nestane);
+  - sedadlo **bez fotky** → „Skenovat a přidat fotku" (`scanSingleSeat(si, seatNum)` → `openScanModal()` + `startScan(si)`).
+- **`startScan(targetSlotIdx = null)`** — nový parametr: když je zadán, do `calibrated` jde jen to jedno sedadlo; nekalibrované (bez coords i preset) → log err a konec. `scanSingleSeat` předem ověří kalibraci (jinak toast, scan se neotevře).
+- Ověřeno `node --check` + Playwright: menu se v obou situacích renderuje správně, akce (smazat/reset/guard scanu) fungují bez chyb.
 
 ### 10. 11. 2026 — manuální ovládání kamer: čištění + sjednocení CAM1↔CAM2
 - **Popisky sekcí** „Pohyb kamery"/„Zoom"/„Zaostřování" odstraněny v obou cam (`ctrl-label`).

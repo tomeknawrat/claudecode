@@ -33,12 +33,13 @@
 ## Záznamy dne
 
 ### 16. 11. 2026 — rámečky boxů + sjednocené hover chování tlačítek
-- **Rámeček panelů:** `.panel--cam1`/`.panel--cam2` měly jen `border-top: 3px` (barevný), zbytek 1px šedý → nově **`border: 3px solid`** barvy kamery kolem **celého boxu** (modrá/amber). `.panel` dostal **`overflow: hidden`** → vnitřní obsah se ořízne na `border-radius` → **spodní rohy zakulacené** jako horní.
+- **Rámeček panelů:** barevný `border-top: 3px` zůstává jen nahoře (zbytek 1px šedý — barevný rámeček kolem celého boxu byl vyzkoušen, ale uživateli se nelíbil, vráceno). `.panel` dostal **`overflow: hidden`** → vnitřní obsah se ořízne na `border-radius` → **spodní rohy zakulacené** jako horní.
 - **Hover tlačítek** sjednocen s `.cam2-tool-btn` (jen lehce ztmavit pozadí, rámeček + opacity zůstanou):
   - CAM1 Pódium ikony (`.cam1-fixed-preset` + `.preset-card`): odstraněno staré `.panel--cam1 .preset-card:hover` (měnilo border na blue-mid + stín-pop) → teď border zůstává blue-d, pozadí ztmaví `#eff6ff→#dbeafe`.
   - `.preset-card:hover` (CAM2 sedadla/presety) → jen `background: var(--surface2)` (dřív amber-soft + amber border + stín).
   - `.cam2-pose .pose-btn:hover` (sedící/stojící) → `color-mix(10% #92400e, #fef3c7)`, border `#92400e` zůstává (dřív se měnil na amber-mid).
   - Prázdná sedadla `.seat-slot.slot-has-calib:hover` → jen ztmavit (`surface3`), border zůstává.
+  - Tlačítko **KOMPAKTNÍ** (`.seat-layout-btn--main`): hover v neaktivním i aktivním stavu (`.active:hover`) jen ztmaví výplň (`color-mix`), border zůstává (dřív měnil border na #92400e + stín-pop; v aktivním stavu navíc hover přebíjelo `.active`).
   - Databáze osob / Nastavení **nezměněny** (dle zadání).
 - Ověřeno Playwrightem (rámečky + rohy, hover čísla i vizuál).
 

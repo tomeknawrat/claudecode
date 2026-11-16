@@ -333,8 +333,8 @@ console.warn = (...args) => {
   .panel--cam1 .panel-title { color: var(--blue); border-bottom-color: var(--blue-mid); margin: 0; border-radius: var(--r) var(--r) 0 0; }
   .panel--cam2 .panel-title { color: var(--amber-d); border-bottom-color: var(--amber-mid); }
 
-  /* Camera 1 — blue identity (barevný rámeček kolem celého boxu) */
-  .panel--cam1 { border: 3px solid var(--blue); }
+  /* Camera 1 — blue identity */
+  .panel--cam1 { border-top: 3px solid var(--blue); }
   .panel--cam1 .cam-id { color: var(--blue); }
   .panel--cam1 .ptz-btn:hover { background: var(--blue-soft); border-color: var(--blue-mid); }
   .panel--cam1 .ptz-btn:hover svg { color: var(--blue); }
@@ -355,7 +355,7 @@ console.warn = (...args) => {
   .panel--cam1 .ptz-center:hover { background: var(--blue-soft) !important; border-color: var(--blue-mid) !important; }
 
   /* Camera 2 — amber identity */
-  .panel--cam2 { border: 3px solid var(--amber); }
+  .panel--cam2 { border-top: 3px solid var(--amber); }
   .panel--cam2 .cam-id { color: var(--amber-d); }
   .panel--cam2 .ptz-btn:hover { background: var(--amber-soft); border-color: var(--amber-mid); }
   .panel--cam2 .ptz-btn:hover svg { color: var(--amber-d); }
@@ -927,11 +927,11 @@ console.warn = (...args) => {
     background: var(--amber-soft);
     justify-content: center;
   }
+  /* Hover: jen lehce ztmavit pozadí, rámeček i barva písma (amber-d) zůstanou. */
   .seat-layout-btn--main:hover {
-    background: #fef3c7;
-    color: #92400e;
-    border-color: #92400e;
-    box-shadow: 0 2px 8px rgba(245,158,11,.15);
+    background: color-mix(in srgb, var(--amber-d) 10%, var(--amber-soft));
+    color: var(--amber-d);
+    border-color: var(--amber-d);
   }
   .seat-layout-btn--main:active {
     background: #fde68a;
@@ -944,6 +944,12 @@ console.warn = (...args) => {
     background: #fef3c7;
     color: #92400e;
     border-color: #92400e;
+  }
+  /* Hover i v aktivním stavu: jen lehce ztmavit výplň, rámeček #92400e zůstane. */
+  .seat-layout-btn--main.active:hover {
+    background: color-mix(in srgb, #92400e 12%, #fef3c7);
+    border-color: #92400e;
+    color: #92400e;
   }
   .cam-header-divider {
     width: 1px; height: 33px;

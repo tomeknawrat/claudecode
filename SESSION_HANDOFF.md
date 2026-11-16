@@ -32,6 +32,16 @@
 
 ## Záznamy dne
 
+### 16. 11. 2026 — rámečky boxů + sjednocené hover chování tlačítek
+- **Rámeček panelů:** `.panel--cam1`/`.panel--cam2` měly jen `border-top: 3px` (barevný), zbytek 1px šedý → nově **`border: 3px solid`** barvy kamery kolem **celého boxu** (modrá/amber). `.panel` dostal **`overflow: hidden`** → vnitřní obsah se ořízne na `border-radius` → **spodní rohy zakulacené** jako horní.
+- **Hover tlačítek** sjednocen s `.cam2-tool-btn` (jen lehce ztmavit pozadí, rámeček + opacity zůstanou):
+  - CAM1 Pódium ikony (`.cam1-fixed-preset` + `.preset-card`): odstraněno staré `.panel--cam1 .preset-card:hover` (měnilo border na blue-mid + stín-pop) → teď border zůstává blue-d, pozadí ztmaví `#eff6ff→#dbeafe`.
+  - `.preset-card:hover` (CAM2 sedadla/presety) → jen `background: var(--surface2)` (dřív amber-soft + amber border + stín).
+  - `.cam2-pose .pose-btn:hover` (sedící/stojící) → `color-mix(10% #92400e, #fef3c7)`, border `#92400e` zůstává (dřív se měnil na amber-mid).
+  - Prázdná sedadla `.seat-slot.slot-has-calib:hover` → jen ztmavit (`surface3`), border zůstává.
+  - Databáze osob / Nastavení **nezměněny** (dle zadání).
+- Ověřeno Playwrightem (rámečky + rohy, hover čísla i vizuál).
+
 ### 16. 11. 2026 — symetrické okraje layoutu + zarovnání hlavičky
 - `.app` padding `16px 16px 16px 0` → **`16px`** (dřív byly boxy Pódium/Komentáře vlevo nalepené, vpravo 16px). `header` padding `0 24px` → **`0 16px`**.
 - Výsledek: title „Ovládání kamer" i levé hrany obou boxů = 16px zleva; NASTAVENÍ i pravé hrany boxů = okraj−16px. Databáze osob + stavová tečka se posunuly s header-right (gap 10px zachován). Ověřeno Playwrightem (vše na 16 / W−16).

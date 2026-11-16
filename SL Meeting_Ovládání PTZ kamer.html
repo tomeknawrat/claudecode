@@ -311,7 +311,7 @@ console.warn = (...args) => {
   .panel--cam1 { width: 100%; max-width: 100%; }
   .panel--cam2 { width: 100%; min-width: 0; }
 
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0; box-shadow: var(--sh-sm); overflow: visible; display: flex; flex-direction: column; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0; box-shadow: var(--sh-sm); overflow: hidden; display: flex; flex-direction: column; }
 
   .panel-body { padding: 8px; }
   .panel--cam1 .panel-body,
@@ -333,8 +333,8 @@ console.warn = (...args) => {
   .panel--cam1 .panel-title { color: var(--blue); border-bottom-color: var(--blue-mid); margin: 0; border-radius: var(--r) var(--r) 0 0; }
   .panel--cam2 .panel-title { color: var(--amber-d); border-bottom-color: var(--amber-mid); }
 
-  /* Camera 1 — blue identity */
-  .panel--cam1 { border-top: 3px solid var(--blue); }
+  /* Camera 1 — blue identity (barevný rámeček kolem celého boxu) */
+  .panel--cam1 { border: 3px solid var(--blue); }
   .panel--cam1 .cam-id { color: var(--blue); }
   .panel--cam1 .ptz-btn:hover { background: var(--blue-soft); border-color: var(--blue-mid); }
   .panel--cam1 .ptz-btn:hover svg { color: var(--blue); }
@@ -355,7 +355,7 @@ console.warn = (...args) => {
   .panel--cam1 .ptz-center:hover { background: var(--blue-soft) !important; border-color: var(--blue-mid) !important; }
 
   /* Camera 2 — amber identity */
-  .panel--cam2 { border-top: 3px solid var(--amber); }
+  .panel--cam2 { border: 3px solid var(--amber); }
   .panel--cam2 .cam-id { color: var(--amber-d); }
   .panel--cam2 .ptz-btn:hover { background: var(--amber-soft); border-color: var(--amber-mid); }
   .panel--cam2 .ptz-btn:hover svg { color: var(--amber-d); }
@@ -552,6 +552,8 @@ console.warn = (...args) => {
     filter: brightness(0) saturate(100%) invert(25%) sepia(56%) saturate(1650%) hue-rotate(352deg) brightness(94%) contrast(94%) !important;
   }
   .cam2-pose .pose-btn.active { border-color: #92400e; }
+  /* Hover: jen lehce ztmavit výplň, rámeček #92400e i ikona zůstanou (jako .cam2-tool-btn). */
+  .cam2-pose .pose-btn:hover { background: color-mix(in srgb, #92400e 10%, #fef3c7); border-color: #92400e; }
   /* Jednotná výška všech tlačítek v liště CAM2 (pose, nástrojová i „Kompaktní") */
   .panel--cam2 .cam-presets-header > div > button,
   .panel--cam2 .cam2-pose .pose-btn {
@@ -638,8 +640,8 @@ console.warn = (...args) => {
     border-radius: var(--r-sm); overflow: hidden; cursor: pointer;
     transition: all .15s; user-select: none; -webkit-user-select: none; box-shadow: var(--sh-sm);
   }
-  .preset-card:hover { border-color: var(--amber-mid); background: var(--amber-soft); box-shadow: 0 4px 12px rgba(245,158,11,.18); }
-  .panel--cam1 .preset-card:hover { border-color: var(--blue-mid); background: var(--blue-soft); box-shadow: 0 4px 12px rgba(59,130,246,.18); }
+  /* Hover: jen lehce ztmavit pozadí, rámeček i stín zůstanou (jako .cam2-tool-btn). */
+  .preset-card:hover { background: var(--surface2); }
   .presets-grid.edit-mode .preset-card:hover { transform: none; }
   .preset-card.saving {
     border-color: var(--green) !important;
@@ -1602,7 +1604,8 @@ console.warn = (...args) => {
   /* Prázdný slot s kalibrací — klikatelný */
   .seat-slot.slot-has-calib { cursor: pointer; }
   .seat-slot.slot-has-calib:hover .slot-empty-label { color: var(--text-2); }
-  .seat-slot.slot-has-calib:hover { border-color: var(--border2); background: var(--surface3); }
+  /* Hover: jen lehce ztmavit pozadí, rámeček zůstane (sjednoceno s tlačítky). */
+  .seat-slot.slot-has-calib:hover { background: var(--surface3); }
   .seat-slot.slot-has-calib.recalled { border-color: var(--green); background: var(--green-soft, #dcfce7); }
   .seat-slot.recalled .slot-empty-label { color: var(--green, #16a34a); font-weight: 700; }
 

@@ -43,6 +43,10 @@
   - Databáze osob / Nastavení **nezměněny** (dle zadání).
 - Ověřeno Playwrightem (rámečky + rohy, hover čísla i vizuál).
 
+### 16. 11. 2026 — sjednocení hoveru v manuálním ovládání kamery
+- Všechna tlačítka sekce „Manuální ovládání kamery" (šipky `.ptz-btn`, domeček `.ptz-center`, zoom `.zoom-btn`, focus `.focus-btn`, AF/MF `.focus-pill`) v obou boxech měla hover s **barevnou výplní (blue/amber-soft) + změnou borderu + přebarvením ikony + u šipek navíc scale(1.05) + stín-pop**. Sjednoceno na chování jako ostatní: **hover = jen `background: var(--surface3)`** (lehké ztmavení), border, ikona i stín beze změny, bez scale.
+- Odstraněny všechny barevné `:hover` (obecné i panel-scoped CAM1/CAM2) i `:hover svg` přebarvení; **AKTIVNÍ/PRESSED stavy** (barevná výplň při kliku, AF/MF `.active`) zůstaly. Smazán i mrtvý `.panel--cam2 .zf-btn:hover` (modrý hover v amber boxu).
+
 ### 16. 11. 2026 — symetrické okraje layoutu + zarovnání hlavičky
 - `.app` padding `16px 16px 16px 0` → **`16px`** (dřív byly boxy Pódium/Komentáře vlevo nalepené, vpravo 16px). `header` padding `0 24px` → **`0 16px`**.
 - Výsledek: title „Ovládání kamer" i levé hrany obou boxů = 16px zleva; NASTAVENÍ i pravé hrany boxů = okraj−16px. Databáze osob + stavová tečka se posunuly s header-right (gap 10px zachován). Ověřeno Playwrightem (vše na 16 / W−16).

@@ -336,47 +336,30 @@ console.warn = (...args) => {
   /* Camera 1 — blue identity */
   .panel--cam1 { border-top: 3px solid var(--blue); }
   .panel--cam1 .cam-id { color: var(--blue); }
-  .panel--cam1 .ptz-btn:hover { background: var(--blue-soft); border-color: var(--blue-mid); }
-  .panel--cam1 .ptz-btn:hover svg { color: var(--blue); }
+  /* Hover sjednocen (viz obecná pravidla .ptz-btn/.zoom-btn/... :hover) — jen
+     ztmavení pozadí, border + ikona zůstanou. Zde jen barevné AKTIVNÍ/PRESSED stavy. */
   .panel--cam1 .ptz-btn:active, .panel--cam1 .ptz-btn.pressed { background: var(--blue); border-color: var(--blue); }
   .panel--cam1 .focus-mode-btn.active { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-soft); }
 
-  .panel--cam1 .zoom-btn:hover { background: var(--blue-soft); border-color: var(--blue-mid); }
-  .panel--cam1 .zoom-btn:hover svg { color: var(--blue); }
   .panel--cam1 .zoom-btn:active, .panel--cam1 .zoom-btn.pressed { background: var(--blue); border-color: var(--blue-d); }
   .panel--cam1 .zoom-btn:active svg, .panel--cam1 .zoom-btn.pressed svg { color: white; }
 
-  .panel--cam1 .focus-btn:hover { background: var(--blue-soft); border-color: var(--blue-mid); }
-  .panel--cam1 .focus-btn:hover svg { color: var(--blue); }
   .panel--cam1 .focus-btn:active, .panel--cam1 .focus-btn.pressed { background: var(--blue); border-color: var(--blue-d); transform: scale(.94); }
   .panel--cam1 .focus-btn:active svg, .panel--cam1 .focus-btn.pressed svg { color: white; }
-
-  .panel--cam1 .focus-pill:hover { border-color: var(--blue-mid); color: var(--blue); }
-  .panel--cam1 .ptz-center:hover { background: var(--blue-soft) !important; border-color: var(--blue-mid) !important; }
 
   /* Camera 2 — amber identity */
   .panel--cam2 { border-top: 3px solid var(--amber); }
   .panel--cam2 .cam-id { color: var(--amber-d); }
-  .panel--cam2 .ptz-btn:hover { background: var(--amber-soft); border-color: var(--amber-mid); }
-  .panel--cam2 .ptz-btn:hover svg { color: var(--amber-d); }
+  /* Hover sjednocen (obecná pravidla) — zde jen barevné AKTIVNÍ/PRESSED stavy. */
   .panel--cam2 .ptz-btn:active, .panel--cam2 .ptz-btn.pressed { background: var(--amber); border-color: var(--amber-d); }
   .panel--cam2 .ptz-btn:active svg, .panel--cam2 .ptz-btn.pressed svg { color: white; }
   .panel--cam2 .focus-mode-btn.active { border-color: var(--amber-mid); color: var(--amber-d); background: var(--amber-soft); }
-  .panel--cam2 .zf-btn:hover { background: var(--blue-soft); border-color: var(--blue-mid); }
-  .panel--cam2 .zf-btn:hover svg { color: var(--blue); }
 
-  .panel--cam2 .zoom-btn:hover { background: var(--amber-soft); border-color: var(--amber-mid); }
-  .panel--cam2 .zoom-btn:hover svg { color: var(--amber-d); }
   .panel--cam2 .zoom-btn:active, .panel--cam2 .zoom-btn.pressed { background: var(--amber); border-color: var(--amber-d); }
   .panel--cam2 .zoom-btn:active svg, .panel--cam2 .zoom-btn.pressed svg { color: white; }
 
-  .panel--cam2 .focus-btn:hover { background: var(--amber-soft); border-color: var(--amber-mid); }
-  .panel--cam2 .focus-btn:hover svg { color: var(--amber-d); }
   .panel--cam2 .focus-btn:active, .panel--cam2 .focus-btn.pressed { background: var(--amber); border-color: var(--amber-d); transform: scale(.94); }
   .panel--cam2 .focus-btn:active svg, .panel--cam2 .focus-btn.pressed svg { color: white; }
-
-  .panel--cam2 .focus-pill:hover { border-color: var(--amber-mid); color: var(--amber-d); }
-  .panel--cam2 .ptz-center:hover { background: var(--amber-soft) !important; border-color: var(--amber-mid) !important; }
 
   .proto-badge {
     font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
@@ -434,8 +417,8 @@ console.warn = (...args) => {
     user-select: none; -webkit-user-select: none; box-shadow: var(--sh-sm);
   }
   .ptz-btn svg { width: 16px; height: 16px; color: var(--text-2); transition: color .12s; }
-  .ptz-btn:hover { background: var(--blue-soft); border-color: var(--blue-mid); box-shadow: 0 3px 10px rgba(59,130,246,.15); transform: scale(1.05); }
-  .ptz-btn:hover svg { color: var(--blue); }
+  /* Hover: jen lehce ztmavit pozadí (surface3), border + ikona + stín beze změny. */
+  .ptz-btn:hover { background: var(--surface3); }
   .ptz-btn:active, .ptz-btn.pressed { background: var(--blue); border-color: var(--blue); transform: scale(.94); box-shadow: 0 2px 8px rgba(59,130,246,.4); }
   .ptz-btn:active svg, .ptz-btn.pressed svg { color: white; }
 
@@ -443,7 +426,7 @@ console.warn = (...args) => {
     background: var(--surface2); border: 1.5px solid var(--border);
     flex-direction: column; gap: 2px; cursor: pointer;
   }
-  .ptz-center:hover { background: var(--surface3) !important; border-color: var(--border2) !important; transform: scale(1.05) !important; box-shadow: var(--sh) !important; }
+  .ptz-center:hover { background: var(--surface3) !important; }
   .ptz-center:active { transform: scale(.94) !important; }
   .cam-id { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: var(--blue); }
   .stop-label { font-size: 8px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-3); }
@@ -463,8 +446,7 @@ console.warn = (...args) => {
     transition: all .12s; user-select: none; box-shadow: var(--sh-sm);
   }
   .zoom-btn svg { width: 16px; height: 16px; color: var(--text-2); transition: color .12s; }
-  .zoom-btn:hover { background: var(--amber-soft); border-color: var(--amber-mid); }
-  .zoom-btn:hover svg { color: var(--amber-d); }
+  .zoom-btn:hover { background: var(--surface3); }
   .zoom-btn:active, .zoom-btn.pressed { background: var(--amber); border-color: var(--amber-d); transform: scale(.94); }
   .zoom-btn:active svg, .zoom-btn.pressed svg { color: white; }
 
@@ -483,8 +465,7 @@ console.warn = (...args) => {
     transition: all .12s; user-select: none; flex-shrink: 0;
   }
   .focus-btn svg { width: 16px; height: 16px; color: var(--text-2); transition: color .12s; }
-  .focus-btn:hover { background: var(--surface3); border-color: var(--border2); }
-  .focus-btn:hover svg { color: var(--text-2); }
+  .focus-btn:hover { background: var(--surface3); }
   .focus-btn:active, .focus-btn.pressed { background: var(--border2); transform: scale(.94); }
 
   .focus-mode-pills {
@@ -498,7 +479,7 @@ console.warn = (...args) => {
     border: 1.5px solid var(--border); color: var(--text-3);
     background: var(--surface2); transition: all .15s; user-select: none;
   }
-  .focus-pill:hover { border-color: var(--border2); color: var(--text-2); }
+  .focus-pill:hover { background: var(--surface3); }
   .focus-pill.active { border-color: var(--amber-mid); color: var(--amber-d); background: var(--amber-soft); }
   .panel--cam1 .focus-pill.active { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-soft); }
   .panel--cam2 .focus-pill.active { border-color: var(--amber-mid); color: var(--amber-d); background: var(--amber-soft); }

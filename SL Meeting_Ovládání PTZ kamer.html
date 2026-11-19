@@ -382,7 +382,8 @@ console.warn = (...args) => {
      sdíleně pro obě cam). CAM1 proto NEMÁ horní padding na panel-body — jinak by
      při SBALENÉM manuálním ovládání vznikl prázdný bílý pruh mezi titulkem PÓDIUM
      a modrým pruhem presetů (CAM2 má titulek uvnitř body, tam problém není). */
-  .panel--cam1 .panel-body { padding-top: 0; }
+  .panel--cam1 .panel-body,
+  .panel--cam2 .panel-body { padding-top: 0; }
 
   .ctrl-group {
     display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -1207,11 +1208,54 @@ console.warn = (...args) => {
   .cam2-controls-toggle * { pointer-events: none; }
   .cam2-controls-toggle:hover .ctrl-label { color: var(--amber-d); }
   .panel--cam1 .cam2-controls-toggle:hover .ctrl-label { color: var(--blue); }
+  /* ── PLOVOUCÍ OKNO manuálního ovládání kamery ──
+     Otevřený stav = plovoucí okno (modal) uprostřed obrazovky, mimo tok stránky,
+     takže nezabírá žádné vertikální místo v panelu. Otevírá/zavírá se ikonkou
+     joysticku (#ctrlFloatBtn1 / #ctrlFloatBtn2). */
   .cam2-controls-collapsible {
-    overflow: visible; transition: max-height .3s ease, opacity .25s ease;
-    max-height: 1200px; opacity: 1;
+    position: fixed; z-index: 1000;
+    left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: max-content; max-width: min(640px, 94vw);
+    max-height: 88vh; overflow: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .28);
+    padding: 10px 14px 14px;
+    opacity: 1;
   }
-  .cam2-controls-collapsible.collapsed { max-height: 0; opacity: 0; overflow: hidden; }
+  .panel--cam1 .cam2-controls-collapsible { border-top: 3px solid var(--blue); }
+  .panel--cam2 .cam2-controls-collapsible { border-top: 3px solid var(--amber); }
+  .cam2-controls-collapsible.collapsed { display: none; }
+
+  /* Podklad pod plovoucím oknem */
+  .ctrl-backdrop {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(15, 23, 42, .35);
+    display: none;
+  }
+  .ctrl-backdrop.show { display: block; }
+
+  /* Hlavička plovoucího okna (titulek + křížek) */
+  .ctrl-window-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ctrl-window-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; color: var(--text-3);
+  }
+  .panel--cam1 .ctrl-window-title { color: var(--blue); }
+  .panel--cam2 .ctrl-window-title { color: var(--amber-d); }
+  .ctrl-window-close {
+    border: none; background: transparent; cursor: pointer;
+    font-size: 15px; line-height: 1; color: var(--text-3);
+    width: 26px; height: 26px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .ctrl-window-close:hover { background: var(--surface3); }
 
   /* ── RESPONSIVE / iPAD ── */
 
@@ -1820,15 +1864,21 @@ console.warn = (...args) => {
 <!-- APP -->
 <div class="app">
 
+  <!-- Podklad (backdrop) pro plovoucí okno manuálního ovládání -->
+  <div id="ctrlBackdrop" class="ctrl-backdrop" onclick="closeAllCtrlWindows()"></div>
+
+
   <!-- CAMERA 1 -->
   <div class="panel panel--cam1">
-    <div class="panel-title" onclick="toggleCam1Controls()" id="cam1CtrlToggle" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-      <span>PÓDIUM</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text-3);text-transform:uppercase;">Manuální ovládání kamery <span class="ctrl-collapse-arrow collapsed" id="cam1CtrlArrow">▼</span></span>
-    </div>
+    <!-- Hlavička „PÓDIUM" + lišta „Manuální ovládání" odebrána; ovládání otevírá ikonka #ctrlFloatBtn1 v liště presetů (plovoucí okno) -->
+
     <div class="panel-body">
     <div class="cam2-controls-wrap">
     <div class="cam2-controls-collapsible collapsed" id="cam1CtrlBody">
+    <div class="ctrl-window-head">
+      <span class="ctrl-window-title">Manuální ovládání kamery — Pódium</span>
+      <button class="ctrl-window-close" onclick="closeAllCtrlWindows()" title="Zavřít" aria-label="Zavřít">✕</button>
+    </div>
     <div class="controls-row">
 
       <!-- Pohyb kamery -->
@@ -1892,6 +1942,9 @@ console.warn = (...args) => {
     <div class="cam-presets-section cam1-strip" style="flex:0 0 auto;min-width:0;">
       <div class="cam1-preset-layout">
         <div class="cam1-btn-col">
+          <button class="cam2-tool-btn icon-only" id="ctrlFloatBtn1" onclick="toggleCam1Controls()" title="Manuální ovládání kamery" style="--btn-bg:var(--blue-soft);--btn-border:var(--blue-mid);--btn-text:var(--blue-d)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16.5" r="4.3"/><path d="M12 12.2V5"/><circle cx="12" cy="4" r="2.1"/></svg>
+          </button>
           <button class="cam2-tool-btn icon-only" id="savePresetBtn1" onclick="saveLastPresetManual(1)" title="Uložit aktuální (ručně upravenou) pozici kamery do posledního vyvolaného presetu" style="--btn-bg:var(--green-soft);--btn-border:#86efac;--btn-text:#16a34a">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           </button>
@@ -1906,12 +1959,14 @@ console.warn = (...args) => {
   <!-- CAMERA 2 -->
   <div class="panel panel--cam2">
     <div class="panel-body">
-    <div class="panel-title" onclick="toggleCam2Controls()" id="cam2CtrlToggle" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-      <span>KOMENTÁŘE</span>
-      <span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--text-3);text-transform:uppercase;">Manuální ovládání kamery <span class="ctrl-collapse-arrow collapsed" id="cam2CtrlArrow">▼</span></span>
-    </div>
+    <!-- Hlavička „KOMENTÁŘE" + lišta „Manuální ovládání" odebrána; ovládání otevírá ikonka #ctrlFloatBtn2 v nástrojové liště (plovoucí okno) -->
+
     <div class="cam2-controls-wrap">
     <div class="cam2-controls-collapsible collapsed" id="cam2CtrlBody">
+    <div class="ctrl-window-head">
+      <span class="ctrl-window-title">Manuální ovládání kamery — Komentáře</span>
+      <button class="ctrl-window-close" onclick="closeAllCtrlWindows()" title="Zavřít" aria-label="Zavřít">✕</button>
+    </div>
     <div class="controls-row">
 
       <!-- Pohyb kamery -->
@@ -1979,6 +2034,9 @@ console.warn = (...args) => {
     <div class="cam-presets-section" style="position:relative;">
       <div class="cam-presets-header">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
+          <button class="cam2-tool-btn icon-only" id="ctrlFloatBtn2" onclick="toggleCam2Controls()" title="Manuální ovládání kamery" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16.5" r="4.3"/><path d="M12 12.2V5"/><circle cx="12" cy="4" r="2.1"/></svg>
+          </button>
           <button class="scan-btn cam2-tool-btn icon-only" id="scanBtn" onclick="openScanModal()" title="Skenovat hlediště" style="--btn-bg:#f5f3ff;--btn-border:#ddd6fe;--btn-text:#6d28d9">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="10.3" r="2.5" fill="currentColor" stroke="none"/><path d="M8 17.2a4 4 0 0 1 8 0z" fill="currentColor" stroke="none"/></svg>
           </button>
@@ -1997,9 +2055,8 @@ console.warn = (...args) => {
           <button class="hide-presets-btn cam2-tool-btn icon-only" id="clearAllBtn2" onclick="openClearResetDialog()" title="Smazat všechny fotky" style="--btn-bg:var(--red-soft);--btn-border:#fca5a5;--btn-text:#dc2626">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
           </button>
-          <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()" style="margin-left:auto">
+          <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()" title="Přepnout na kompaktní zobrazení (plánek sálu)" style="margin-left:auto">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="10" y="4" width="4" height="4" rx="1"/><rect x="17" y="4" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="10" y="11" width="4" height="4" rx="1"/><rect x="17" y="11" width="4" height="4" rx="1"/><rect x="3" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="17" y="18" width="4" height="4" rx="1"/></svg>
-            <span id="seatLayoutBtnLabel">Detailní</span>
           </button>
         </div>
       </div>
@@ -3028,20 +3085,44 @@ function onDragEnd() {
   document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('drag-over'));
 }
 
-// ── CAM1 CONTROLS TOGGLE ──
-function toggleCam1Controls() {
-  const body  = document.getElementById('cam1CtrlBody');
-  const arrow = document.getElementById('cam1CtrlArrow');
-  const collapsed = body.classList.toggle('collapsed');
-  arrow.classList.toggle('collapsed', collapsed);
+// ── PLOVOUCÍ OKNO MANUÁLNÍHO OVLÁDÁNÍ ──
+// Ikonka joysticku v liště otevře/zavře plovoucí okno s ovládacími prvky kamery.
+let _ctrlWinEscHandler = null;
+
+function closeAllCtrlWindows() {
+  const b1 = document.getElementById('cam1CtrlBody');
+  const b2 = document.getElementById('cam2CtrlBody');
+  if (b1) b1.classList.add('collapsed');
+  if (b2) b2.classList.add('collapsed');
+  const bd = document.getElementById('ctrlBackdrop');
+  if (bd) bd.classList.remove('show');
+  if (_ctrlWinEscHandler) {
+    document.removeEventListener('keydown', _ctrlWinEscHandler);
+    _ctrlWinEscHandler = null;
+  }
 }
 
-// ── CAM2 CONTROLS TOGGLE ──
+function _openCtrlWindow(cam) {
+  closeAllCtrlWindows();                       // vždy jen jedno okno naráz
+  const body = document.getElementById('cam' + cam + 'CtrlBody');
+  if (!body) return;
+  body.classList.remove('collapsed');
+  const bd = document.getElementById('ctrlBackdrop');
+  if (bd) bd.classList.add('show');
+  _ctrlWinEscHandler = e => { if (e.key === 'Escape') closeAllCtrlWindows(); };
+  setTimeout(() => document.addEventListener('keydown', _ctrlWinEscHandler), 50);
+}
+
+function toggleCam1Controls() {
+  const body = document.getElementById('cam1CtrlBody');
+  if (body && body.classList.contains('collapsed')) _openCtrlWindow(1);
+  else closeAllCtrlWindows();
+}
+
 function toggleCam2Controls() {
-  const body  = document.getElementById('cam2CtrlBody');
-  const arrow = document.getElementById('cam2CtrlArrow');
-  const collapsed = body.classList.toggle('collapsed');
-  arrow.classList.toggle('collapsed', collapsed);
+  const body = document.getElementById('cam2CtrlBody');
+  if (body && body.classList.contains('collapsed')) _openCtrlWindow(2);
+  else closeAllCtrlWindows();
 }
 
 // ── COLLAPSIBLE CTRL GROUPS ──
@@ -4855,7 +4936,7 @@ function toggleSeatLayout() {
   const empty    = document.getElementById('presetsEmpty2');
 
   btn.classList.toggle('active', seatLayoutActive);
-  document.getElementById('seatLayoutBtnLabel').textContent = seatLayoutActive ? 'Kompaktní' : 'Detailní';
+  btn.title = seatLayoutActive ? 'Přepnout na detailní zobrazení (grid presetů)' : 'Přepnout na kompaktní zobrazení (plánek sálu)';
   document.querySelector('.panel--cam2').classList.toggle('seat-layout-active', seatLayoutActive);
 
   if (seatLayoutActive) {

@@ -4,7 +4,10 @@
 > **Není to doslovný přepis chatu** — je to kontext pro pokračování v nové (i remote) session.
 > Doplňuje `KONTEXT_PRO_NOVY_CHAT.md`, který popisuje celý projekt. Tento soubor popisuje, co se dělo naposledy a co zbývá.
 
-## TL;DR — kde to stojí (aktualizace 7. 11. 2026)
+## TL;DR — kde to stojí (aktualizace 19. 11. 2026)
+
+- ✅ **Manuální ovládání kamery = plovoucí okno** (19. 11.) — otevírá ikonka joysticku v liště (CAM1 modrá, CAM2 amber); hlavičky „PÓDIUM"/„KOMENTÁŘE" i stará rozbalovací lišta odebrány kvůli úspoře místa na half-screen. Přepínač zobrazení (`#seatLayoutBtn2`) je teď jen ikonka.
+
 
 - ✅ **Zastavování kamery — VYŘEŠENO a ověřeno naostro** — pan/tilt stop je `ptzstop`, ne `stop`.
 - ✅ **Video náhled (WHEP) — VYŘEŠENO** — CORS proxy v `ptz_server.py` (:8890) obchází CORS MediaMTX.
@@ -31,6 +34,18 @@
 ---
 
 ## Záznamy dne
+
+### 19. 11. 2026 — plovoucí okno manuálního ovládání + úspora vertikálního místa
+- **Hlavičky „PÓDIUM" / „KOMENTÁŘE" odebrány** (lišty `.panel-title` obou panelů). Důvod: úspora vertikálního místa na half-screen. S nimi zmizela i lišta-přepínač „Manuální ovládání kamery ▼".
+- **Manuální ovládání kamery = plovoucí okno.** Místo inline rozbalovací sekce se ovládání otevírá přes **ikonku joysticku** v liště:
+  - CAM1: `#ctrlFloatBtn1` (modrá) v levém sloupci u „Uložit preset".
+  - CAM2: `#ctrlFloatBtn2` (amber) jako první v nástrojové liště.
+  - Okno = vycentrovaný modal (`position:fixed`), horní pruh v barvě kamery, hlavička s titulkem „Manuální ovládání kamery — Pódium/Komentáře" + křížek; pod ním původní `controls-row` (PTZ pad, zoom, focus, pozice).
+  - Podklad `#ctrlBackdrop` (ztmavení); zavření křížkem, klikem na podklad nebo Escape; otevření jednoho okna zavře druhé. JS: `toggleCam1/2Controls`, `_openCtrlWindow`, `closeAllCtrlWindows` (nahradily starou arrow-collapse logiku).
+  - CSS: `.cam2-controls-collapsible` otevřená = modal, `.collapsed` = `display:none`; nové `.ctrl-backdrop`, `.ctrl-window-head/-title/-close`. Prázdné `.panel-body` obou kamer má `padding-top:0` (nezabírá místo).
+- **Tlačítko přepnutí zobrazení (Detailní/Kompaktní) = jen ikonka.** `#seatLayoutBtn2` už nemá textový popisek (`#seatLayoutBtnLabel` odstraněn); stav napovídá `title` (přepínán v `toggleSeatLayout`).
+- Pozn.: ikonka joysticku je zatím vestavěná SVG — lze snadno vyměnit za dodanou.
+- Ověřeno Playwrightem (otevření/zavření obou oken, backdrop, Escape, přepnutí, ikonkový přepínač) + `node --check`.
 
 ### 16. 11. 2026 — rámečky boxů + sjednocené hover chování tlačítek
 - **Rámeček panelů:** barevný `border-top: 3px` zůstává jen nahoře (zbytek 1px šedý — barevný rámeček kolem celého boxu byl vyzkoušen, ale uživateli se nelíbil, vráceno). `.panel` dostal **`overflow: hidden`** → vnitřní obsah se ořízne na `border-radius` → **spodní rohy zakulacené** jako horní.

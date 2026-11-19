@@ -2,7 +2,7 @@
 
 > Přehled hotového, rozpracovaného a dalšího směru. Doplňuje
 > `KONTEXT_PRO_NOVY_CHAT.md` (popis projektu) a `SESSION_HANDOFF.md` (stav práce).
-> Aktualizováno: **16. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
+> Aktualizováno: **19. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
 > Hlavní soubor appky: **`SL Meeting_Ovládání PTZ kamer.html`**.
 
 ---
@@ -47,6 +47,14 @@
 - Zrušeno „Přesunout". Přidáno **Uložit preset** (`saveLastPresetManual(1)` — uloží ruční doladění do posledního vyvolaného presetu). Tlačítko stylem totožné s Komentáři (`cam2-tool-btn`).
 - Tlačítko vlevo, presety vpravo. *(Dřív: textový popisek, výška 92 px, přidávání od středu — nyní nahrazeno ikonovým pruhem.)*
 - Styl `.cam2-tool-btn` rozšířen na obě kamery (`.cam-presets-section .cam2-tool-btn`).
+
+## ✅ Plovoucí okno manuálního ovládání (hotovo 19. 11.)
+
+- **Hlavičky „PÓDIUM" / „KOMENTÁŘE" a rozbalovací lišta „Manuální ovládání kamery" odebrány** — úspora vertikálního místa (half-screen).
+- Manuální ovládání se otevírá **ikonkou joysticku** v liště (CAM1 `#ctrlFloatBtn1` modrá, CAM2 `#ctrlFloatBtn2` amber) jako **plovoucí okno** (modal `position:fixed` + podklad `#ctrlBackdrop`), horní pruh v barvě kamery, hlavička s titulkem + křížek. Zavření: křížek / podklad / Escape; otevřít jedno zavře druhé.
+- JS: `toggleCam1/2Controls`, `_openCtrlWindow`, `closeAllCtrlWindows`; CSS: `.cam2-controls-collapsible` (modal) + `.ctrl-backdrop` + `.ctrl-window-*`.
+- Přepínač zobrazení `#seatLayoutBtn2` je nově **jen ikonka** (bez slova Detailní/Kompaktní; stav v `title`).
+- *Pozn.: vestavěná SVG ikonka joysticku — připravená k výměně za dodanou.*
 
 ## ✅ Spuštění jedním krokem (hotovo)
 

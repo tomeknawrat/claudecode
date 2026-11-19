@@ -83,7 +83,7 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 - DOM zůstal na místě: `#cam1CtrlBody` / `#cam2CtrlBody` (`.cam2-controls-collapsible`). Otevřený stav = `position:fixed` vycentrovaná karta (horní pruh v barvě kamery, hlavička `.ctrl-window-head` s titulkem + křížek), zavřený stav = `display:none` (třída `collapsed`). Podklad `#ctrlBackdrop` (`.ctrl-backdrop.show`).
 - JS: `toggleCam1Controls`/`toggleCam2Controls` (přepínač), `_openCtrlWindow(cam)` (zavře druhé, ukáže podklad, naváže Escape), `closeAllCtrlWindows()`. Zavření: křížek / klik na podklad / Escape.
 - Hlavičky panelů „PÓDIUM"/„KOMENTÁŘE" a stará rozbalovací lišta „Manuální ovládání kamery ▼" byly odebrány (úspora místa na half-screen). Prázdné `.panel-body` obou kamer má `padding-top:0`.
-- Ikonka joysticku je vestavěná SVG — připravená k výměně za dodanou.
+- Ikonka joysticku = plně vyplněný SVG (kulička + páka + trapézový podstavec s tlačítkem jako výřez, `fill-rule:evenodd`) dle dodané předlohy; obarvení `currentColor` (CAM1 modrá, CAM2 amber).
 
 ### Seat layout
 Původní pevný layout z jednacího hlediště (obnovený na žádost):

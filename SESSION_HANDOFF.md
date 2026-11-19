@@ -49,7 +49,7 @@
   - Podklad `#ctrlBackdrop` (ztmavení); zavření křížkem, klikem na podklad nebo Escape; otevření jednoho okna zavře druhé. JS: `toggleCam1/2Controls`, `_openCtrlWindow`, `closeAllCtrlWindows` (nahradily starou arrow-collapse logiku).
   - CSS: `.cam2-controls-collapsible` otevřená = modal, `.collapsed` = `display:none`; nové `.ctrl-backdrop`, `.ctrl-window-head/-title/-close`. Prázdné `.panel-body` obou kamer má `padding-top:0` (nezabírá místo).
 - **Tlačítko přepnutí zobrazení (Detailní/Kompaktní) = jen ikonka.** `#seatLayoutBtn2` už nemá textový popisek (`#seatLayoutBtnLabel` odstraněn); stav napovídá `title` (přepínán v `toggleSeatLayout`).
-- Pozn.: ikonka joysticku je zatím vestavěná SVG — lze snadno vyměnit za dodanou.
+- Pozn.: ikonka joysticku = plně vyplněný SVG dle dodané předlohy (19. 11.), `currentColor` (CAM1 modrá, CAM2 amber).
 - Ověřeno Playwrightem (otevření/zavření obou oken, backdrop, Escape, přepnutí, ikonkový přepínač) + `node --check`.
 
 ### 16. 11. 2026 — rámečky boxů + sjednocené hover chování tlačítek

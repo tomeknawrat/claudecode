@@ -54,7 +54,7 @@
 - Manuální ovládání se otevírá **ikonkou joysticku** v liště (CAM1 `#ctrlFloatBtn1` modrá, CAM2 `#ctrlFloatBtn2` amber) jako **plovoucí okno** (modal `position:fixed` + podklad `#ctrlBackdrop`), horní pruh v barvě kamery, hlavička s titulkem + křížek. Zavření: křížek / podklad / Escape; otevřít jedno zavře druhé.
 - JS: `toggleCam1/2Controls`, `_openCtrlWindow`, `closeAllCtrlWindows`; CSS: `.cam2-controls-collapsible` (modal) + `.ctrl-backdrop` + `.ctrl-window-*`.
 - Přepínač zobrazení `#seatLayoutBtn2` je nově **jen ikonka** (bez slova Detailní/Kompaktní; stav v `title`).
-- *Pozn.: vestavěná SVG ikonka joysticku — připravená k výměně za dodanou.*
+- *Ikonka joysticku: plně vyplněný SVG (kulička + páka + podstavec s tlačítkem) dle dodané předlohy, obarvení přes `currentColor` (CAM1 modrá, CAM2 amber).*
 
 ## ✅ Spuštění jedním krokem (hotovo)
 

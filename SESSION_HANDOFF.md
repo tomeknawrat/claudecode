@@ -35,11 +35,17 @@
 
 ## Záznamy dne
 
+### 19. 11. 2026 — ikonka přepínače (filled) + úpravy detailního přehledu
+- **Ikonka přepínače zobrazení** (`#seatLayoutBtn2`) překreslena na **plně vyplněnou mřížku 3×3** (9 `rect fill=currentColor`), ať vizuálně odpovídá ostatním ikonám (dřív tenké obrysové čtverečky).
+- **Detailní kartový přehled (`renderPresets`, `presetsGrid2`):**
+  - **Bez popisku** — spodní text „Sedadlo XX" (`preset-name`) z karet odstraněn.
+  - **Číslo = číslo sedadla** (z názvu „Sedadlo XX"), ne pořadí v gridu (`idx+1`), a **vpravo nahoře** (stejná strana jako v kompaktním plánku; CSS `.panel--cam2 .preset-card .preset-number`).
+  - **Jen vyfocená sedadla** — karta bez fotky (`!p.img`) se nevykresluje (po smazání fotky zmizí, nezůstane placeholder s postavičkou). Když po filtru nic nezbude, ukáže se prázdný stav.
+
 ### 19. 11. 2026 — doladění joysticků + pevná velikost přepínače zobrazení
 - **Joystick CAM1 (Pódium)** přesunut z levého sloupce **doprava** v liště presetů (jako u CAM2) — úspora vertikálního místa. (`#ctrlFloatBtn1` je teď v `.cam1-preset-spacer`, zarovnaný vpravo, 42×42.)
 - **Joystick CAM2 (Komentáře)** přebarven na **indigo** (`#eef2ff`/`#c7d2fe`/`#4f46e5`) — odlišná barva od amber tématu, jako ostatní barevná tlačítka v liště.
-- **Přepínač zobrazení `#seatLayoutBtn2`** má teď **pevnou velikost 42×42** jako ostatní ikonová tlačítka (dřív 46×42, „měnil velikost"). *Výplň ikony (filled) čeká na dodanou fotku.*
-- ⏳ **Čeká na fotky:** (3) finální filled ikonka přepínače zobrazení; (4) úpravy kompaktního zobrazení — A) vzhled sedadla bez popisku + čísla na stejné straně, B) po smazaných fotkách zůstávají sedadla (vyřešit dle fotky).
+- **Přepínač zobrazení `#seatLayoutBtn2`** má teď **pevnou velikost 42×42** jako ostatní ikonová tlačítka (dřív 46×42, „měnil velikost"). Ikona filled viz záznam výše (19. 11.).
 
 ### 19. 11. 2026 — smazání fotky → sedadlo zpět na defaultní prázdné
 - Po smazání fotky sedadla se slot vrací na **defaultní prázdný vzhled** (přerušovaný rámeček + číslo), ne na kartu s placeholder „postavičkou".

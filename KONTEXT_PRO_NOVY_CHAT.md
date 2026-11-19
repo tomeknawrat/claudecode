@@ -68,7 +68,8 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 
 ### CAM 2 — Komentáře (pravý panel)
 - Stejné ovládání jako CAM 1 (manuální ovládání = plovoucí okno, ikonka joysticku `#ctrlFloatBtn2` **indigo** `#4f46e5` — odlišná barva od zbytku; v liště úplně vpravo, napravo od přepínače zobrazení). Hlavička „KOMENTÁŘE" odebrána.
-- **Toolbar = jen ikony** (icon-only, čtverec 42×42, popisek jako tooltip): Skenovat / Přidat sedadlo / Přesunout / Uložit preset / Výchozí pozice / Smazat všechny fotky + pose 🧍🪑 … a vpravo **přepínač zobrazení** (`#seatLayoutBtn2`, Detailní/Kompaktní) + **joystick** (plovoucí ovládání). **Přepínač zobrazení je jen ikonka — pevná velikost 42×42 jako ostatní (ikona mřížky 26px), stav v tooltipu.**
+- **Toolbar = jen ikony** (icon-only, čtverec 42×42, popisek jako tooltip): Skenovat / Přidat sedadlo / Přesunout / Uložit preset / Výchozí pozice / Smazat všechny fotky + pose 🧍🪑 … a vpravo **přepínač zobrazení** (`#seatLayoutBtn2`, Detailní/Kompaktní) + **joystick** (plovoucí ovládání). **Přepínač zobrazení je jen ikonka — pevná velikost 42×42 jako ostatní (plně vyplněná mřížka 3×3), stav v tooltipu.**
+- **Detailní kartový přehled** (`presetsGrid2`, `renderPresets`) = jen **vyfocená** sedadla (karta bez `p.img` se nevykresluje — po smazání fotky zmizí). Karta: fotka + **číslo sedadla vpravo nahoře** (z názvu „Sedadlo XX"), **bez spodního popisku** „Sedadlo XX".
 - **Seat layout** — zobrazení hlediště s rozmístěním sedadel (Blok A + Blok B)
 - **Kalibrace sedadla bez módu** — klikni na sedadlo (kamera najede/nic), dolaď joystickem a dej **Uložit preset** → uloží polohu do presetu + VISCA souřadnice. (Dřívější mód „Editace presetů sedadel" byl zrušen; jeho funkce zůstávají v kódu „uspané".)
 - **Pravý klik na sedadlo = kontextové menu** (`_showSeatCtxMenu`, na úrovni `.seat-slot` ve `_makeViewSlotOld`). Dvě situace:

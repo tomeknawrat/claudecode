@@ -67,7 +67,7 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 - Skrytí presetů (hide mode), rozsah čísel presetů: 1–99
 
 ### CAM 2 — Komentáře (pravý panel)
-- Stejné ovládání jako CAM 1 (manuální ovládání = plovoucí okno, ikonka joysticku `#ctrlFloatBtn2` **indigo** `#4f46e5` — odlišná barva od zbytku; v liště úplně vpravo, napravo od přepínače zobrazení). Hlavička „KOMENTÁŘE" odebrána.
+- Stejné ovládání jako CAM 1 (manuální ovládání = plovoucí okno, ikonka joysticku `#ctrlFloatBtn2` **amber** jako tlačítko Kompaktní; v liště úplně vpravo, napravo od přepínače zobrazení). Hlavička „KOMENTÁŘE" odebrána.
 - **Toolbar = jen ikony** (icon-only, čtverec 42×42, popisek jako tooltip): Skenovat / Přidat sedadlo / Přesunout / Uložit preset / Výchozí pozice / Smazat všechny fotky + pose 🧍🪑 … a vpravo **přepínač zobrazení** (`#seatLayoutBtn2`, Detailní/Kompaktní) + **joystick** (plovoucí ovládání). **Přepínač zobrazení je jen ikonka — pevná velikost 42×42 jako ostatní (plně vyplněná mřížka 3×3), stav v tooltipu.**
 - **Detailní kartový přehled** (`presetsGrid2`, `renderPresets`) = jen **vyfocená** sedadla (karta bez `p.img` se nevykresluje — po smazání fotky zmizí). Karta: fotka + **číslo sedadla vpravo nahoře** (z názvu „Sedadlo XX"), **bez spodního popisku** „Sedadlo XX".
 - **Seat layout** — zobrazení hlediště s rozmístěním sedadel (Blok A + Blok B)
@@ -80,11 +80,11 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 - Rozsah čísel presetů: 175–255
 
 ### Plovoucí okno manuálního ovládání (od 19. 11. 2026)
-- Manuální ovládání (PTZ pad, zoom, focus, pozice) není inline, ale **plovoucí okno** (modal). Otevírá ho **ikonka joysticku** v liště každé kamery: `#ctrlFloatBtn1` (CAM1, modrá, vpravo v liště presetů), `#ctrlFloatBtn2` (CAM2, indigo `#4f46e5`, úplně vpravo v toolbaru).
+- Manuální ovládání (PTZ pad, zoom, focus, pozice) není inline, ale **plovoucí okno** (modal). Otevírá ho **ikonka joysticku** v liště každé kamery: `#ctrlFloatBtn1` (CAM1, modrá, vpravo v liště presetů), `#ctrlFloatBtn2` (CAM2, amber jako Kompaktní, úplně vpravo v toolbaru).
 - DOM zůstal na místě: `#cam1CtrlBody` / `#cam2CtrlBody` (`.cam2-controls-collapsible`). Otevřený stav = `position:fixed` vycentrovaná karta (horní pruh v barvě kamery, hlavička `.ctrl-window-head` s titulkem + křížek), zavřený stav = `display:none` (třída `collapsed`). Podklad `#ctrlBackdrop` (`.ctrl-backdrop.show`).
 - JS: `toggleCam1Controls`/`toggleCam2Controls` (přepínač), `_openCtrlWindow(cam)` (zavře druhé, ukáže podklad, naváže Escape), `closeAllCtrlWindows()`. Zavření: křížek / klik na podklad / Escape.
 - Hlavičky panelů „PÓDIUM"/„KOMENTÁŘE" a stará rozbalovací lišta „Manuální ovládání kamery ▼" byly odebrány (úspora místa na half-screen). Prázdné `.panel-body` obou kamer má `padding-top:0`.
-- Ikonka joysticku = plně vyplněný SVG (kulička + páka + trapézový podstavec s tlačítkem jako výřez, `fill-rule:evenodd`) dle dodané předlohy; obarvení `currentColor` (CAM1 modrá, CAM2 indigo `#4f46e5`).
+- Ikonka joysticku = plně vyplněný SVG (kulička + páka + trapézový podstavec s tlačítkem jako výřez, `fill-rule:evenodd`) dle dodané předlohy; obarvení `currentColor` (CAM1 modrá, CAM2 amber jako Kompaktní).
 
 ### Seat layout
 Původní pevný layout z jednacího hlediště (obnovený na žádost):

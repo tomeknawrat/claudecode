@@ -35,6 +35,10 @@
 
 ## Záznamy dne
 
+### 19. 11. 2026 — joystick CAM2 amber + ikonka přepínače drží velikost na úzkém okně
+- **Joystick CAM2 (Komentáře)** vrácen na **amber** (`--amber-soft`/`--amber-d`) — jako tlačítko Kompaktní (předchozí indigo zrušeno dle upřesnění).
+- **Ikonka přepínače zobrazení** se na úzkém okně (`@media max-width:1100px`) zmenšovala (`.seat-layout-btn svg { 13px !important }`). Opraveno: `#seatLayoutBtn2` + `#seatLayoutBtn2 svg` mají velikost s `!important` (42×42 / 26px), takže drží stejně jako na fullscreen a jako ostatní ikonová tlačítka. Ověřeno na 1500px i 820px.
+
 ### 19. 11. 2026 — ikonka přepínače (filled) + úpravy detailního přehledu
 - **Ikonka přepínače zobrazení** (`#seatLayoutBtn2`) překreslena na **plně vyplněnou mřížku 3×3** (9 `rect fill=currentColor`), ať vizuálně odpovídá ostatním ikonám (dřív tenké obrysové čtverečky).
 - **Detailní kartový přehled (`renderPresets`, `presetsGrid2`):**

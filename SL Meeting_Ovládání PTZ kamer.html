@@ -608,9 +608,10 @@ console.warn = (...args) => {
     width: 16px;
     height: 16px;
   }
-  /* Přepínač zobrazení (Detailní/Kompaktní) — pevná velikost 42×42 jako ostatní ikonová tlačítka lišty */
-  #seatLayoutBtn2 { width: 42px; min-width: 42px; height: 42px; padding: 0; gap: 0; box-sizing: border-box; justify-content: center; }
-  #seatLayoutBtn2 svg { width: 26px; height: 26px; }
+  /* Přepínač zobrazení (Detailní/Kompaktní) — pevná velikost 42×42 jako ostatní ikonová
+     tlačítka lišty; !important drží velikost i na úzkém okně (jinak ji media query zmenší). */
+  #seatLayoutBtn2 { width: 42px !important; min-width: 42px !important; height: 42px !important; padding: 0 !important; gap: 0 !important; box-sizing: border-box; justify-content: center; }
+  #seatLayoutBtn2 svg { width: 26px !important; height: 26px !important; }
 
   .presets-grid { display: grid; grid-template-columns: repeat(auto-fill, var(--card-w, 97px)); gap: 8px; }
   .panel--cam2 .presets-grid { grid-template-columns: repeat(auto-fill, var(--card-w, 97px)); }
@@ -2062,7 +2063,7 @@ console.warn = (...args) => {
           <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()" title="Přepnout na kompaktní zobrazení (plánek sálu)" style="margin-left:auto">
             <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="5" height="5" rx="1.2"/><rect x="9.5" y="3" width="5" height="5" rx="1.2"/><rect x="16" y="3" width="5" height="5" rx="1.2"/><rect x="3" y="9.5" width="5" height="5" rx="1.2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1.2"/><rect x="16" y="9.5" width="5" height="5" rx="1.2"/><rect x="3" y="16" width="5" height="5" rx="1.2"/><rect x="9.5" y="16" width="5" height="5" rx="1.2"/><rect x="16" y="16" width="5" height="5" rx="1.2"/></svg>
           </button>
-          <button class="cam2-tool-btn icon-only" id="ctrlFloatBtn2" onclick="toggleCam2Controls()" title="Manuální ovládání kamery" style="--btn-bg:#eef2ff;--btn-border:#c7d2fe;--btn-text:#4f46e5">
+          <button class="cam2-tool-btn icon-only" id="ctrlFloatBtn2" onclick="toggleCam2Controls()" title="Manuální ovládání kamery" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
             <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="4.8" r="3.1"/><rect x="11.1" y="6.9" width="1.8" height="8.1" rx=".9"/><path fill-rule="evenodd" clip-rule="evenodd" d="M8.6 13.6 H15.4 Q16 13.6 16.3 14.2 L18.9 19.4 Q19.4 20.2 18.5 20.2 H5.5 Q4.6 20.2 5.1 19.4 L7.7 14.2 Q8 13.6 8.6 13.6 Z M16.75 17.6 a1.35 1.35 0 1 1 -2.7 0 a1.35 1.35 0 1 1 2.7 0 Z"/></svg>
           </button>
         </div>

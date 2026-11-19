@@ -35,6 +35,11 @@
 
 ## Záznamy dne
 
+### 19. 11. 2026 — smazání fotky → sedadlo zpět na defaultní prázdné
+- Po smazání fotky sedadla se slot vrací na **defaultní prázdný vzhled** (přerušovaný rámeček + číslo), ne na kartu s placeholder „postavičkou".
+- Oprava v renderu: kartu sedadla (`makePresetCardForSlot`) vykresli jen když preset **skutečně má fotku** (`preset.img`); bez fotky → větev prázdného sedadla (`slot-empty-label` + `slot-has-calib`). Skryté presety se v hide-módu ukazují dál. Změna v `_makeViewSlotOld` i dormantním `_makeViewSlot`.
+- Preset, souřadnice i přiřazení zůstávají (recall funguje dál; pravý klik na takové sedadlo nabídne „Skenovat a přidat fotku", protože `hasPhoto` už je false). Ověřeno Playwrightem.
+
 ### 19. 11. 2026 — plovoucí okno manuálního ovládání + úspora vertikálního místa
 - **Hlavičky „PÓDIUM" / „KOMENTÁŘE" odebrány** (lišty `.panel-title` obou panelů). Důvod: úspora vertikálního místa na half-screen. S nimi zmizela i lišta-přepínač „Manuální ovládání kamery ▼".
 - **Manuální ovládání kamery = plovoucí okno.** Místo inline rozbalovací sekce se ovládání otevírá přes **ikonku joysticku** v liště:

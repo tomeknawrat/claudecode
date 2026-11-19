@@ -4103,7 +4103,10 @@ function _makeViewSlotOld(seatNum) {
     e.preventDefault();
     _showSeatCtxMenu(e, si, seatNum, presetIdx);
   });
-  if (preset && (!preset.hidden || hideMode[2])) {
+  // Kartu (s fotkou) ukaž jen když preset fotku skutečně má; bez fotky → defaultní prázdné
+  // sedadlo (přerušovaný rámeček + číslo), ne karta s placeholder postavičkou.
+  // Skryté presety se v hide-módu ukazují dál (kvůli možnosti odkrytí).
+  if (preset && (preset.hidden ? hideMode[2] : !!preset.img)) {
     slot.classList.add('occupied');
     slot.appendChild(makePresetCardForSlot(presetIdx, si, seatNum));
   } else {
@@ -4306,7 +4309,8 @@ function _makeViewSlot(seat) {
   });
   slot.addEventListener('pointercancel', () => { t = null; });
 
-  if (preset && (!preset.hidden || hideMode[2])) {
+  // Bez fotky → defaultní prázdné sedadlo (viz _makeViewSlotOld).
+  if (preset && (preset.hidden ? hideMode[2] : !!preset.img)) {
     slot.classList.add('occupied');
     slot.appendChild(makePresetCardForSlot(presetIdx, si, seat.id));
   } else {

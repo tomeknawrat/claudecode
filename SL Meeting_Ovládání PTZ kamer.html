@@ -608,6 +608,8 @@ console.warn = (...args) => {
     width: 16px;
     height: 16px;
   }
+  /* Ikonka v přepínači zobrazení (Detailní/Kompaktní) sladěná velikostně s ostatními ikonami lišty */
+  #seatLayoutBtn2 svg { width: 26px; height: 26px; }
 
   .presets-grid { display: grid; grid-template-columns: repeat(auto-fill, var(--card-w, 97px)); gap: 8px; }
   .panel--cam2 .presets-grid { grid-template-columns: repeat(auto-fill, var(--card-w, 97px)); }
@@ -2034,9 +2036,6 @@ console.warn = (...args) => {
     <div class="cam-presets-section" style="position:relative;">
       <div class="cam-presets-header">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
-          <button class="cam2-tool-btn icon-only" id="ctrlFloatBtn2" onclick="toggleCam2Controls()" title="Manuální ovládání kamery" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16.5" r="4.3"/><path d="M12 12.2V5"/><circle cx="12" cy="4" r="2.1"/></svg>
-          </button>
           <button class="scan-btn cam2-tool-btn icon-only" id="scanBtn" onclick="openScanModal()" title="Skenovat hlediště" style="--btn-bg:#f5f3ff;--btn-border:#ddd6fe;--btn-text:#6d28d9">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="10.3" r="2.5" fill="currentColor" stroke="none"/><path d="M8 17.2a4 4 0 0 1 8 0z" fill="currentColor" stroke="none"/></svg>
           </button>
@@ -2057,6 +2056,9 @@ console.warn = (...args) => {
           </button>
           <button class="seat-layout-btn seat-layout-btn--main" id="seatLayoutBtn2" onclick="toggleSeatLayout()" title="Přepnout na kompaktní zobrazení (plánek sálu)" style="margin-left:auto">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="10" y="4" width="4" height="4" rx="1"/><rect x="17" y="4" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="10" y="11" width="4" height="4" rx="1"/><rect x="17" y="11" width="4" height="4" rx="1"/><rect x="3" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="17" y="18" width="4" height="4" rx="1"/></svg>
+          </button>
+          <button class="cam2-tool-btn icon-only" id="ctrlFloatBtn2" onclick="toggleCam2Controls()" title="Manuální ovládání kamery" style="--btn-bg:var(--amber-soft);--btn-border:var(--amber-mid);--btn-text:var(--amber-d)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16.5" r="4.3"/><path d="M12 12.2V5"/><circle cx="12" cy="4" r="2.1"/></svg>
           </button>
         </div>
       </div>

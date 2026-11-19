@@ -35,6 +35,11 @@
 
 ## Záznamy dne
 
+### 19. 11. 2026 — plovoucí okno tažitelné + joystick sladěn + přejmenování
+- **Plovoucí okno manuálního ovládání je teď tažitelné** — chytni za hlavičku (`_ctrlMakeDraggable`, pointer eventy, `setPointerCapture`) a přetáhni kamkoli (pozice drží i po zavření/otevření). **Backdrop odstraněn** → layout pod oknem zůstává aktivní. Zavření: křížek / Escape / znovu klik na ikonku (klik mimo už nezavírá).
+- **Joystick CAM2** má teď třídy `seat-layout-btn seat-layout-btn--main` + override na `#fef3c7`/`#92400e` → vypadá i se chová **úplně stejně jako pose (sedí/stojí) a Kompaktní** (dřív amber `#d97706` / jiný styl `cam2-tool-btn`).
+- **Přejmenování popisků (tooltipů):** přepínač zobrazení → „Kompaktní zobrazení" / „Celkové zobrazení"; pose → „Pozice sedící" / „Pozice stojící".
+
 ### 19. 11. 2026 — joystick CAM2 amber + ikonka přepínače drží velikost na úzkém okně
 - **Joystick CAM2 (Komentáře)** vrácen na **amber** (`--amber-soft`/`--amber-d`) — jako tlačítko Kompaktní (předchozí indigo zrušeno dle upřesnění).
 - **Ikonka přepínače zobrazení** se na úzkém okně (`@media max-width:1100px`) zmenšovala (`.seat-layout-btn svg { 13px !important }`). Opraveno: `#seatLayoutBtn2` + `#seatLayoutBtn2 svg` mají velikost s `!important` (42×42 / 26px), takže drží stejně jako na fullscreen a jako ostatní ikonová tlačítka. Ověřeno na 1500px i 820px.

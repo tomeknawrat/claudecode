@@ -80,11 +80,11 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
 - Rozsah čísel presetů: 175–255
 
 ### Plovoucí okno manuálního ovládání (od 19. 11. 2026)
-- Manuální ovládání (PTZ pad, zoom, focus, pozice) není inline, ale **plovoucí okno** (modal). Otevírá ho **ikonka joysticku** v liště každé kamery: `#ctrlFloatBtn1` (CAM1, modrá, vpravo v liště presetů), `#ctrlFloatBtn2` (CAM2, amber jako Kompaktní, úplně vpravo v toolbaru).
-- DOM zůstal na místě: `#cam1CtrlBody` / `#cam2CtrlBody` (`.cam2-controls-collapsible`). Otevřený stav = `position:fixed` vycentrovaná karta (horní pruh v barvě kamery, hlavička `.ctrl-window-head` s titulkem + křížek), zavřený stav = `display:none` (třída `collapsed`). Podklad `#ctrlBackdrop` (`.ctrl-backdrop.show`).
-- JS: `toggleCam1Controls`/`toggleCam2Controls` (přepínač), `_openCtrlWindow(cam)` (zavře druhé, ukáže podklad, naváže Escape), `closeAllCtrlWindows()`. Zavření: křížek / klik na podklad / Escape.
+- Manuální ovládání (PTZ pad, zoom, focus, pozice) není inline, ale **plovoucí okno**, které jde **chytit za hlavičku a přetáhnout kamkoli**; **bez podkladu — layout pod ním zůstává aktivní**. Otevírá ho **ikonka joysticku** v liště každé kamery: `#ctrlFloatBtn1` (CAM1, modrá, vpravo v liště presetů), `#ctrlFloatBtn2` (CAM2, stejný vzhled jako pose/Kompaktní — `#fef3c7`/`#92400e`, úplně vpravo v toolbaru).
+- DOM zůstal na místě: `#cam1CtrlBody` / `#cam2CtrlBody` (`.cam2-controls-collapsible`). Otevřený stav = `position:fixed` karta (horní pruh v barvě kamery, hlavička `.ctrl-window-head` s titulkem + křížek; tažení za hlavičku), zavřený stav = `display:none` (třída `collapsed`). Žádný backdrop.
+- JS: `toggleCam1Controls`/`toggleCam2Controls` (přepínač), `_openCtrlWindow(cam)` (zavře druhé okno, naváže Escape), `closeAllCtrlWindows()`, `_ctrlMakeDraggable(win)` (tažení za hlavičku, pozice drží i po zavření). Zavření: křížek / Escape / znovu klik na ikonku.
 - Hlavičky panelů „PÓDIUM"/„KOMENTÁŘE" a stará rozbalovací lišta „Manuální ovládání kamery ▼" byly odebrány (úspora místa na half-screen). Prázdné `.panel-body` obou kamer má `padding-top:0`.
-- Ikonka joysticku = plně vyplněný SVG (kulička + páka + trapézový podstavec s tlačítkem jako výřez, `fill-rule:evenodd`) dle dodané předlohy; obarvení `currentColor` (CAM1 modrá, CAM2 amber jako Kompaktní).
+- Ikonka joysticku = plně vyplněný SVG (kulička + páka + trapézový podstavec s tlačítkem jako výřez, `fill-rule:evenodd`) dle dodané předlohy; obarvení `currentColor` (CAM1 modrá, CAM2 `#92400e` — stejně jako pose/Kompaktní tlačítka).
 
 ### Seat layout
 Původní pevný layout z jednacího hlediště (obnovený na žádost):

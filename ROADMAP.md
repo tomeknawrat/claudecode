@@ -153,10 +153,11 @@ Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) se dřív jel i
 
 ## 🧩 Budoucí verze
 
-- **V3.0 — Face recognition / Databáze osob:**
-  - Rozpoznávání při skenu — nahrát osoby, doladit práh z `dist:` hodnot.
+- **Databáze osob — layout hotový (20. 11.):** sloupec osob řazený podle příjmení, oficiální fotka (file picker + lightbox s tužkou), hromadný import, „Přidat osobu" dole. *Fotka ze skenu = placeholder, přidání nepočítá embedding.*
+- **V3.0 — Face recognition:**
+  - Rozpoznávání při skenu — propojit oficiální fotky s detekcí, doladit práh z `dist:` hodnot.
+  - „Přidat fotku ze skenu" dodělat (zatím placeholder).
   - Víc referenčních fotek na osobu (robustnější rozpoznávání).
-  - Modal „Databáze osob" (zatím velmi basic — jméno + 1 fotka + práh) → správa osob, víc fotek, propojení s rozpoznáváním při skenu.
 - **V4.0 — OBS integrace (`obs-websocket`):** propojení preset/souřadnice kamery ↔ scéna (rozpoznaný řečník → kamera + přepnutí programu = poloautomatická režie). Alternativa hostování: **Browser dock** (appka jako Custom Browser Dock uvnitř OBS, skoro beze změny kódu).
 - ~~**Dynamický layout — rozšíření**~~ — zahozeno (stávající přidat/smazat sedadlo zůstává).
 

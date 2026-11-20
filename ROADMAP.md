@@ -183,7 +183,7 @@ Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) se dřív jel i
 
 ## 🧩 Budoucí verze
 
-- **Databáze osob — layout hotový (20. 11.):** sloupec osob řazený podle příjmení, oficiální fotka (file picker + lightbox s tužkou), hromadný import, „Přidat osobu" dole. *Fotka ze skenu = placeholder, přidání nepočítá embedding.*
+- **Databáze osob — layout hotový (20. 11.):** sloupec osob řazený podle příjmení, oficiální fotka (file picker + lightbox s tužkou), „Přidat osobu" dole. *Fotka ze skenu = placeholder, přidání nepočítá embedding. Hromadné přidání a popisek nahoře odebrány.*
 - **V3.0 — Face recognition:**
   - Rozpoznávání při skenu — propojit oficiální fotky s detekcí, doladit práh z `dist:` hodnot.
   - „Přidat fotku ze skenu" dodělat (zatím placeholder).

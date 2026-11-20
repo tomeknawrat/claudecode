@@ -311,7 +311,7 @@ console.warn = (...args) => {
   .panel--cam1 { width: 100%; max-width: 100%; }
   .panel--cam2 { width: 100%; min-width: 0; position: relative; }
   /* Při skenování má box Komentáře zaručenou výšku, aby se scan okno (náhled + log) vešlo */
-  .panel--cam2.cam2-scanning { min-height: 430px; }
+  .panel--cam2.cam2-scanning { min-height: 480px; }
 
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0; box-shadow: var(--sh-sm); overflow: hidden; display: flex; flex-direction: column; }
 
@@ -1412,19 +1412,22 @@ console.warn = (...args) => {
   .slot-card { position: relative; }
 
   /* ── SCAN MODÁL ── */
-  /* Scan okno překrývá JEN panel Komentáře (CAM2) — je to jeho absolutní potomek.
-     Panel Pódium (CAM1) je samostatný panel nad ním a zůstává plně aktivní. */
+  /* Scan okno „patří" do panelu Komentáře (CAM2) — je jeho absolutní potomek.
+     Backdrop zašedne a zneaktivní JEN box Komentáře (layout pod ním zůstává vidět),
+     Pódium (CAM1) je samostatný panel nad ním a zůstává plně aktivní.
+     Samotné okno je vyskakovací karta přirozené velikosti (ne na celou plochu). */
   .scan-overlay {
     display: none; position: absolute; inset: 0;
-    background: rgba(15,23,42,.35); z-index: 120;
+    background: rgba(15,23,42,.28); z-index: 120;
+    align-items: flex-start; justify-content: center; padding: 14px;
   }
-  .scan-overlay.show { display: block; }
+  .scan-overlay.show { display: flex; }
   .scan-modal {
-    position: absolute; inset: 0;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--r); box-shadow: var(--sh-lg); overflow: hidden;
     animation: modal-in .18s ease-out;
     display: flex; flex-direction: column;
+    max-width: 100%; max-height: 100%;
   }
   .scan-modal-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -1433,19 +1436,20 @@ console.warn = (...args) => {
     flex-shrink: 0;
   }
   .scan-modal-title { font-size: 15px; font-weight: 700; color: #5b21b6; display: flex; align-items: center; gap: 8px; }
-  /* Dvousloupcový obsah: vlevo RTSP náhled, vpravo nahoře statistiky a pod tím log */
-  .scan-modal-body { padding: 14px 16px; overflow: hidden; flex: 1; display: flex; flex-direction: row; gap: 14px; align-items: stretch; min-height: 0; }
-  .scan-right-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  /* Vlevo RTSP náhled (16:9, 1080), vpravo úzký sloupec stejně vysoký jako video:
+     nahoře statistiky, pod tím dlouhý log. */
+  .scan-modal-body { padding: 14px 16px; overflow: hidden; display: flex; flex-direction: row; gap: 12px; align-items: stretch; }
+  .scan-right-col { width: clamp(150px, 20vw, 200px); flex: none; align-self: stretch; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 
   .scan-video-wrap {
     position: relative; border-radius: var(--r-sm); overflow: hidden;
     background: #0f172a; border: 1px solid var(--border);
-    flex: 1.35; min-width: 0; min-height: 0;
+    width: min(560px, 58vw); aspect-ratio: 16/9; flex: none;
   }
   @media (max-width: 760px) {
     .scan-modal-body { flex-direction: column; overflow-y: auto; }
-    .scan-video-wrap { flex: none; aspect-ratio: 16/9; }
-    .scan-right-col { flex: none; }
+    .scan-video-wrap { width: 100%; }
+    .scan-right-col { width: 100%; align-self: auto; }
   }
   #scanVideo { width: 100%; height: 100%; display: block; object-fit: cover; }
   #scanCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }

@@ -158,9 +158,9 @@ Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) se dřív jel i
 - Laditelná pole **přesunuta do Nastavení → „Skenování hlediště"** (⏩ rychlý sken, 🔎 base práh obsazenosti, 🤏 přijmout od velikosti, ↑ tilt, 🙂 min. jistota).
 - **Doladit naživo:** `baseGateConfidence` (když přeskakuje reálné lidi → snížit), `baseAcceptFrac` (fotky z base moc široké → zvýšit).
 
-### Scan okno = překrytí jen boxu Komentáře (hotovo v kódu)
-- Scan okno už není fullscreen přes celou appku — překrývá a zneaktivní **jen box Komentáře (CAM2)**, **Pódium (CAM1) zůstává aktivní** (`#scanOverlay` přesunut do `.panel--cam2` jako `absolute; inset:0`, třída `cam2-scanning`).
-- Nový layout okna: **vlevo RTSP náhled, vpravo nahoře statistiky + pod tím log**.
+### Scan okno = vyskakovací popup nad boxem Komentáře (hotovo v kódu)
+- Scan okno už není fullscreen přes celou appku — je to **vyskakovací karta přirozené velikosti** nad boxem Komentáře (CAM2). Backdrop box **jen zašedne/zneaktivní** (layout sedadel zůstává vidět), **Pódium (CAM1) zůstává aktivní** (`#scanOverlay` přesunut do `.panel--cam2`, třída `cam2-scanning`).
+- Layout okna: **vlevo RTSP náhled (16:9, 1080), vpravo úzký vysoký sloupec stejně vysoký jako video** — nahoře statistiky, pod tím log.
 - Parametry skenu přesunuty ze scan okna do Nastavení.
 - Zbývá (volitelné): detekovat **během zoom-inu** a zastavit dřív; zkrátit `settleMs`/`zoomStepMs`/`zoomSettleMs`; **inkrementální sken** (přeskočit už vyfocená).
 

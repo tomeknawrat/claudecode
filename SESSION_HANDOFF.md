@@ -35,6 +35,12 @@
 
 ## Záznamy dne
 
+### 20. 11. 2026 — urychlení skenu: base pre-gate (čeká na nedělní živý test)
+- **Early-exit v `_zoomFindOccupant`:** před nakláněním/zoomem rychlá detekce na širokém base presetu s **volnějším prahem** (`baseGateConfidence` 0.50); žádná tvář → `fastSkipEmpty` přeskočí celý zoom žebřík (hlavní úspora, hlavně prázdná sedadla).
+- **Přijmout bez zoomu:** tvář na base už dost velká (`baseAcceptFrac` 0.30) + u středu + conf ≥ `minFaceConfidence` → fotka rovnou z base (přední/blízká sedadla).
+- `_detectAndDraw(confThr)` má volitelný práh (base pre-gate volá s volnějším). Laditelná pole ve scan modalu (⏩/🔎/🤏). Ověřeno Playwrightem (stuby): prázdné → 0 zoom volání; velká tvář → bez zoomu; malá → projde do zoomu; vypnuto → zpětně kompatibilní.
+- **Nedělní live test:** doladit `baseGateConfidence`/`baseAcceptFrac` podle toho, jestli přeskakuje reálné lidi nebo dělá moc široké fotky.
+
 ### 20. 11. 2026 — živý test ověřen + roadmap přebucketován
 - **Živý test u kamer prošel:** restart serveru + překalibrace (sken po souřadnicích), zoom sken top-center + mírnější zoom + tilt-up, fotky top-center bez rámečku, překalibrace rozhozených sedadel. Práh jistoty obličeje zatím OK.
 - **Otevřený bod — urychlení skenu:** zoom žebřík se jede i na prázdných sedadlech. Plán: early-exit (detekce na base presetu s volnějším prahem → bez tváře přeskočit zoom) + přijmout base záběr bez zoomu u velkých/centrovaných tváří. **Čeká na odsouhlasení implementace.**

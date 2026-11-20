@@ -125,14 +125,14 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 - ✅ **Překalibrace rozhozených sedadel** (zadní řada 51–57 apod.).
 - ☑️ **Práh jistoty obličeje** (`minFaceConfidence` 0.90) — zatím OK.
 
-## 🚧 Urychlení skenu (otevřené — řeší se)
+## 🚧 Urychlení skenu — hotovo v kódu, čeká na živý test (neděle)
 
-Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) je hlavní časová položka a jede se i na **prázdných** sedadlech.
-- **Early-exit (priorita):** na širokém base presetu rychlá detekce s **volnějším prahem**; když tam není žádná tvář → sedadlo prázdné → **přeskočit celý zoom**. Jinak pokračovat zoomem jako dosud (fotka + odfiltrování sousedů).
-- Přijmout **base záběr bez zoomu**, když je tvář už velká + u středu (přední/blízká sedadla).
-- Detekovat **během zoom-inu** a zastavit na první dobré úrovni (ušetří oddalovací žebřík).
-- Zkrátit `settleMs`/`zoomStepMs`/`zoomSettleMs` (konzervativní) — doladit naživo.
-- **Inkrementální sken** — přeskočit už vyfocená sedadla.
+Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) se dřív jel i na **prázdných** sedadlech. Implementováno jako **base pre-gate** v `_zoomFindOccupant` (před nakláněním/zoomem):
+- ✅ **Early-exit** (`fastSkipEmpty`): na širokém base presetu rychlá detekce s **volnějším prahem** (`baseGateConfidence` 0.50); žádná tvář → sedadlo prázdné → **přeskočí celý zoom**.
+- ✅ **Přijmout base bez zoomu** (`baseAcceptFrac` 0.30): tvář už dost velká + u středu + dost jistá → fotka rovnou ze širokého záběru (přední/blízká sedadla).
+- Laditelná pole ve scan modalu (⏩ rychlý sken, 🔎 base práh obsazenosti, 🤏 přijmout od velikosti).
+- **Doladit naživo:** `baseGateConfidence` (když přeskakuje reálné lidi → snížit), `baseAcceptFrac` (fotky z base moc široké → zvýšit).
+- Zbývá (volitelné): detekovat **během zoom-inu** a zastavit dřív; zkrátit `settleMs`/`zoomStepMs`/`zoomSettleMs`; **inkrementální sken** (přeskočit už vyfocená).
 
 ---
 

@@ -2299,6 +2299,26 @@ console.warn = (...args) => {
                  onchange="_scan.minFaceConfidence = (parseInt(this.value)||0)/100">
           <span style="color:var(--text-3)">(vyšší = míň falešných detekcí jako ruce, ale může zahodit profily)</span>
         </label>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
+          ⏩ Rychlý sken (přeskočit prázdná):
+          <input type="checkbox" id="fastSkipEmptyInput" checked
+                 onchange="_scan.fastSkipEmpty = this.checked">
+          <span style="color:var(--text-3)">(na širokém záběru žádná tvář → bez zoomu rovnou dál)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
+          🔎 Base práh obsazenosti (%):
+          <input type="number" id="baseGateConfInput" value="50" min="20" max="90" step="5"
+                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
+                 onchange="_scan.baseGateConfidence = (parseInt(this.value)||0)/100">
+          <span style="color:var(--text-3)">(volnější než min. jistota; nižší = míň přeskočí reálných lidí)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
+          🤏 Přijmout bez zoomu od velikosti (%):
+          <input type="number" id="baseAcceptFracInput" value="30" min="10" max="60" step="5"
+                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
+                 onchange="_scan.baseAcceptFrac = (parseInt(this.value)||0)/100">
+          <span style="color:var(--text-3)">(tvář u středu aspoň takhle velká na širokém záběru → fotka bez zoomu)</span>
+        </label>
       </div>
 
       <!-- Log -->
@@ -5551,6 +5571,10 @@ const _scan = {
   zoomSettleMs: 700,     // ustálení po zoom kroku (ms)
   zoomMinAcceptFrac: 0.20, // min. výška tváře pro PŘIJETÍ — jen „přizoomovaná" (velká) tvář = osoba na místě; malé/oddálené se zahodí
   minFaceConfidence: 0.90, // min. jistota BlazeFace (0–1) — odfiltruje falešné detekce (ruce apod.); laditelné polem ve scan modalu
+  // ── Rychlý sken (urychlení) — base pre-gate na širokém presetu PŘED zoomem ──
+  fastSkipEmpty: true,      // žádná tvář na base presetu → přeskočit celý zoom (hlavní úspora času)
+  baseGateConfidence: 0.50, // volnější práh pro base pre-gate (0–1), nižší než minFaceConfidence — ať nepřeskočí reálného člověka (malá tvář na širokém záběru)
+  baseAcceptFrac: 0.30,     // tvář na base presetu už aspoň takhle velká + u středu + dost jistá → přijmout fotku bez zoomu
   recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
 };
 
@@ -5752,7 +5776,7 @@ function _faceProb(f) {
   return (typeof p === 'number') ? p : 1;
 }
 
-async function _detectAndDraw() {
+async function _detectAndDraw(confThr) {
   const v  = document.getElementById('scanVideo');
   const cv = document.getElementById('scanCanvas');
   if (!cv || !_scan.model) return [];
@@ -5773,8 +5797,9 @@ async function _detectAndDraw() {
 
   try {
     let faces = await _scan.model.estimateFaces(cv, false);
-    // Odfiltruj málo jisté detekce (ruce apod.) — BlazeFace confidence
-    const thr = _scan.minFaceConfidence || 0;
+    // Odfiltruj málo jisté detekce (ruce apod.) — BlazeFace confidence.
+    // confThr (volitelně) přebije minFaceConfidence (např. volnější práh pro base pre-gate).
+    const thr = (confThr !== undefined && confThr !== null) ? confThr : (_scan.minFaceConfidence || 0);
     const rejected = faces.filter(f => _faceProb(f) < thr);
     if (rejected.length) {
       _sLog(`  ↳ odfiltrováno ${rejected.length} málo jistých (práh ${(thr*100).toFixed(0)}%): ${rejected.map(f => (_faceProb(f)*100).toFixed(0)+'%').join(', ')}`);
@@ -5830,6 +5855,22 @@ async function _zoomStep(cam, dir, ms) {
 // Vrací { pick, zoomLevel } nebo null (prázdné). Po návratu je kamera přiblížená —
 // screenshot/rozpoznání se udělá na té úrovni, další gotopreset zoom resetuje.
 async function _zoomFindOccupant(seatNum, W, H) {
+  // ── Base pre-gate (rychlý sken) ── na širokém presetu rychle zjisti obsazenost,
+  // než se vůbec začne naklánět a zoomovat.
+  if (_scan.fastSkipEmpty) {
+    const baseFaces = await _detectAndDraw(_scan.baseGateConfidence);
+    if (_scan.aborting) return null;
+    if (!baseFaces.length) {
+      _sLog(`  Sedadlo ${seatNum} [base]: žádná tvář (práh ${Math.round((_scan.baseGateConfidence||0)*100)}%) → přeskakuji zoom`);
+      return null;                                      // prázdné → ušetři celý zoom žebřík
+    }
+    const bp = _pickSeatFace(baseFaces, W, H);
+    // Už na širokém záběru velká tvář u středu a dost jistá → přijmi rovnou (bez zoomu).
+    if (bp.dx <= _scan.maxDx && bp.hFrac >= _scan.baseAcceptFrac && _faceProb(bp.f) >= (_scan.minFaceConfidence || 0)) {
+      _sLog(`  Sedadlo ${seatNum} [base]: tvář velká+u středu (dx=${bp.dx.toFixed(2)} vel=${Math.round(bp.hFrac*100)}% conf=${Math.round(_faceProb(bp.f)*100)}%) → přijato bez zoomu`);
+      return { pick: bp, zoomLevel: 0 };
+    }
+  }
   // Nejdřív nakloň NAHORU — obličej je v horní části širokého presetu (top-center).
   // Bez toho zoom míří na geometrický střed (hruď/sedačka) a obličej ztratí.
   if (_scan.zoomTiltUpMs > 0) {

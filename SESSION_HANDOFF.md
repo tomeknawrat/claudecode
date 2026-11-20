@@ -40,7 +40,7 @@
 - **Oficiální fotka:** prázdná = tlačítko → průzkumník souborů; s fotkou = náhled → **lightbox** se zvětšenou fotkou + **tužka** (úprava = znovu průzkumník). Sdílený `#personPhotoInput`, `_pickPersonPhoto`/`handlePersonPhotoFile`/`_openPhotoLightbox`/`_editLightboxPhoto`. Pole `officialPhoto` (fallback na starý `photoDataUrl`).
 - **Fotka ze skenu** (`scanPhoto`) — tlačítko zatím placeholder (`_scanPhotoTodo`), dodělá se později.
 - Přidání osoby **už nepočítá embedding** (face recognition = v3.0). Ověřeno Playwrightem (řazení, náhled, lightbox, tužka).
-- ⏳ **Čeká na uživatele:** seznam konkrétních osob (příloha ve zprávě nedorazila) → pak hromadně nahraju a seřadím podle příjmení.
+- **Hromadný import** (`bulkAddPersons`, `<details>` „Hromadně přidat" + textarea, jedno jméno na řádek, přeskočí duplicity) — protože z cloudu nejde zapsat do IndexedDB v prohlížeči uživatele. Jména ve formátu „Příjmení Jméno", řazení celého jména (cs) = podle příjmení. Ověřeno s reálným seznamem (48 osob, správné české řazení vč. „Ch"). **Reálná jména zůstávají jen v prohlížeči — nejsou v repu** (seznam předán uživateli k vložení).
 
 ### 20. 11. 2026 — urychlení skenu: base pre-gate (čeká na nedělní živý test)
 - **Early-exit v `_zoomFindOccupant`:** před nakláněním/zoomem rychlá detekce na širokém base presetu s **volnějším prahem** (`baseGateConfidence` 0.50); žádná tvář → `fastSkipEmpty` přeskočí celý zoom žebřík (hlavní úspora, hlavně prázdná sedadla).

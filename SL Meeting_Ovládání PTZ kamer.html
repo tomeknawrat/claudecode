@@ -1596,6 +1596,18 @@ console.warn = (...args) => {
     font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--blue); white-space: nowrap; transition: all .15s;
   }
   .person-add-btn:hover { background: #dbeafe; }
+  .person-bulk { margin-top: 8px; }
+  .person-bulk > summary { font-size: 11px; color: var(--text-3); cursor: pointer; user-select: none; list-style: none; }
+  .person-bulk > summary::-webkit-details-marker { display: none; }
+  .person-bulk > summary:hover { color: var(--text-2); }
+  .person-bulk[open] > summary { margin-bottom: 6px; color: var(--text-2); }
+  .person-bulk textarea {
+    width: 100%; min-height: 90px; resize: vertical; box-sizing: border-box; margin-bottom: 6px;
+    padding: 8px 10px; border-radius: var(--r-xs); border: 1.5px solid var(--border);
+    background: var(--surface2); font-family: 'DM Sans', sans-serif; font-size: 12.5px; color: var(--text); outline: none; line-height: 1.5;
+  }
+  .person-bulk textarea:focus { border-color: var(--blue-mid); }
+  .person-bulk { display: flex; flex-direction: column; }
   /* Lightbox zvětšené oficiální fotky */
   .person-lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(15,23,42,.6); display: none; align-items: center; justify-content: center; }
   .person-lightbox.show { display: flex; }
@@ -2230,10 +2242,17 @@ console.warn = (...args) => {
 
           <!-- Přidání osoby (dole) -->
           <div class="person-add-row">
-            <input type="text" id="newPersonName" placeholder="Jméno a příjmení"
+            <input type="text" id="newPersonName" placeholder="Příjmení a jméno"
               onkeydown="if(event.key==='Enter')addPersonFromInput()">
             <button onclick="addPersonFromInput()" class="person-add-btn">＋ Přidat osobu</button>
           </div>
+
+          <!-- Hromadný import (jedno jméno na řádek) -->
+          <details class="person-bulk">
+            <summary>＋ Hromadně přidat (více jmen)</summary>
+            <textarea id="bulkPersonsInput" placeholder="Jedno jméno na řádek — formát „Příjmení Jméno“"></textarea>
+            <button onclick="bulkAddPersons()" class="person-add-btn" style="align-self:flex-start">Přidat všechny</button>
+          </details>
 
           <!-- Sdílený file input (oficiální fotka / úprava) -->
           <input type="file" id="personPhotoInput" accept="image/*" style="display:none" onchange="handlePersonPhotoFile(event)">
@@ -6395,16 +6414,10 @@ function closePersonsDb() {
 }
 
 // ── UI: render seznamu osob ──
-// Příjmení = poslední slovo jména (pro abecední řazení)
-function _personSurname(name) {
-  const t = String(name || '').trim().split(/\s+/);
-  return (t.length > 1 ? t[t.length - 1] : t[0]) || '';
-}
+// Řazení podle příjmení: jména jsou ve formátu „Příjmení Jméno", takže abecední
+// řazení celého řetězce (česká kolace) = řazení podle příjmení.
 function _sortPersons() {
-  _persons.sort((a, b) => {
-    const s = _personSurname(a.name).localeCompare(_personSurname(b.name), 'cs');
-    return s !== 0 ? s : String(a.name).localeCompare(String(b.name), 'cs');
-  });
+  _persons.sort((a, b) => String(a.name).localeCompare(String(b.name), 'cs'));
 }
 
 function _esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -6516,6 +6529,34 @@ async function addPersonFromInput() {
   _renderPersonsList();
   if (nameEl) { nameEl.value = ''; nameEl.focus(); }
   if (statusEl) { statusEl.textContent = `✅ ${name} přidán(a)`; statusEl.style.color = '#16a34a'; }
+}
+
+// Hromadné přidání — jedno jméno na řádek (duplicity podle jména se přeskočí).
+async function bulkAddPersons() {
+  const ta = document.getElementById('bulkPersonsInput');
+  const statusEl = document.getElementById('personsStatus');
+  if (!ta) return;
+  const lines = ta.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (!lines.length) {
+    if (statusEl) { statusEl.textContent = '❌ Vlož jména (jedno na řádek)'; statusEl.style.color = 'var(--red)'; }
+    return;
+  }
+  const existing = new Set(_persons.map(p => String(p.name).toLowerCase()));
+  let added = 0, skipped = 0;
+  for (const name of lines) {
+    if (existing.has(name.toLowerCase())) { skipped++; continue; }
+    existing.add(name.toLowerCase());
+    _persons.push({ id: Date.now().toString() + Math.random().toString(36).slice(2,6), name, officialPhoto: null, scanPhoto: null, descriptor: null });
+    added++;
+  }
+  _sortPersons();
+  await _savePersonsDB();
+  _renderPersonsList();
+  ta.value = '';
+  if (statusEl) {
+    statusEl.textContent = `✅ Přidáno ${added} osob${skipped ? ` (${skipped} duplicit přeskočeno)` : ''}`;
+    statusEl.style.color = '#16a34a';
+  }
 }
 
 // ── Smazání osoby ──

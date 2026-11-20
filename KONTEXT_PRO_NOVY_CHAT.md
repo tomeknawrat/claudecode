@@ -126,6 +126,9 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 **Dynamický layout (minimum):** `SEAT_LAYOUT` je měnitelný (`let`), ukládá se do `ptz_seat_layout` (default `_SEAT_LAYOUT_DEFAULT`); `_rebuildSeatMaps()` přepočítá `SEAT_NUMBERS`/`SEAT_NUM_TO_IDX`/`TOTAL_SEATS`. Tlačítko `+` v liště CAM2 otevře dialog **„Upravit sedadla"** (`openSeatEditor`) — přidat číslo do bloku/řady, smazat podle čísla. `_remapSeatStorageByNumber` po změně přemapuje slot* pole **podle čísla sedadla** → kalibrace/fotky drží. Layout je i v záloze (export/import v2).
 
 ### Scan modal (skenování hlediště)
+- **Překrývá JEN box Komentáře (CAM2)** — `#scanOverlay` je přesunutý (JS `_mountScanInCam2` při startu) do `.panel--cam2` jako `position:absolute; inset:0`. Při otevření dostane panel třídu `cam2-scanning` (min-height 430px). Box Komentáře se tím zneaktivní, **panel Pódium (CAM1) nahoře zůstává aktivní** (samostatný panel). Dřív to byl fullscreen overlay přes celou appku.
+- **Layout okna:** vlevo RTSP náhled (`.scan-video-wrap`), vpravo sloupec (`.scan-right-col`) — nahoře progress + statistiky (Sedadla/Extra/Přeskočeno), pod tím log. Na úzkém okně (≤760px) se to zalomí pod sebe.
+- **Parametry skenu jsou v Nastavení** (sekce „Skenování hlediště"): tilt nahoru před zoomem, min. jistota obličeje, rychlý sken, base práh obsazenosti, přijmout bez zoomu. ID (`zoomTiltUpInput` atd.) + onchange na `_scan.*` beze změny, jen přesunuté ze scan okna. (V paměti, nepersistují se.)
 - Otevře se z panelu CAM2
 - Zobrazí live WebRTC stream z CAM2 (přes MediaMTX WHEP endpoint `http://localhost:8889/cam2/whep`)
 - Kamera projíždí kalibrovanými sedadly (**po VISCA souřadnicích** `slotCoords`, fallback preset) a fotí tváře

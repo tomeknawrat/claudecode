@@ -309,7 +309,9 @@ console.warn = (...args) => {
   /* ── LAYOUT ── */
   .app { display: flex; flex-direction: column; gap: 12px; padding: 16px; overflow-x: hidden; }
   .panel--cam1 { width: 100%; max-width: 100%; }
-  .panel--cam2 { width: 100%; min-width: 0; }
+  .panel--cam2 { width: 100%; min-width: 0; position: relative; }
+  /* Při skenování má box Komentáře zaručenou výšku, aby se scan okno (náhled + log) vešlo */
+  .panel--cam2.cam2-scanning { min-height: 430px; }
 
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0; box-shadow: var(--sh-sm); overflow: hidden; display: flex; flex-direction: column; }
 
@@ -1410,18 +1412,19 @@ console.warn = (...args) => {
   .slot-card { position: relative; }
 
   /* ── SCAN MODÁL ── */
+  /* Scan okno překrývá JEN panel Komentáře (CAM2) — je to jeho absolutní potomek.
+     Panel Pódium (CAM1) je samostatný panel nad ním a zůstává plně aktivní. */
   .scan-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(15,23,42,.6); backdrop-filter: blur(4px);
-    z-index: 300; align-items: center; justify-content: center;
+    display: none; position: absolute; inset: 0;
+    background: rgba(15,23,42,.35); z-index: 120;
   }
-  .scan-overlay.show { display: flex; }
+  .scan-overlay.show { display: block; }
   .scan-modal {
+    position: absolute; inset: 0;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r); width: 680px; max-width: 96vw;
-    box-shadow: var(--sh-lg); overflow: hidden;
-    animation: modal-in .2s ease-out;
-    display: flex; flex-direction: column; max-height: 92vh;
+    border-radius: var(--r); box-shadow: var(--sh-lg); overflow: hidden;
+    animation: modal-in .18s ease-out;
+    display: flex; flex-direction: column;
   }
   .scan-modal-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -1430,11 +1433,19 @@ console.warn = (...args) => {
     flex-shrink: 0;
   }
   .scan-modal-title { font-size: 15px; font-weight: 700; color: #5b21b6; display: flex; align-items: center; gap: 8px; }
-  .scan-modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+  /* Dvousloupcový obsah: vlevo RTSP náhled, vpravo nahoře statistiky a pod tím log */
+  .scan-modal-body { padding: 14px 16px; overflow: hidden; flex: 1; display: flex; flex-direction: row; gap: 14px; align-items: stretch; min-height: 0; }
+  .scan-right-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 
   .scan-video-wrap {
     position: relative; border-radius: var(--r-sm); overflow: hidden;
-    background: #0f172a; border: 1px solid var(--border); flex-shrink: 0; aspect-ratio: 16/9;
+    background: #0f172a; border: 1px solid var(--border);
+    flex: 1.35; min-width: 0; min-height: 0;
+  }
+  @media (max-width: 760px) {
+    .scan-modal-body { flex-direction: column; overflow-y: auto; }
+    .scan-video-wrap { flex: none; aspect-ratio: 16/9; }
+    .scan-right-col { flex: none; }
   }
   #scanVideo { width: 100%; height: 100%; display: block; object-fit: cover; }
   #scanCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -1487,10 +1498,11 @@ console.warn = (...args) => {
 
   .scan-log {
     background: #1a2235; border-radius: var(--r-sm); padding: 9px 12px;
-    height: 90px; overflow-y: auto; font-family: 'DM Mono', monospace;
+    flex: 1; min-height: 70px; overflow-y: auto; font-family: 'DM Mono', monospace;
     font-size: 10px; line-height: 1.7; color: #64748b;
-    scrollbar-width: thin; scrollbar-color: #2d3a50 transparent; flex-shrink: 0;
+    scrollbar-width: thin; scrollbar-color: #2d3a50 transparent;
   }
+  @media (max-width: 760px) { .scan-log { flex: none; height: 90px; } }
   .scan-log-entry.ok   { color: #4ade80; }
   .scan-log-entry.warn { color: #fbbf24; }
   .scan-log-entry.err  { color: #f87171; }
@@ -1869,6 +1881,43 @@ console.warn = (...args) => {
             <label>Zoom Out</label>
             <input type="number" id="poseStandZoom" value="5" min="1" max="50" style="width:80px" onchange="saveSettings()">
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKENOVÁNÍ HLEDIŠTĚ (parametry přesunuté ze scan okna) -->
+    <div class="drawer-section">
+      <div class="drawer-collapsible-header" onclick="toggleDrawerSection(this)">
+        <span class="drawer-collapsible-label">Skenování hlediště</span>
+        <span class="drawer-collapsible-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="drawer-collapsible-body">
+        <div class="drawer-collapsible-inner">
+          <div class="drawer-row">
+            <label>↑ Tilt nahoru před zoomem (ms)</label>
+            <input type="number" id="zoomTiltUpInput" value="700" min="0" max="2000" step="50" style="width:80px" onchange="_scan.zoomTiltUpMs = parseInt(this.value)||0">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">0 = vypnuto; zaměří zoom na obličej v top-center.</div>
+          <div class="drawer-row">
+            <label>🙂 Min. jistota obličeje (%)</label>
+            <input type="number" id="minFaceConfInput" value="90" min="50" max="99" step="1" style="width:80px" onchange="_scan.minFaceConfidence = (parseInt(this.value)||0)/100">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">Vyšší = míň falešných detekcí (ruce), ale může zahodit profily.</div>
+          <div class="drawer-row">
+            <label>⏩ Rychlý sken (přeskočit prázdná)</label>
+            <input type="checkbox" id="fastSkipEmptyInput" checked onchange="_scan.fastSkipEmpty = this.checked">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">Na širokém záběru žádná tvář → bez zoomu rovnou dál.</div>
+          <div class="drawer-row">
+            <label>🔎 Base práh obsazenosti (%)</label>
+            <input type="number" id="baseGateConfInput" value="50" min="20" max="90" step="5" style="width:80px" onchange="_scan.baseGateConfidence = (parseInt(this.value)||0)/100">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">Volnější než min. jistota; nižší = míň přeskočí reálných lidí.</div>
+          <div class="drawer-row">
+            <label>🤏 Přijmout bez zoomu od velikosti (%)</label>
+            <input type="number" id="baseAcceptFracInput" value="30" min="10" max="60" step="5" style="width:80px" onchange="_scan.baseAcceptFrac = (parseInt(this.value)||0)/100">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 2px;">Tvář u středu aspoň takhle velká na širokém záběru → fotka bez zoomu.</div>
         </div>
       </div>
     </div>
@@ -2307,8 +2356,8 @@ console.warn = (...args) => {
         </div>
       </div>
 
-      <!-- Progress -->
-      <div>
+      <!-- Pravý sloupec: nahoře statistiky, pod tím log -->
+      <div class="scan-right-col">
         <div class="scan-progress-row" style="margin-bottom:7px">
           <div class="scan-progress-bar-wrap"><div class="scan-progress-bar" id="scanProgressBar"></div></div>
           <div class="scan-progress-text" id="scanProgressText">0 %</div>
@@ -2318,44 +2367,8 @@ console.warn = (...args) => {
           <div class="scan-stat">Extra: <span class="scan-stat-val" id="scanStatExtra">0</span></div>
           <div class="scan-stat">Přeskočeno: <span class="scan-stat-val" id="scanStatSkip">0</span></div>
         </div>
-        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
-          ↑ Tilt nahoru před zoomem (ms):
-          <input type="number" id="zoomTiltUpInput" value="700" min="0" max="2000" step="50"
-                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
-                 onchange="_scan.zoomTiltUpMs = parseInt(this.value)||0">
-          <span style="color:var(--text-3)">(0 = vypnuto; zaměří zoom na obličej v top-center)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
-          🙂 Min. jistota obličeje (%):
-          <input type="number" id="minFaceConfInput" value="90" min="50" max="99" step="1"
-                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
-                 onchange="_scan.minFaceConfidence = (parseInt(this.value)||0)/100">
-          <span style="color:var(--text-3)">(vyšší = míň falešných detekcí jako ruce, ale může zahodit profily)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
-          ⏩ Rychlý sken (přeskočit prázdná):
-          <input type="checkbox" id="fastSkipEmptyInput" checked
-                 onchange="_scan.fastSkipEmpty = this.checked">
-          <span style="color:var(--text-3)">(na širokém záběru žádná tvář → bez zoomu rovnou dál)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
-          🔎 Base práh obsazenosti (%):
-          <input type="number" id="baseGateConfInput" value="50" min="20" max="90" step="5"
-                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
-                 onchange="_scan.baseGateConfidence = (parseInt(this.value)||0)/100">
-          <span style="color:var(--text-3)">(volnější než min. jistota; nižší = míň přeskočí reálných lidí)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12px;color:var(--text-2)">
-          🤏 Přijmout bez zoomu od velikosti (%):
-          <input type="number" id="baseAcceptFracInput" value="30" min="10" max="60" step="5"
-                 style="width:70px;font-family:'DM Mono',monospace;font-size:12px;padding:2px 6px"
-                 onchange="_scan.baseAcceptFrac = (parseInt(this.value)||0)/100">
-          <span style="color:var(--text-3)">(tvář u středu aspoň takhle velká na širokém záběru → fotka bez zoomu)</span>
-        </label>
+        <div class="scan-log" id="scanLog"></div>
       </div>
-
-      <!-- Log -->
-      <div class="scan-log" id="scanLog"></div>
     </div>
     <div class="scan-modal-footer">
       <button class="btn-scan-cancel" id="scanCancelBtn" onclick="closeScanModal()">Zavřít</button>
@@ -6328,6 +6341,8 @@ async function openScanModal() {
   const log = document.getElementById('scanLog');
   if (log) log.innerHTML = '';
   document.getElementById('scanOverlay').classList.add('show');
+  const _p2 = document.querySelector('.panel--cam2');
+  if (_p2) _p2.classList.add('cam2-scanning');
   await _initVideo();
   _sLog('Modál otevřen. Spusťte skenování.');
 }
@@ -6346,6 +6361,8 @@ function closeScanModal() {
   const overlay = document.getElementById('scanVideoOverlay');
   if (overlay) overlay.style.display = 'none';
   document.getElementById('scanOverlay').classList.remove('show');
+  const _p2 = document.querySelector('.panel--cam2');
+  if (_p2) _p2.classList.remove('cam2-scanning');
   if (!_scan.active) _finishScan();
 }
 
@@ -6704,6 +6721,14 @@ async function deletePerson(id) {
   if (SERVER_MODE) logMsg('info', 'Úložiště: server (' + API_BASE + ')');
 })();
 logMsg('info','PTZ Controller spuštěn. Připojuji k IP serveru…');
+
+// Scan okno patří do panelu Komentáře (CAM2) — přesuň ho tam jako absolutního potomka,
+// aby při skenování překrývalo a zneaktivnilo JEN box Komentáře (Pódium zůstává aktivní).
+(function _mountScanInCam2() {
+  const panel = document.querySelector('.panel--cam2');
+  const ov = document.getElementById('scanOverlay');
+  if (panel && ov && ov.parentElement !== panel) panel.appendChild(ov);
+})();
 
 // ── AUTO-CONNECT ──
 function autoConnect() {

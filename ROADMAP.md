@@ -155,8 +155,13 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) se dřív jel i na **prázdných** sedadlech. Implementováno jako **base pre-gate** v `_zoomFindOccupant` (před nakláněním/zoomem):
 - ✅ **Early-exit** (`fastSkipEmpty`): na širokém base presetu rychlá detekce s **volnějším prahem** (`baseGateConfidence` 0.50); žádná tvář → sedadlo prázdné → **přeskočí celý zoom**.
 - ✅ **Přijmout base bez zoomu** (`baseAcceptFrac` 0.30): tvář už dost velká + u středu + dost jistá → fotka rovnou ze širokého záběru (přední/blízká sedadla).
-- Laditelná pole ve scan modalu (⏩ rychlý sken, 🔎 base práh obsazenosti, 🤏 přijmout od velikosti).
+- Laditelná pole **přesunuta do Nastavení → „Skenování hlediště"** (⏩ rychlý sken, 🔎 base práh obsazenosti, 🤏 přijmout od velikosti, ↑ tilt, 🙂 min. jistota).
 - **Doladit naživo:** `baseGateConfidence` (když přeskakuje reálné lidi → snížit), `baseAcceptFrac` (fotky z base moc široké → zvýšit).
+
+### Scan okno = překrytí jen boxu Komentáře (hotovo v kódu)
+- Scan okno už není fullscreen přes celou appku — překrývá a zneaktivní **jen box Komentáře (CAM2)**, **Pódium (CAM1) zůstává aktivní** (`#scanOverlay` přesunut do `.panel--cam2` jako `absolute; inset:0`, třída `cam2-scanning`).
+- Nový layout okna: **vlevo RTSP náhled, vpravo nahoře statistiky + pod tím log**.
+- Parametry skenu přesunuty ze scan okna do Nastavení.
 - Zbývá (volitelné): detekovat **během zoom-inu** a zastavit dřív; zkrátit `settleMs`/`zoomStepMs`/`zoomSettleMs`; **inkrementální sken** (přeskočit už vyfocená).
 
 ---

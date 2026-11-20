@@ -35,6 +35,13 @@
 
 ## Záznamy dne
 
+### 20. 11. 2026 — Databáze osob: nový layout seznamu (bez face recognition, to je v3.0)
+- **Modal „Databáze osob" předělán:** sloupec osob **řazený podle příjmení** (`_sortPersons`/`_personSurname`, cs collation). Řádek = jméno + **oficiální fotka** + **fotka ze skenu** + koš. „Přidat osobu" (jen jméno) **dole**; po přidání se znovu seřadí.
+- **Oficiální fotka:** prázdná = tlačítko → průzkumník souborů; s fotkou = náhled → **lightbox** se zvětšenou fotkou + **tužka** (úprava = znovu průzkumník). Sdílený `#personPhotoInput`, `_pickPersonPhoto`/`handlePersonPhotoFile`/`_openPhotoLightbox`/`_editLightboxPhoto`. Pole `officialPhoto` (fallback na starý `photoDataUrl`).
+- **Fotka ze skenu** (`scanPhoto`) — tlačítko zatím placeholder (`_scanPhotoTodo`), dodělá se později.
+- Přidání osoby **už nepočítá embedding** (face recognition = v3.0). Ověřeno Playwrightem (řazení, náhled, lightbox, tužka).
+- ⏳ **Čeká na uživatele:** seznam konkrétních osob (příloha ve zprávě nedorazila) → pak hromadně nahraju a seřadím podle příjmení.
+
 ### 20. 11. 2026 — urychlení skenu: base pre-gate (čeká na nedělní živý test)
 - **Early-exit v `_zoomFindOccupant`:** před nakláněním/zoomem rychlá detekce na širokém base presetu s **volnějším prahem** (`baseGateConfidence` 0.50); žádná tvář → `fastSkipEmpty` přeskočí celý zoom žebřík (hlavní úspora, hlavně prázdná sedadla).
 - **Přijmout bez zoomu:** tvář na base už dost velká (`baseAcceptFrac` 0.30) + u středu + conf ≥ `minFaceConfidence` → fotka rovnou z base (přední/blízká sedadla).

@@ -1563,36 +1563,51 @@ console.warn = (...args) => {
   .scan-speed-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-2); min-width: 12px; }
 
   /* ── OSOBY (rozpoznávání tváří) ── */
-  .person-card {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px; border-radius: var(--r-sm);
-    border: 1.5px solid var(--border); background: var(--surface2);
-    margin-bottom: 6px; transition: all .15s;
+  /* ── Databáze osob — seznam (sloupec jmen + fotky) ── */
+  .persons-list { display: flex; flex-direction: column; gap: 6px; max-height: 46vh; overflow-y: auto; margin-bottom: 10px; }
+  .person-empty { font-size: 12px; color: var(--text-3); text-align: center; padding: 10px 0; }
+  .person-row {
+    display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 8px;
+    padding: 6px 8px; border: 1.5px solid var(--border); border-radius: var(--r-sm); background: var(--surface2);
   }
-  .person-card:hover { border-color: var(--border2); }
-  .person-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
-    object-fit: cover; border: 2px solid var(--border2);
-    flex-shrink: 0; background: var(--surface3);
+  .person-row:hover { border-color: var(--border2); }
+  .person-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .person-photo-btn, .person-scan-btn {
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    padding: 6px 10px; border-radius: var(--r-xs); border: 1.5px dashed var(--border2); background: var(--surface); color: var(--text-2); transition: all .15s;
   }
-  .person-avatar-placeholder {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--surface3); border: 2px solid var(--border2);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; color: var(--text-3); font-size: 18px;
-  }
-  .person-info { flex: 1; min-width: 0; }
-  .person-name { font-size: 13px; font-weight: 600; color: var(--text); }
-  .person-status { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-  .person-status.ok { color: #16a34a; }
-  .person-status.err { color: var(--red); }
+  .person-photo-btn:hover, .person-scan-btn:hover { background: var(--surface3); border-color: var(--text-3); color: var(--text); }
+  .person-scan-btn { opacity: .8; }
+  .person-photo-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border2); cursor: pointer; display: block; transition: border-color .15s; }
+  .person-photo-thumb:hover { border-color: var(--blue); }
   .person-del-btn {
-    width: 28px; height: 28px; border-radius: var(--r-xs);
-    background: none; border: 1.5px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text-3); transition: all .15s; flex-shrink: 0;
+    width: 28px; height: 28px; border-radius: var(--r-xs); background: none; border: none;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-3); transition: all .15s;
   }
-  .person-del-btn:hover { background: var(--red-soft); border-color: #fca5a5; color: var(--red); }
+  .person-del-btn:hover { background: var(--red-soft); color: var(--red); }
+  .person-add-row { display: flex; gap: 6px; }
+  .person-add-row input {
+    flex: 1; padding: 8px 10px; border-radius: var(--r-xs); border: 1.5px solid var(--border);
+    background: var(--surface2); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none;
+  }
+  .person-add-row input:focus { border-color: var(--blue-mid); }
+  .person-add-btn {
+    padding: 8px 16px; border-radius: var(--r-xs); border: 1.5px solid var(--blue-mid); background: var(--blue-soft);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--blue); white-space: nowrap; transition: all .15s;
+  }
+  .person-add-btn:hover { background: #dbeafe; }
+  /* Lightbox zvětšené oficiální fotky */
+  .person-lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(15,23,42,.6); display: none; align-items: center; justify-content: center; }
+  .person-lightbox.show { display: flex; }
+  .person-lightbox-inner { position: relative; }
+  .person-lightbox-inner img { max-width: 80vw; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.4); display: block; }
+  .person-lightbox-edit, .person-lightbox-close {
+    position: absolute; top: 10px; width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.25); transition: transform .12s;
+  }
+  .person-lightbox-edit:hover, .person-lightbox-close:hover { transform: scale(1.08); }
+  .person-lightbox-edit { right: 54px; background: #fff; color: var(--blue-d); }
+  .person-lightbox-close { right: 10px; background: #fff; color: var(--text-2); font-size: 16px; }
 
   /* ── SLOT EDIT — struktura (řady, sekce, akční tlačítka) ── */
   .sed-hall { display:flex;flex-wrap:wrap;gap:var(--hall-gap);align-items:flex-start; }
@@ -2204,36 +2219,24 @@ console.warn = (...args) => {
 
 <!-- ══ DATABÁZE OSOB (rozpoznávání tváří) ══ -->
 <div class="modal-overlay" id="personsDbOverlay" onclick="if(event.target===this)closePersonsDb()">
-  <div class="modal" style="width:360px">
+  <div class="modal" style="width:540px;max-width:94vw">
     <div class="modal-title">Databáze osob</div>
           <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;line-height:1.6;">
-            Nahrajte oficiální fotky osob. Při skenování aplikace rozpozná tvář a použije oficiální fotku místo screenshotu.
+            Seznam osob (řazeno podle příjmení). U každé osoby lze doplnit oficiální fotku a fotku ze skenu. Rozpoznávání tváří se řeší ve v3.0.
           </div>
 
-          <!-- Seznam osob -->
-          <div id="personsList"></div>
+          <!-- Seznam osob (sloupec jmen + fotky) -->
+          <div id="personsList" class="persons-list"></div>
 
-          <!-- Přidání osoby -->
-          <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
-            <input type="text" id="newPersonName" placeholder="Jméno osoby"
-              style="width:100%;padding:7px 10px;border-radius:var(--r-xs);border:1.5px solid var(--border);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;"
+          <!-- Přidání osoby (dole) -->
+          <div class="person-add-row">
+            <input type="text" id="newPersonName" placeholder="Jméno a příjmení"
               onkeydown="if(event.key==='Enter')addPersonFromInput()">
-            <div style="display:flex;gap:6px;">
-              <button onclick="document.getElementById('personPhotoInput').click()"
-                style="flex:1;padding:7px;border-radius:var(--r-xs);border:1.5px solid var(--border2);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-2)">
-                📷 Vybrat fotku
-              </button>
-              <button onclick="addPersonFromInput()"
-                style="flex:1;padding:7px;border-radius:var(--r-xs);border:1.5px solid var(--blue-mid);background:var(--blue-soft);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--blue)">
-                ＋ Přidat osobu
-              </button>
-            </div>
-            <input type="file" id="personPhotoInput" accept="image/*" style="display:none" onchange="handlePersonPhoto(event)">
-            <div id="personPhotoPreviewWrap" style="display:none;position:relative;width:60px;">
-              <img id="personPhotoPreview" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border2);">
-              <button onclick="clearPersonPhoto()" style="position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;border:none;background:var(--red);color:white;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
-            </div>
+            <button onclick="addPersonFromInput()" class="person-add-btn">＋ Přidat osobu</button>
           </div>
+
+          <!-- Sdílený file input (oficiální fotka / úprava) -->
+          <input type="file" id="personPhotoInput" accept="image/*" style="display:none" onchange="handlePersonPhotoFile(event)">
 
           <div id="personsStatus" style="margin-top:8px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-3);min-height:16px;"></div>
 
@@ -2248,6 +2251,17 @@ console.warn = (...args) => {
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closePersonsDb()">Zavřít</button>
     </div>
+  </div>
+</div>
+
+<!-- Zvětšená oficiální fotka osoby (lightbox) -->
+<div id="personPhotoLightbox" class="person-lightbox" onclick="if(event.target===this)_closePhotoLightbox()">
+  <div class="person-lightbox-inner">
+    <img id="personLightboxImg" alt="Oficiální fotka">
+    <button class="person-lightbox-edit" onclick="_editLightboxPhoto()" title="Upravit fotku" aria-label="Upravit fotku">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </button>
+    <button class="person-lightbox-close" onclick="_closePhotoLightbox()" title="Zavřít" aria-label="Zavřít">✕</button>
   </div>
 </div>
 <!-- ══ SCAN MODÁL ══ -->
@@ -6381,57 +6395,113 @@ function closePersonsDb() {
 }
 
 // ── UI: render seznamu osob ──
+// Příjmení = poslední slovo jména (pro abecední řazení)
+function _personSurname(name) {
+  const t = String(name || '').trim().split(/\s+/);
+  return (t.length > 1 ? t[t.length - 1] : t[0]) || '';
+}
+function _sortPersons() {
+  _persons.sort((a, b) => {
+    const s = _personSurname(a.name).localeCompare(_personSurname(b.name), 'cs');
+    return s !== 0 ? s : String(a.name).localeCompare(String(b.name), 'cs');
+  });
+}
+
+function _esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 function _renderPersonsList() {
   const list = document.getElementById('personsList');
   if (!list) return;
+  _sortPersons();
   list.innerHTML = '';
   if (_persons.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--text-3);text-align:center;padding:8px 0;">Žádné osoby</div>';
+    list.innerHTML = '<div class="person-empty">Žádné osoby</div>';
     return;
   }
   _persons.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'person-card';
-    const hasDesc = !!p.descriptor;
-    card.innerHTML = `
-      ${p.photoDataUrl
-        ? `<img class="person-avatar" src="${p.photoDataUrl}">`
-        : `<div class="person-avatar-placeholder">👤</div>`}
-      <div class="person-info">
-        <div class="person-name">${p.name}</div>
-        <div class="person-status ${hasDesc ? 'ok' : 'err'}">${hasDesc ? '✓ Embedding vypočítán' : '⚠ Bez embeddingu'}</div>
-      </div>
-      <button class="person-del-btn" onclick="deletePerson('${p.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      </button>
-    `;
-    list.appendChild(card);
+    const official = p.officialPhoto || p.photoDataUrl || null;   // fallback na starý formát
+    const row = document.createElement('div');
+    row.className = 'person-row';
+    const officialHtml = official
+      ? `<img class="person-photo-thumb" src="${official}" title="Zvětšit / upravit oficiální fotku" onclick="_openPhotoLightbox('${p.id}')">`
+      : `<button class="person-photo-btn" title="Přidat oficiální fotku" onclick="_pickPersonPhoto('${p.id}','official')">＋ Oficiální fotka</button>`;
+    const scanHtml = p.scanPhoto
+      ? `<img class="person-photo-thumb" src="${p.scanPhoto}" title="Fotka ze skenu" onclick="_openPhotoLightbox('${p.id}','scan')">`
+      : `<button class="person-scan-btn" title="Přidat fotku ze skenu (připravujeme ve v3.0)" onclick="_scanPhotoTodo()">＋ Fotka ze skenu</button>`;
+    row.innerHTML = `
+      <div class="person-name" title="${_esc(p.name)}">${_esc(p.name)}</div>
+      ${officialHtml}
+      ${scanHtml}
+      <button class="person-del-btn" title="Smazat osobu" onclick="deletePerson('${p.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>`;
+    list.appendChild(row);
   });
 }
 
 // ── Obsluha výběru fotky ──
-function handlePersonPhoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+// ── Fotky osoby (oficiální / sken) ──
+let _photoTarget = null;      // { id, kind:'official'|'scan' } — pro sdílený file input
+let _lightboxPersonId = null; // id osoby zobrazené v lightboxu
+
+// Otevře průzkumník souborů pro danou osobu + druh fotky.
+function _pickPersonPhoto(id, kind) {
+  _photoTarget = { id, kind: kind || 'official' };
+  const inp = document.getElementById('personPhotoInput');
+  if (inp) inp.click();
+}
+
+// Zpracuje vybraný soubor → uloží fotku k osobě (bez výpočtu embeddingu — to je v3.0).
+function handlePersonPhotoFile(e) {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file || !_photoTarget) return;
+  const { id, kind } = _photoTarget;
   const reader = new FileReader();
-  reader.onload = ev => {
-    _pendingPersonPhoto = ev.target.result;
-    const preview = document.getElementById('personPhotoPreview');
-    const wrap = document.getElementById('personPhotoPreviewWrap');
-    if (preview) preview.src = _pendingPersonPhoto;
-    if (wrap) wrap.style.display = 'block';
+  reader.onload = async ev => {
+    const p = _persons.find(x => x.id === id);
+    if (!p) return;
+    if (kind === 'scan') p.scanPhoto = ev.target.result;
+    else p.officialPhoto = ev.target.result;
+    await _savePersonsDB();
+    _renderPersonsList();
+    // Pokud je právě otevřený lightbox této osoby, obnov v něm obrázek.
+    if (_lightboxPersonId === id) {
+      const img = document.getElementById('personLightboxImg');
+      if (img) img.src = p.officialPhoto || p.photoDataUrl || '';
+    }
   };
   reader.readAsDataURL(file);
-  e.target.value = '';
 }
 
-function clearPersonPhoto() {
-  _pendingPersonPhoto = null;
-  const wrap = document.getElementById('personPhotoPreviewWrap');
-  if (wrap) wrap.style.display = 'none';
+// Zvětší oficiální (nebo skenovou) fotku v lightboxu; prázdná oficiální → rovnou picker.
+function _openPhotoLightbox(id, kind) {
+  const p = _persons.find(x => x.id === id);
+  if (!p) return;
+  const src = (kind === 'scan') ? p.scanPhoto : (p.officialPhoto || p.photoDataUrl);
+  if (!src) { _pickPersonPhoto(id, kind || 'official'); return; }
+  _lightboxPersonId = id;
+  const img = document.getElementById('personLightboxImg');
+  if (img) img.src = src;
+  const lb = document.getElementById('personPhotoLightbox');
+  if (lb) lb.classList.add('show');
+}
+function _closePhotoLightbox() {
+  const lb = document.getElementById('personPhotoLightbox');
+  if (lb) lb.classList.remove('show');
+  _lightboxPersonId = null;
+}
+// Tužka v lightboxu → znovu otevře průzkumník souborů (úprava oficiální fotky).
+function _editLightboxPhoto() {
+  if (_lightboxPersonId) _pickPersonPhoto(_lightboxPersonId, 'official');
+}
+// „Přidat fotku ze skenu" — funkce se řeší později.
+function _scanPhotoTodo() {
+  const s = document.getElementById('personsStatus');
+  if (s) { s.textContent = 'ℹ Přidání fotky ze skenu připravujeme (v3.0).'; s.style.color = 'var(--text-3)'; }
 }
 
-// ── Přidání osoby ──
+// ── Přidání osoby (jen jméno; fotky se doplňují zvlášť) ──
 async function addPersonFromInput() {
   const nameEl = document.getElementById('newPersonName');
   const statusEl = document.getElementById('personsStatus');
@@ -6440,54 +6510,12 @@ async function addPersonFromInput() {
     if (statusEl) { statusEl.textContent = '❌ Zadejte jméno osoby'; statusEl.style.color = 'var(--red)'; }
     return;
   }
-  if (!_pendingPersonPhoto) {
-    if (statusEl) { statusEl.textContent = '❌ Vyberte fotku osoby'; statusEl.style.color = 'var(--red)'; }
-    return;
-  }
-
-  if (statusEl) { statusEl.textContent = '⏳ Načítám modely a počítám embedding…'; statusEl.style.color = 'var(--text-3)'; }
-
-  // Zamkni tlačítko během zpracování
-  const addBtn = document.querySelector('[onclick="addPersonFromInput()"]');
-  if (addBtn) addBtn.disabled = true;
-
-  try {
-  // Načti face-api pokud třeba
-  const ok = await _loadFaceApi();
-  if (!ok) {
-    if (statusEl) { statusEl.textContent = '❌ Nepodařilo se načíst face-api modely'; statusEl.style.color = 'var(--red)'; }
-    return;
-  }
-
-  // Vypočítej descriptor z fotky
-  const img = new Image();
-  img.src = _pendingPersonPhoto;
-  await new Promise(r => { img.onload = r; img.onerror = r; });
-  if (statusEl) { statusEl.textContent = '⏳ Počítám embedding…'; }
-  const descriptor = await _computeDescriptor(img);
-
-  const person = {
-    id: Date.now().toString(),
-    name,
-    photoDataUrl: _pendingPersonPhoto,
-    descriptor,
-  };
-  _persons.push(person);
+  _persons.push({ id: Date.now().toString() + Math.random().toString(36).slice(2,6), name, officialPhoto: null, scanPhoto: null, descriptor: null });
+  _sortPersons();
   await _savePersonsDB();
   _renderPersonsList();
-
-  // Reset formuláře
-  if (nameEl) nameEl.value = '';
-  clearPersonPhoto();
-  if (statusEl) {
-    statusEl.textContent = descriptor
-      ? `✅ ${name} přidána — embedding vypočítán`
-      : `⚠ ${name} přidána — tvář se nepodařilo detekovat (embedding chybí)`;
-    statusEl.style.color = descriptor ? '#16a34a' : 'var(--amber-d)';
-  }
-  } finally {
-    if (addBtn) addBtn.disabled = false;
-  }
+  if (nameEl) { nameEl.value = ''; nameEl.focus(); }
+  if (statusEl) { statusEl.textContent = `✅ ${name} přidán(a)`; statusEl.style.color = '#16a34a'; }
 }
 
 // ── Smazání osoby ──

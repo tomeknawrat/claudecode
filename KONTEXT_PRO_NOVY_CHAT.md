@@ -130,11 +130,13 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - Modely se stáhnou z CDN při prvním použití (~12MB)
 - Rozpoznané osoby = presety (fotka + jméno), uložené v IndexedDB
 
-### Osoby (rozpoznávání tváří) — modal „Databáze osob"
-- **Samostatný modal** (`#personsDbOverlay`, otevírá tlačítko `personsDbBtn` v hlavičce přes `openPersonsDb()`); **přesunuto z bočního panelu Nastavení** (10. 11. 2026). Zatím velmi basic, další práce ve v3.0.
-- Přidání osoby: jméno + fotka + automatický facial embedding
-- Threshold slider 0.3–0.8 (default 0.5)
-- Osoby uložené v IndexedDB (`ptz_persons`)
+### Osoby — modal „Databáze osob" (layout předělán 20. 11. 2026)
+- **Samostatný modal** (`#personsDbOverlay`, otevírá tlačítko `personsDbBtn` v hlavičce přes `openPersonsDb()`); **přesunuto z bočního panelu Nastavení** (10. 11. 2026).
+- **Layout:** sloupec osob **řazený podle příjmení** (`_sortPersons` / `_personSurname`, `localeCompare 'cs'`). Řádek (`.person-row`): jméno + **oficiální fotka** + **fotka ze skenu** + koš. „**Přidat osobu**" (jen jméno) je **dole**; po přidání se seznam znovu seřadí.
+- **Oficiální fotka** (`_pickPersonPhoto`/`handlePersonPhotoFile`, sdílený `#personPhotoInput`): prázdná = tlačítko „＋ Oficiální fotka" → průzkumník souborů; s fotkou = náhled → klik **zvětší v lightboxu** (`#personPhotoLightbox`) s **tužkou** (`_editLightboxPhoto` → znovu průzkumník). Pole osoby: `officialPhoto` (fallback na starý `photoDataUrl`).
+- **Fotka ze skenu** (`scanPhoto`) — tlačítko je zatím **placeholder** (`_scanPhotoTodo`), funkce se dodělá později.
+- **Pozn.:** přidání osoby **už nepočítá facial embedding** (face recognition = v3.0; `descriptor` zůstává `null`).
+- Threshold slider 0.3–0.8 (default 0.5). Osoby v IndexedDB (`ptz_persons`); ukládá se celý objekt osoby (nová pole se persistují).
 
 ### Nastavení (boční panel)
 - **Připojit / Restartovat server** (úplně nahoře) — samostatné tlačítko (`connectBtn`, `toggleConnect`), přesunuto z hlavičky; v hlavičce zůstala jen stavová tečka.

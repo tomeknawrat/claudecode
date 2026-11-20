@@ -35,6 +35,11 @@
 
 ## Záznamy dne
 
+### 20. 11. 2026 — živý test ověřen + roadmap přebucketován
+- **Živý test u kamer prošel:** restart serveru + překalibrace (sken po souřadnicích), zoom sken top-center + mírnější zoom + tilt-up, fotky top-center bez rámečku, překalibrace rozhozených sedadel. Práh jistoty obličeje zatím OK.
+- **Otevřený bod — urychlení skenu:** zoom žebřík se jede i na prázdných sedadlech. Plán: early-exit (detekce na base presetu s volnějším prahem → bez tváře přeskočit zoom) + přijmout base záběr bez zoomu u velkých/centrovaných tváří. **Čeká na odsouhlasení implementace.**
+- **Roadmap:** rozpoznávání/osoby/víc fotek → **V3.0**; `obs-websocket` → **V4.0**; **dynamický layout — rozšíření zahozeno** (stávající přidat/smazat sedadlo zůstává).
+
 ### 19. 11. 2026 — plovoucí okno tažitelné + joystick sladěn + přejmenování
 - **Plovoucí okno manuálního ovládání je teď tažitelné** — chytni za hlavičku (`_ctrlMakeDraggable`, pointer eventy, `setPointerCapture`) a přetáhni kamkoli (pozice drží i po zavření/otevření). **Backdrop odstraněn** → layout pod oknem zůstává aktivní. Zavření: křížek / Escape / znovu klik na ikonku (klik mimo už nezavírá).
 - **Joystick CAM2** má teď třídy `seat-layout-btn seat-layout-btn--main` + override na `#fef3c7`/`#92400e` → vypadá i se chová **úplně stejně jako pose (sedí/stojí) a Kompaktní** (dřív amber `#d97706` / jiný styl `cam2-tool-btn`).

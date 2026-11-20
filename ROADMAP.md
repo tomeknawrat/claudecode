@@ -2,7 +2,7 @@
 
 > Přehled hotového, rozpracovaného a dalšího směru. Doplňuje
 > `KONTEXT_PRO_NOVY_CHAT.md` (popis projektu) a `SESSION_HANDOFF.md` (stav práce).
-> Aktualizováno: **19. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
+> Aktualizováno: **20. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
 > Hlavní soubor appky: **`SL Meeting_Ovládání PTZ kamer.html`**.
 
 ---
@@ -117,16 +117,22 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 
 ---
 
-## 📋 Čeká na čtvrtek (živý test u kamer, s lidmi)
+## ✅ Živý test u kamer — ověřeno (20. 11. 2026)
 
-1. **Restart `ptz_server.py`** (kvůli VISCA) + **překalibrace sedadel** → sken po souřadnicích. Toto je priorita — vyřeší posun/cizí obličeje.
-2. Ověřit **zoom sken top-center + mírnější zoom**, doladit `pickAnchorY`, `zoomSteps`, `zoomMinAcceptFrac`.
-3. Fotky **top-center + bez rámečku**, doladit `facePhotoFaceAt`.
-4. Případně `scanTiltMs` (fyzický tilt nudge) — vyzkoušet směr/velikost.
-6. **Zoom sken: tilt nahoru před zoomem** (`zoomTiltUpMs`, default 700 ms, laditelné polem ve scan modalu) — zoom se zaměří na obličej v top-center, ne na střed/hruď. Doladit hodnotu podle záběru.
-8. **Práh jistoty obličeje** (`minFaceConfidence`, default 0.90, laditelné polem) — odfiltruje falešné detekce (ruce). Log ukazuje confidence přijatých i odfiltrovaných, podle toho doladit.
-7. Zadní řada (51–57) + některá sedadla (46, 43) mají **rozhozené uložené souřadnice** → překalibrovat (klik na sedadlo → joystick → Uložit preset). Prázdná sedadla chytající souseda (12, 46) = smazat fotku.
-5. Rozpoznávání: nahrát osoby, doladit práh z `dist:` hodnot.
+- ✅ **Restart `ptz_server.py` (VISCA) + překalibrace sedadel** → sken po souřadnicích funguje (vyřešen posun / cizí obličeje).
+- ✅ **Zoom sken top-center + mírnější zoom** + tilt nahoru před zoomem (`zoomTiltUpMs`).
+- ✅ **Fotky top-center + bez rámečku** (`facePhotoFaceAt`).
+- ✅ **Překalibrace rozhozených sedadel** (zadní řada 51–57 apod.).
+- ☑️ **Práh jistoty obličeje** (`minFaceConfidence` 0.90) — zatím OK.
+
+## 🚧 Urychlení skenu (otevřené — řeší se)
+
+Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) je hlavní časová položka a jede se i na **prázdných** sedadlech.
+- **Early-exit (priorita):** na širokém base presetu rychlá detekce s **volnějším prahem**; když tam není žádná tvář → sedadlo prázdné → **přeskočit celý zoom**. Jinak pokračovat zoomem jako dosud (fotka + odfiltrování sousedů).
+- Přijmout **base záběr bez zoomu**, když je tvář už velká + u středu (přední/blízká sedadla).
+- Detekovat **během zoom-inu** a zastavit na první dobré úrovni (ušetří oddalovací žebřík).
+- Zkrátit `settleMs`/`zoomStepMs`/`zoomSettleMs` (konzervativní) — doladit naživo.
+- **Inkrementální sken** — přeskočit už vyfocená sedadla.
 
 ---
 
@@ -145,19 +151,14 @@ Každé sedadlo má kromě pracovní pozice i **výchozí (baseline)** pozici:
 - Layout je součástí **zálohy** (export/import v2, aplikuje se před slot poli).
 - *Zatím minimum:* bez přesunu/přejmenování/2D editoru a bez „obnovit výchozí layout" (připraveno `_SEAT_LAYOUT_DEFAULT`). Smazání obsazeného sedadla nechá osiřelou preset-kartu v `state.presets[2]` (vyčistí „Smazat všechny fotky").
 
-## 🧩 Zaparkované / otevřené nápady
+## 🧩 Budoucí verze
 
-- **Dynamický layout — rozšíření:** přesun sedadel (drag&drop / přečíslování), přejmenování, „obnovit výchozí layout", čištění osiřelých karet. Případně plný 2D editor (uspaný `_sed…` systém).
-- **Víc referenčních fotek na osobu** — robustnější rozpoznávání (v3.0, AI rozpoznávání).
-- **Databáze osob (v3.0)** — modal „Databáze osob" (přesunuto z Nastavení 10. 11. 2026) je zatím velmi basic (jméno + 1 fotka + práh); plánuje se rozšíření ve v3.0 (správa osob, víc fotek, propojení s rozpoznáváním při skenu).
-
----
-
-## 🔭 OBS integrace (nový směr)
-
-OBS je v sále aktivní (program na TV, virtuální kamera do Zoomu, nahrávání).
-- **Browser dock** (doporučeno) — appku hostovat jako Custom Browser Dock uvnitř OBS, skoro beze změny kódu (CORS proxy se přenese). Ne nativní C/C++ plugin.
-- **`obs-websocket`** — propojení preset/souřadnice kamery ↔ scéna (rozpoznaný řečník → kamera + přepnutí programu = poloautomatická režie).
+- **V3.0 — Face recognition / Databáze osob:**
+  - Rozpoznávání při skenu — nahrát osoby, doladit práh z `dist:` hodnot.
+  - Víc referenčních fotek na osobu (robustnější rozpoznávání).
+  - Modal „Databáze osob" (zatím velmi basic — jméno + 1 fotka + práh) → správa osob, víc fotek, propojení s rozpoznáváním při skenu.
+- **V4.0 — OBS integrace (`obs-websocket`):** propojení preset/souřadnice kamery ↔ scéna (rozpoznaný řečník → kamera + přepnutí programu = poloautomatická režie). Alternativa hostování: **Browser dock** (appka jako Custom Browser Dock uvnitř OBS, skoro beze změny kódu).
+- ~~**Dynamický layout — rozšíření**~~ — zahozeno (stávající přidat/smazat sedadlo zůstává).
 
 ---
 

@@ -1439,7 +1439,7 @@ console.warn = (...args) => {
   /* Vlevo RTSP náhled (16:9, 1080), vpravo úzký sloupec stejně vysoký jako video:
      nahoře statistiky, pod tím dlouhý log. */
   .scan-modal-body { padding: 14px 16px; overflow: hidden; display: flex; flex-direction: row; gap: 12px; align-items: stretch; }
-  .scan-right-col { width: clamp(150px, 20vw, 200px); flex: none; align-self: stretch; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .scan-right-col { width: clamp(240px, 26vw, 280px); flex: none; align-self: stretch; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 
   .scan-video-wrap {
     position: relative; border-radius: var(--r-sm); overflow: hidden;
@@ -1496,8 +1496,8 @@ console.warn = (...args) => {
   .scan-progress-bar-wrap { flex: 1; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
   .scan-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#7c3aed,#a78bfa); border-radius: 3px; transition: width .4s ease; }
   .scan-progress-text { font-size: 12px; font-weight: 600; color: var(--text-2); white-space: nowrap; min-width: 40px; text-align: right; }
-  .scan-stats-row { display: flex; gap: 14px; flex-wrap: wrap; }
-  .scan-stat { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
+  .scan-stats-row { display: flex; gap: 11px; flex-wrap: nowrap; }
+  .scan-stat { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
   .scan-stat-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text); }
 
   .scan-log {

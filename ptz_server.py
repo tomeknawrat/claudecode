@@ -28,10 +28,24 @@ WHEP_PROXY_PORT       = 8890
 MEDIAMTX_WEBRTC_HOST  = '127.0.0.1'
 MEDIAMTX_WEBRTC_PORT  = 8889
 
+# HTTP server appky — servíruje samotné HTML a datové API (úložiště na serveru).
+# Díky tomu lze appku otevřít přes http://<IP-sálového-PC>:8080/ z jakéhokoli
+# zařízení v LAN a data (presety, fotky, osoby, nastavení) jsou sdílená na serveru,
+# ne per-browser jako při otevření přes file://.
+APP_PORT  = 8080
+
 # Složka kde se hledá HTML soubor — stejná jako ptz_server.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEDIAMTX_EXE  = os.path.join(BASE_DIR, 'mediamtx.exe')
 MEDIAMTX_CONF = os.path.join(BASE_DIR, 'mediamtx.yml')
+
+# ── Úložiště dat na serveru (jednouživatelské, bez zámků) ──
+# Každý „kbelík" = jeden JSON soubor v ptz_data/. Appka si je při startu natáhne
+# (GET /api/data) a při každém uložení pošle zpět (PUT /api/data/<bucket>).
+DATA_DIR     = os.path.join(BASE_DIR, 'ptz_data')
+DATA_BUCKETS = ('settings', 'slots', 'presets', 'persons')
+MAX_PUT_BYTES = 128 * 1024 * 1024  # 128 MB strop na jeden zápis (fotky v base64)
+_data_lock = threading.Lock()
 
 # Globální proces MediaMTX
 _mediamtx_proc = None
@@ -279,11 +293,163 @@ class _ThreadingHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 def run_whep_proxy():
     """Spustí CORS proxy pro WHEP handshake na localhost:WHEP_PROXY_PORT."""
     try:
-        srv = _ThreadingHTTPServer(('127.0.0.1', WHEP_PROXY_PORT), _WhepProxyHandler)
+        srv = _ThreadingHTTPServer(('0.0.0.0', WHEP_PROXY_PORT), _WhepProxyHandler)
     except Exception as e:
         print(f'[WHEP-PROXY] Nepodařilo se spustit na :{WHEP_PROXY_PORT} — {e}')
         return
-    print(f'[WHEP-PROXY] Naslouchá na http://127.0.0.1:{WHEP_PROXY_PORT} → MediaMTX :{MEDIAMTX_WEBRTC_PORT} (obchází CORS)')
+    print(f'[WHEP-PROXY] Naslouchá na http://0.0.0.0:{WHEP_PROXY_PORT} → MediaMTX :{MEDIAMTX_WEBRTC_PORT} (obchází CORS, dostupný z LAN)')
+    srv.serve_forever()
+
+
+# ──────────────────────────────────────────────────────────────────────────
+#  HTTP server appky: servíruje HTML + datové API (úložiště na serveru)
+# ──────────────────────────────────────────────────────────────────────────
+
+def _bucket_path(bucket):
+    return os.path.join(DATA_DIR, bucket + '.json')
+
+def _read_bucket(bucket):
+    """Vrátí parsovaný obsah kbelíku, nebo None když ještě neexistuje."""
+    path = _bucket_path(bucket)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+def _write_bucket(bucket, raw_bytes):
+    """Atomicky zapíše kbelík (temp soubor + os.replace). raw_bytes musí být
+    platný JSON (ověřeno předem)."""
+    os.makedirs(DATA_DIR, exist_ok=True)
+    path = _bucket_path(bucket)
+    tmp  = path + '.tmp'
+    with _data_lock:
+        with open(tmp, 'wb') as f:
+            f.write(raw_bytes)
+        os.replace(tmp, path)
+
+class _AppHandler(http.server.BaseHTTPRequestHandler):
+    """Servíruje HTML appky na `/` a datové API na `/api/data[/<bucket>]`.
+
+    - GET  /                      → HTML appky
+    - GET  /api/data              → všechny kbelíky najednou (boot hydratace)
+    - GET  /api/data/<bucket>     → jeden kbelík
+    - PUT  /api/data/<bucket>     → uloží jeden kbelík (JSON v těle)
+
+    Úložiště je jednouživatelské (bez zámků/verzí) — v sále appku obsluhuje
+    jeden člověk z jednoho zařízení."""
+
+    protocol_version = 'HTTP/1.1'
+
+    def _send_json(self, obj, status=200):
+        body = json.dumps(obj).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _send_bytes(self, data, content_type):
+        self.send_response(200)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('Content-Length', str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _send_text(self, text, status=200):
+        body = text.encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'text/plain; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', '*')
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+
+    def do_GET(self):
+        path = self.path.split('?', 1)[0]
+        if path == '/api/data':
+            data = {b: _read_bucket(b) for b in DATA_BUCKETS}
+            self._send_json({'ok': True, 'data': data})
+            return
+        if path.startswith('/api/data/'):
+            bucket = path[len('/api/data/'):]
+            if bucket not in DATA_BUCKETS:
+                self._send_json({'ok': False, 'msg': 'neznámý kbelík'}, status=404)
+                return
+            self._send_json({'ok': True, 'data': _read_bucket(bucket)})
+            return
+        if path in ('/', '/index.html'):
+            html_file = _find_html_file()
+            if not html_file:
+                self._send_text('HTML appky nenalezeno v adresáři serveru.', status=404)
+                return
+            try:
+                with open(os.path.join(BASE_DIR, html_file), 'rb') as f:
+                    self._send_bytes(f.read(), 'text/html; charset=utf-8')
+            except Exception as e:
+                self._send_text('Chyba čtení HTML: ' + str(e), status=500)
+            return
+        if path == '/health':
+            self._send_json({'ok': True})
+            return
+        self._send_text('Nenalezeno', status=404)
+
+    def do_PUT(self):
+        path = self.path.split('?', 1)[0]
+        if not path.startswith('/api/data/'):
+            self._send_json({'ok': False, 'msg': 'jen /api/data/<bucket>'}, status=404)
+            return
+        bucket = path[len('/api/data/'):]
+        if bucket not in DATA_BUCKETS:
+            self._send_json({'ok': False, 'msg': 'neznámý kbelík'}, status=404)
+            return
+        try:
+            length = int(self.headers.get('Content-Length', 0) or 0)
+        except ValueError:
+            length = 0
+        if length <= 0:
+            self._send_json({'ok': False, 'msg': 'prázdné tělo'}, status=400)
+            return
+        if length > MAX_PUT_BYTES:
+            self._send_json({'ok': False, 'msg': 'tělo příliš velké'}, status=413)
+            return
+        raw = self.rfile.read(length)
+        try:
+            json.loads(raw.decode('utf-8'))  # ověř že je to platný JSON
+        except Exception as e:
+            self._send_json({'ok': False, 'msg': 'neplatný JSON: ' + str(e)}, status=400)
+            return
+        try:
+            _write_bucket(bucket, raw)
+        except Exception as e:
+            self._send_json({'ok': False, 'msg': 'zápis selhal: ' + str(e)}, status=500)
+            return
+        self._send_json({'ok': True})
+
+    def log_message(self, *args):
+        pass  # ticho
+
+
+def run_app_server():
+    """Spustí HTTP server appky na 0.0.0.0:APP_PORT (dostupný z celé LAN)."""
+    try:
+        srv = _ThreadingHTTPServer(('0.0.0.0', APP_PORT), _AppHandler)
+    except Exception as e:
+        print(f'[APP] Nepodařilo se spustit HTTP server na :{APP_PORT} — {e}')
+        return
+    print(f'[APP] Appka běží na http://0.0.0.0:{APP_PORT}/  (otevři přes IP sálového PC)')
     srv.serve_forever()
 
 
@@ -425,8 +591,8 @@ async def handler(websocket):
 def run_server():
     """Spustí asyncio WebSocket server v samostatném vlákně."""
     async def _main():
-        print(f'[START] PTZ IP Server běží na ws://localhost:{WS_PORT}')
-        async with websockets.serve(handler, 'localhost', WS_PORT):
+        print(f'[START] PTZ IP Server běží na ws://0.0.0.0:{WS_PORT} (dostupný z LAN)')
+        async with websockets.serve(handler, '0.0.0.0', WS_PORT):
             await asyncio.Future()
     asyncio.run(_main())
 
@@ -440,14 +606,22 @@ def _find_html_file():
             return f
     return None
 
+def _lan_ip():
+    """Zjistí lokální LAN IP adresu PC (pro zobrazení adresy appky)."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))  # nic se neposílá, jen zjistí výchozí rozhraní
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return '127.0.0.1'
+
 def _open_app():
-    """Otevře appku (HTML) v prohlížeči. Vrací True, pokud soubor našel."""
-    html_file = _find_html_file()
-    if html_file:
-        webbrowser.open(f'file:///{os.path.join(BASE_DIR, html_file).replace(os.sep, "/")}')
-        return True
-    print('[INFO] HTML appky nenalezeno v adresáři serveru — otevři ji ručně')
-    return False
+    """Otevře appku v prohlížeči přes HTTP server (http://localhost:APP_PORT/),
+    aby data šla na server a sdílela se. Vrací True vždy (server servíruje HTML)."""
+    webbrowser.open(f'http://localhost:{APP_PORT}/')
+    return True
 
 if __name__ == '__main__':
     # Pokud existuje mediamtx.yml, spusť MediaMTX hned při startu
@@ -465,9 +639,22 @@ if __name__ == '__main__':
     whep_thread = threading.Thread(target=run_whep_proxy, daemon=True)
     whep_thread.start()
 
-    # Automaticky otevři appku v prohlížeči (po krátké prodlevě, ať WS server naběhne).
+    # HTTP server appky (HTML + datové API) — v samostatném vlákně
+    app_thread = threading.Thread(target=run_app_server, daemon=True)
+    app_thread.start()
+
+    # Vypiš adresu, na které je appka dostupná z jiných zařízení v síti
+    _ip = _lan_ip()
+    print('')
+    print('  ┌─────────────────────────────────────────────────────────┐')
+    print(f'  │  Appka v prohlížeči:  http://localhost:{APP_PORT}/              │')
+    print(f'  │  Z jiného zařízení:   http://{_ip}:{APP_PORT}/'.ljust(60) + '│')
+    print('  └─────────────────────────────────────────────────────────┘')
+    print('')
+
+    # Automaticky otevři appku v prohlížeči (po krátké prodlevě, ať servery naběhnou).
     # Díky tomu stačí spustit server (dvojklik na start_ptz.bat) a appka naskočí sama.
-    threading.Timer(1.0, _open_app).start()
+    threading.Timer(1.5, _open_app).start()
 
     # pystray MUSÍ běžet v hlavním vlákně (požadavek Windows)
     try:

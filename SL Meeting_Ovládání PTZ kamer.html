@@ -2377,8 +2377,16 @@ const state = {
   _pickerOpen: false,
 };
 
+// ── Režim běhu: server (http://) vs. lokální soubor (file://) ──
+// Přes http:// (servíruje ptz_server.py) → data jdou na server a sdílí se mezi
+// zařízeními. Přes file:// → fallback na localStorage/IndexedDB (per-browser),
+// hostitel = localhost (původní lokální režim i pro Playwright testy).
+const SERVER_MODE = (location.protocol === 'http:' || location.protocol === 'https:');
+const APP_HOST    = location.hostname || 'localhost';
+const API_BASE    = SERVER_MODE ? location.origin : null;
+
 // ── WebSocket spojení s Python serverem ──
-const WS_URL = 'ws://localhost:8765';
+const WS_URL = `ws://${APP_HOST}:8765`;
 let _ws = null;
 let _wsReconnectTimer = null;
 
@@ -2386,7 +2394,7 @@ function _wsConnect() {
   if (_ws && (_ws.readyState === WebSocket.OPEN || _ws.readyState === WebSocket.CONNECTING)) return;
   _ws = new WebSocket(WS_URL);
   _ws.onopen = () => {
-    logMsg('info', 'PTZ Server připojen (ws://localhost:8765)');
+    logMsg('info', 'PTZ Server připojen (' + WS_URL + ')');
     state.connected = true;
     setConnUI(true);
     // Pošli konfiguraci kamer ihned po připojení
@@ -2419,7 +2427,7 @@ function _wsConnect() {
     } catch(e) {}
   };
   _ws.onerror = () => {
-    logMsg('err', 'PTZ Server nedostupný — je spuštěn? (ws://localhost:8765)');
+    logMsg('err', 'PTZ Server nedostupný — je spuštěn? (' + WS_URL + ')');
   };
   _ws.onclose = () => {
     if (state.connected) {
@@ -2527,6 +2535,106 @@ async function sendCmd(cam, cmd, presetNum) {
 // ══════════════════════════════════════════════════
 //  INDEXEDDB — úložiště pro presety (bez limitu)
 // ══════════════════════════════════════════════════
+// ──────────────────────────────────────────────────────────────────────────
+//  Úložiště na serveru (jednouživatelské, bez zámků)
+//  V SERVER_MODE se data drží na serveru (ptz_server.py, /api/data). Při startu
+//  se natáhnou do localStorage/IndexedDB (_hydrateFromServer) → stávající load
+//  funkce fungují beze změny. Při každém uložení jde navíc „write-through" na
+//  server (_srvPut). V file:// režimu jsou všechny tyto funkce no-op.
+// ──────────────────────────────────────────────────────────────────────────
+
+async function _srvGetAll() {
+  if (!SERVER_MODE) return null;
+  const r = await fetch(`${API_BASE}/api/data`, { cache: 'no-store' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  return (j && j.data) ? j.data : {};
+}
+
+// Zápisy serializujeme za sebe, ať se PUTy nepřekříží (poslední vyhrává).
+let _srvPutQueue = Promise.resolve();
+function _srvPut(bucket, data) {
+  if (!SERVER_MODE) return _srvPutQueue;
+  _srvPutQueue = _srvPutQueue.then(async () => {
+    try {
+      const r = await fetch(`${API_BASE}/api/data/${bucket}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+    } catch (e) {
+      try { logMsg('err', `Uložení na server (${bucket}) selhalo: ${e.message}`); } catch(_) {}
+    }
+  });
+  return _srvPutQueue;
+}
+
+// Posbírá všechna slot-pole + layout do jednoho kbelíku „slots".
+function _collectSlots() {
+  return {
+    slotAssignments:   (typeof slotAssignments   !== 'undefined' && slotAssignments)   ? [...slotAssignments]   : null,
+    slotPresets:       (typeof slotPresets        !== 'undefined' && slotPresets)       ? [...slotPresets]       : null,
+    slotCoords:        (typeof slotCoords         !== 'undefined' && slotCoords)        ? [...slotCoords]        : null,
+    slotDefaultCoords: (typeof slotDefaultCoords  !== 'undefined' && slotDefaultCoords) ? [...slotDefaultCoords] : null,
+    seatLayout:        (typeof SEAT_LAYOUT        !== 'undefined') ? SEAT_LAYOUT : null,
+  };
+}
+
+// Serializuje osoby pro server (Float32Array descriptor → obyčejné pole).
+function _personsForServer() {
+  try {
+    return (_persons || []).map(p => ({ ...p, descriptor: p.descriptor ? Array.from(p.descriptor) : null }));
+  } catch(e) { return []; }
+}
+
+// Natáhne data ze serveru do localStorage/IndexedDB PŘED spuštěním load funkcí.
+async function _hydrateFromServer() {
+  if (!SERVER_MODE) return;
+  let d;
+  try { d = await _srvGetAll(); }
+  catch (e) { try { logMsg('err', 'Serverové úložiště nedostupné: ' + e.message); } catch(_){} return; }
+  if (!d) return;
+
+  // settings → localStorage
+  if (d.settings) { try { localStorage.setItem('ptz_settings', JSON.stringify(d.settings)); } catch(e){} }
+
+  // slots → jednotlivé localStorage klíče
+  if (d.slots) {
+    const S = d.slots;
+    const put = (k, v) => { if (v != null) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
+    put('ptz_slot_assignments',    S.slotAssignments);
+    put('ptz_slot_presets',        S.slotPresets);
+    put('ptz_slot_coords',         S.slotCoords);
+    put('ptz_slot_default_coords', S.slotDefaultCoords);
+    put('ptz_seat_layout',         S.seatLayout);
+  }
+
+  // presety → IndexedDB (ptz_controller/presets)
+  if (d.presets) {
+    try {
+      const db = await openDB();
+      const tx = db.transaction('presets', 'readwrite');
+      const st = tx.objectStore('presets');
+      st.put(JSON.stringify(d.presets.cam1 || []), 'cam1');
+      st.put(JSON.stringify(d.presets.cam2 || []), 'cam2');
+      await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+    } catch(e) { try { logMsg('err', 'Hydratace presetů selhala: ' + e.message); } catch(_){} }
+  }
+
+  // osoby → IndexedDB (ptz_persons/persons)
+  if (Array.isArray(d.persons)) {
+    try {
+      const db = await _openPersonsDB();
+      const tx = db.transaction('persons', 'readwrite');
+      const st = tx.objectStore('persons');
+      st.clear();
+      d.persons.forEach(p => st.put(p));
+      await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+    } catch(e) { try { logMsg('err', 'Hydratace osob selhala: ' + e.message); } catch(_){} }
+  }
+}
+
 let _db = null;
 
 function openDB() {
@@ -2552,6 +2660,7 @@ async function savePresetsStorage() {
     store.put(JSON.stringify(state.presets[1]), 'cam1');
     store.put(JSON.stringify(state.presets[2]), 'cam2');
     await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+    _srvPut('presets', { cam1: state.presets[1], cam2: state.presets[2] });
   } catch(e) {
     logMsg('err', 'Presety se nepodařilo uložit: ' + e.message);
   }
@@ -2559,6 +2668,7 @@ async function savePresetsStorage() {
   try {
     if (slotAssignments) localStorage.setItem('ptz_slot_assignments', JSON.stringify(slotAssignments));
   } catch(e) {}
+  _srvPut('slots', _collectSlots());
 }
 
 // Odstraní duplicitní presety podle čísla (num) — obrana proti poškozeným datům
@@ -2641,12 +2751,13 @@ function saveSettings() {
     poseSitZoom:   (document.getElementById('poseSitZoom')   || {}).value || '5',
     poseStandTilt: (document.getElementById('poseStandTilt') || {}).value || '20',
     poseStandZoom: (document.getElementById('poseStandZoom') || {}).value || '5',
-    mediamtxUrl:   'http://localhost:8889/cam2',
+    mediamtxUrl:   `http://${APP_HOST}:8889/cam2`,
     streamType:    'whep',
     rtspUrl:       (document.getElementById('rtspUrl')              || {}).value || '',
     faceMatchThreshold: (document.getElementById('faceMatchThreshold') || {}).value || '0.5',
   };
   localStorage.setItem('ptz_settings', JSON.stringify(s));
+  _srvPut('settings', s);
 }
 
 function loadSettings() {
@@ -3707,6 +3818,13 @@ function importPresets(e) {
         if (window._renderPersonsList) _renderPersonsList();
       }
       await savePresetsStorage();
+      // Migrace na server: vynuť kompletní uložení všech kbelíků (settings se jinak
+      // při importu jen zapíše do localStorage a nepushne). Tím Import = naplnění serveru.
+      if (SERVER_MODE) {
+        try { const st = JSON.parse(localStorage.getItem('ptz_settings') || 'null'); if (st) _srvPut('settings', st); } catch(e) {}
+        _srvPut('slots', _collectSlots());
+        _srvPut('persons', _personsForServer());
+      }
       renderPresets();
       if (window.applyZoom) window.applyZoom();
       if (seatLayoutActive) renderSeatLayout();
@@ -3943,6 +4061,7 @@ function _loadSeatLayout() {
 }
 function _saveSeatLayout() {
   try { localStorage.setItem('ptz_seat_layout', JSON.stringify(SEAT_LAYOUT)); } catch (e) {}
+  _srvPut('slots', _collectSlots());
 }
 
 let SEAT_LAYOUT = _loadSeatLayout();
@@ -3992,6 +4111,7 @@ function _remapSeatStorageByNumber(oldNums) {
   if (slotDefaultCoords) { slotDefaultCoords = remap(slotDefaultCoords); saveSlotDefaultCoordsStorage(); }
   if (slotAssignments)   { slotAssignments = remap(slotAssignments);
     try { localStorage.setItem('ptz_slot_assignments', JSON.stringify(slotAssignments)); } catch (e) {} }
+  _srvPut('slots', _collectSlots());
 }
 
 // Přidá sedadlo `seatNum` do bloku ('left'/'right'), na konec řady `rowIdx`.
@@ -4946,14 +5066,17 @@ async function scanSingleSeat(si, seatNum) {
 
 function saveSlotPresetsStorage() {
   try { localStorage.setItem('ptz_slot_presets', JSON.stringify(slotPresets)); } catch(e) {}
+  _srvPut('slots', _collectSlots());
 }
 
 function saveSlotCoordsStorage() {
   try { localStorage.setItem('ptz_slot_coords', JSON.stringify(slotCoords)); } catch(e) {}
+  _srvPut('slots', _collectSlots());
 }
 
 function saveSlotDefaultCoordsStorage() {
   try { localStorage.setItem('ptz_slot_default_coords', JSON.stringify(slotDefaultCoords)); } catch(e) {}
+  _srvPut('slots', _collectSlots());
 }
 
 // Přečte aktuální absolutní pozici kamery (VISCA) a uloží ji jako souřadnice sedadla.
@@ -5386,6 +5509,7 @@ function _onDragEnd(e) {
 
   // Ulož do localStorage
   try { localStorage.setItem('ptz_slot_assignments', JSON.stringify(slotAssignments)); } catch(e) {}
+  _srvPut('slots', _collectSlots());
 
   // Pro každý slot kde se změnil preset — přepiš preset pozicí slotu
   _applySlotPresetsToChangedSlots(savedAssignments, previewAssign);
@@ -5660,7 +5784,7 @@ async function _initVideo() {
     // z file:// (Origin: null) skončí na "Failed to fetch". Proxy handshake přepošle
     // na MediaMTX (server↔server, bez CORS) a doplní Access-Control-* hlavičky.
     // Samotné video pak teče WebRTC/UDP napřímo browser↔MediaMTX (proxy se ho netýká).
-    await _startStream('http://localhost:8890/cam2', 'whep');
+    await _startStream(`http://${APP_HOST}:8890/cam2`, 'whep');
   } else {
     overlay.style.display = 'flex';
     const msg = document.getElementById('scanVideoMsg');
@@ -6260,6 +6384,7 @@ async function _savePersonsDB() {
       store.put({ ...p, descriptor: p.descriptor ? Array.from(p.descriptor) : null });
     });
     await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+    _srvPut('persons', _personsForServer());
   } catch(e) { logMsg('err', 'Chyba ukládání osob: ' + e.message); }
 }
 
@@ -6566,15 +6691,23 @@ async function deletePerson(id) {
   _renderPersonsList();
 }
 
-loadSettings();
-_loadPersonsDB();
-loadSlotPresetsStorage();
-loadPresets();
+// Boot: v SERVER_MODE nejdřív natáhni data ze serveru do localStorage/IndexedDB,
+// teprve pak spusť load funkce (ty čtou z lokálních úložišť). Ve file:// je
+// _hydrateFromServer no-op, takže pořadí i chování zůstává jako dřív.
+(async function _boot() {
+  try { await _hydrateFromServer(); }
+  catch (e) { try { logMsg('err', 'Hydratace ze serveru selhala: ' + e.message); } catch(_){} }
+  loadSettings();
+  await _loadPersonsDB();
+  loadSlotPresetsStorage();
+  loadPresets();
+  if (SERVER_MODE) logMsg('info', 'Úložiště: server (' + API_BASE + ')');
+})();
 logMsg('info','PTZ Controller spuštěn. Připojuji k IP serveru…');
 
 // ── AUTO-CONNECT ──
 function autoConnect() {
-  logMsg('info', 'Připojuji k PTZ serveru (ws://localhost:8765)...');
+  logMsg('info', 'Připojuji k PTZ serveru (' + WS_URL + ')...');
   _wsConnect();
 }
 autoConnect();

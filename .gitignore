@@ -12,6 +12,10 @@ mediamtx.yml
 # Claude Code — lokální nastavení (per-machine)
 .claude/settings.local.json
 
+# Úložiště dat appky na serveru — presety, fotky, OSOBNÍ ÚDAJE (jména, fotky osob).
+# Nikdy necommitovat: data žijí jen na sálovém PC.
+ptz_data/
+
 # Windows / OneDrive
 desktop.ini
 Thumbs.db

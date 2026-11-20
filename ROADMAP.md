@@ -7,6 +7,31 @@
 
 ---
 
+## ✅ Server-centrické úložiště + web přes LAN (hotovo v kódu — čeká na živý test)
+
+Appka už nemusí běžet z `file://`. `ptz_server.py` ji servíruje přes HTTP a drží
+data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sálového PC.
+
+- **Adresa:** `http://<IP-sálového-PC>:8080/` (server ji po startu sám vypíše a otevře).
+- **Úložiště na serveru:** složka `ptz_data/`, 4 JSON „kbelíky" — `settings`, `slots`
+  (přiřazení/presety/souřadnice/layout), `presets` (cam1/cam2 vč. fotek),
+  `persons` (osoby vč. fotek). API: `GET /api/data` (vše), `GET/PUT /api/data/<bucket>`
+  (atomický zápis temp+rename). Jednouživatelské, **bez zámků** (v sále obsluhuje jeden člověk).
+- **Appka:** `SERVER_MODE` podle `http(s)://` vs `file://`. Při startu `_hydrateFromServer()`
+  natáhne data do localStorage/IndexedDB (stávající load funkce beze změny), při každém
+  uložení jde „write-through" na server (`_srvPut`). Host pro WS/video je dynamický
+  (`ws://${location.hostname}:8765`, WHEP `:8890`, video `:8889`). Bindy serveru přepnuty
+  na `0.0.0.0` (WS, WHEP proxy, HTTP appky).
+- **Migrace tvých dat:** `file://` a `http://` mají oddělené úložiště prohlížeče. Jednorázově:
+  ve staré verzi **Export** → přes IP **Import** → tím se naplní server (Import pushuje všechny kbelíky).
+- **`file://` zůstává jako fallback** (beze změny chování; Playwright testy dál běží z file://).
+- **Otestováno v cloudu:** Python API (GET/PUT/hydrate, 400/404) + Playwright end-to-end proti
+  `http://localhost:8080/` (write-through nastavení i osoby → soubor na serveru → reload → hydrate vrátí).
+  Kamery/video netestováno (nejsou v dosahu) → **nedělní živý test**.
+- **Bez autentizace** (LAN-only, důvěryhodná síť v sále). `ptz_data/` je v `.gitignore` (osobní údaje nikdy do repa).
+
+---
+
 ## ✅ Hotovo a ověřeno naostro
 
 | Oblast | Popis | Commit |
@@ -158,7 +183,7 @@ Zoom žebřík (tilt-up → zoom-in → oddalování s detekcí) se dřív jel i
   - Rozpoznávání při skenu — propojit oficiální fotky s detekcí, doladit práh z `dist:` hodnot.
   - „Přidat fotku ze skenu" dodělat (zatím placeholder).
   - Víc referenčních fotek na osobu (robustnější rozpoznávání).
-- **V4.0 — OBS integrace (`obs-websocket`):** propojení preset/souřadnice kamery ↔ scéna (rozpoznaný řečník → kamera + přepnutí programu = poloautomatická režie). Alternativa hostování: **Browser dock** (appka jako Custom Browser Dock uvnitř OBS, skoro beze změny kódu).
+- **V4.0 — OBS integrace (`obs-websocket`):** propojení preset/souřadnice kamery ↔ scéna (rozpoznaný řečník → kamera + přepnutí programu = poloautomatická režie). Alternativa hostování: **Browser dock** (appka jako Custom Browser Dock uvnitř OBS, skoro beze změny kódu). *Server-centrické úložiště (viz nahoře) je pro to ideální základ — žádný konflikt.*
 - ~~**Dynamický layout — rozšíření**~~ — zahozeno (stávající přidat/smazat sedadlo zůstává).
 
 ---

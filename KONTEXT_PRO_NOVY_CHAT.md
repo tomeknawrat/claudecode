@@ -9,11 +9,13 @@ Webová aplikace pro ovládání dvou PTZ kamer v konferenční/jednací sále. 
 ## Architektura
 
 ```
-SL Meeting_Ovládání PTZ kamer.html   (UI, běží v Edge/Chrome)
-        │
-        │ WebSocket ws://localhost:8765
+Prohlížeč (jakékoli zařízení v LAN)  →  http://<IP-sálového-PC>:8080/
+        │                                   (ptz_server.py servíruje HTML + datové API)
+        │  HTTP  GET/PUT /api/data/<bucket>  →  úložiště na serveru (ptz_data/*.json)
+        │  WS    ws://<host>:8765            →  PTZ příkazy
+        │  WHEP  http://<host>:8890 (video)  →  CORS proxy → MediaMTX :8889
         ▼
-ptz_server.py   (Python, běží na pozadí jako systray app)
+ptz_server.py   (Python, systray app; HTTP appky :8080, WS :8765, WHEP proxy :8890 — bind 0.0.0.0)
         │
         │ HTTP CGI
         ├──▶ Kamera 1 – Pódium    (IP např. 192.168.1.51)
@@ -22,6 +24,10 @@ ptz_server.py   (Python, běží na pozadí jako systray app)
                 │ RTSP → MediaMTX → WebRTC/WHEP → prohlížeč
                 └──▶ Live náhled ve scan modalu
 ```
+
+> **Dva režimy běhu:** přes `http://…:8080/` (SERVER_MODE — data na serveru, sdílená
+> mezi zařízeními) nebo přes `file://` (fallback — data per-browser v localStorage/IndexedDB).
+> Host pro WS/video je dynamický podle `location.hostname` (file:// → `localhost`).
 
 **Kamery:** VHD V600 (nebo podobné), **CGI protokol** (port 80):
 - Pohyb: `GET /cgi-bin/ptzctrl.cgi?ptzcmd&up&5`
@@ -162,26 +168,37 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 ## Úložiště dat
 
-| Data | Kde |
-|------|-----|
-| Presety CAM1+CAM2 | IndexedDB `ptz_controller` → `presets` (cam1/cam2) |
-| Osoby + embeddingy | IndexedDB `ptz_persons` |
-| Slot assignments (sedadlo→preset) | localStorage `ptz_slot_assignments` |
-| Slot presets (sedadlo→číslo presetu) | localStorage `ptz_slot_presets` |
-| **Slot coords (sedadlo→VISCA pan/tilt/zoom)** | localStorage `ptz_slot_coords` |
-| Výchozí (baseline) coords | localStorage `ptz_slot_default_coords` |
-| **Layout sedadel (dynamický, řady)** | localStorage `ptz_seat_layout` |
-| Nastavení (IP, pass atd.) | localStorage `ptz_settings` |
+**SERVER_MODE (http://…:8080):** zdroj pravdy je server — složka `ptz_data/`, 4 JSON kbelíky.
+Appka si je při startu natáhne (`_hydrateFromServer`) do localStorage/IndexedDB a při každém
+uložení pošle zpět (`_srvPut` → `PUT /api/data/<bucket>`). localStorage/IndexedDB tak slouží
+jen jako lokální cache naplněná ze serveru.
+
+| Kbelík na serveru (`ptz_data/<b>.json`) | Obsah | Lokální cache |
+|------|-----|-----|
+| `settings` | IP, hesla, rychlosti, pozice, RTSP, práh rozpoznávání | localStorage `ptz_settings` |
+| `slots` | assignments + presets + coords + default_coords + seat_layout | localStorage `ptz_slot_*`, `ptz_seat_layout` |
+| `presets` | `{cam1, cam2}` — presety vč. fotek | IndexedDB `ptz_controller/presets` |
+| `persons` | osoby vč. fotek + descriptor (jako pole) | IndexedDB `ptz_persons/persons` |
+
+**file:// fallback:** žádný server — data žijí jen v localStorage/IndexedDB daného prohlížeče
+(původní chování). `_srvPut`/`_hydrateFromServer` jsou no-op.
+
+> Migrace file:// → server: Export (stará verze) → Import (přes IP). Import pushne všechny kbelíky na server.
 
 ---
 
 ## ptz_server.py — klíčové detaily
 
-- Naslouchá na `ws://localhost:8765`
+- **HTTP server appky** (`_AppHandler`, `run_app_server`, port **8080**, bind `0.0.0.0`): servíruje
+  HTML na `/` a datové API `GET /api/data` (vše najednou), `GET/PUT /api/data/<bucket>`
+  (buckety `settings|slots|presets|persons`, atomický zápis temp+rename do `ptz_data/`,
+  strop 128 MB, validace JSON). `_lan_ip()` po startu vypíše adresu pro ostatní zařízení.
+- WS server bind `0.0.0.0:8765` (dřív `localhost`), WHEP proxy bind `0.0.0.0:8890` (dřív `127.0.0.1`) — kvůli LAN přístupu
+- `_open_app` otevírá `http://localhost:8080/` (dřív `file://`)
 - Každý PTZ příkaz běží jako samostatný `asyncio.ensure_future` task (aby stop nečekal za pomalým HTTP requestem)
 - Příkazy pro danou kameru se serializují přes `cam_locks` (per-camera `asyncio.Lock`), aby stop nepředběhl move na síti
 - `build_cgi_path`: pan/tilt stop → **`ptzstop`** (ne `stop`), bez parametru rychlosti
-- **WHEP CORS proxy** (`_WhepProxyHandler`, `run_whep_proxy`, port **8890**) — obchází CORS MediaMTX pro `file://` náhled
+- **WHEP CORS proxy** (`_WhepProxyHandler`, `run_whep_proxy`, port **8890**, bind `0.0.0.0`) — obchází CORS MediaMTX pro náhled
 - **VISCA-over-IP** (`visca_get_pos`, `visca_abs_move`, UDP 1259) + WS příkazy `getpos` / `absmove` pro sken po souřadnicích
 - MediaMTX: auto-start při spuštění pokud existuje `mediamtx.yml`, auto-stop při ukončení
 - `set_rtsp` WS příkaz: přepíše `mediamtx.yml` + restartuje MediaMTX

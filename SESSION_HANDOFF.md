@@ -4,7 +4,9 @@
 > **Není to doslovný přepis chatu** — je to kontext pro pokračování v nové (i remote) session.
 > Doplňuje `KONTEXT_PRO_NOVY_CHAT.md`, který popisuje celý projekt. Tento soubor popisuje, co se dělo naposledy a co zbývá.
 
-## TL;DR — kde to stojí (aktualizace 19. 11. 2026)
+## TL;DR — kde to stojí (aktualizace 20. 11. 2026)
+
+- ⏳ **Server-centrické úložiště + web přes LAN** (20. 11., hotovo v kódu, čeká na nedělní živý test) — `ptz_server.py` servíruje appku přes HTTP (`http://<IP-PC>:8080/`) a drží data na serveru (`ptz_data/`, 4 JSON kbelíky `settings|slots|presets|persons`, API `GET /api/data` + `GET/PUT /api/data/<bucket>`, atomický zápis). Appka: `SERVER_MODE` podle protokolu, `_hydrateFromServer()` při startu + `_srvPut()` write-through; host WS/videa dynamický. Bindy WS/WHEP/HTTP na `0.0.0.0`. `file://` zůstává jako fallback (beze změny). **Jednouživatelské, bez zámků** (uživatel výslovně: víc zařízení najednou nikdy needitovat). Migrace dat: Export (stará verze) → Import (přes IP). Otestováno v cloudu: Python API + Playwright end-to-end (write-through → soubor → reload → hydrate). `ptz_data/` v `.gitignore` (osobní údaje).
 
 - ✅ **Manuální ovládání kamery = plovoucí okno** (19. 11.) — otevírá ikonka joysticku v liště (CAM1 modrá, CAM2 amber); hlavičky „PÓDIUM"/„KOMENTÁŘE" i stará rozbalovací lišta odebrány kvůli úspoře místa na half-screen. Přepínač zobrazení (`#seatLayoutBtn2`) je teď jen ikonka.
 

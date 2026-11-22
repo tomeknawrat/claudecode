@@ -63,6 +63,7 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
 | Fotka sedadla | Ořez vycentrovaný na obličej (4:3), **top-center** framing, bez detekčního rámečku | `2f75614`, `c43b025`, `c062d98` |
 | Volitelný tilt nudge | `_scan.scanTiltMs` (default off) — framing obličeje výš | `c43b025` |
 | **Čekání na doostření** 🎯 | Varianta A (ostrost z obrazu): `_frameSharpness` + `_waitForFocus` počkají po přejezdu/zoomu, až se obraz doostří (řeší rozmazání mezi řadami), teprve pak detekce+fotka. Přepínač + max. čas v Nastavení. **Doladit prahy naostro** | `22. 11.` |
+| **Dedup obličejů ve skenu** 👥 | Stejný obličej nafocený víckrát (sken odpředu → tvář z přední řady i u sedadla za ní) se přeskočí — porovnání embeddingů v rámci skenu (`capturedDescriptors`), funguje i bez DB osob. Přepínač + práh shody v Nastavení. **Doladit práh naostro** | `22. 11.` |
 
 ## ✅ Panel Pódium (CAM1) — 5 pevných presetů (hotovo)
 

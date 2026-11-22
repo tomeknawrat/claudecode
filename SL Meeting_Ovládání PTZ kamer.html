@@ -1919,7 +1919,17 @@ console.warn = (...args) => {
             <label>⏱️ Max. čekání na ostrost (ms)</label>
             <input type="number" id="focusMaxMsInput" value="1500" min="300" max="4000" step="100" style="width:80px" onchange="_scan.focusMaxMs = parseInt(this.value)||1500">
           </div>
-          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 2px;">Horní strop — když se ostrost neustálí (málo kontrastu), scan jde dál po tomto čase.</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">Horní strop — když se ostrost neustálí (málo kontrastu), scan jde dál po tomto čase.</div>
+          <div class="drawer-row">
+            <label>👥 Neduplikovat stejný obličej</label>
+            <input type="checkbox" id="dedupFacesInput" checked onchange="_scan.dedupFaces = this.checked">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">Sken jede odpředu → stejnou tvář z přední řady může zachytit i u sedadla za ní. Když se obličej shoduje s dřív nafoceným v tomto skenu, přeskočí se (funguje i bez databáze osob).</div>
+          <div class="drawer-row">
+            <label>📏 Práh shody obličeje (0–1)</label>
+            <input type="number" id="dedupDistanceInput" value="0.5" min="0.3" max="0.8" step="0.05" style="width:80px" onchange="_scan.dedupDistance = parseFloat(this.value)||0.5">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 2px;">Menší vzdálenost než práh = stejný člověk. Nižší = přísnější (míň sloučí, ale může přehlédnout opravdový duplikát); vyšší = volnější (víc sloučí, ale hrozí sloučení dvou podobných lidí).</div>
         </div>
       </div>
     </div>
@@ -5767,7 +5777,13 @@ const _scan = {
   focusStableN: 2,          // kolik po sobě jdoucích „plochých" vzorků = ustáleno
   focusStableDelta: 0.04,   // rel. změna ostrosti pod tímto prahem = plochý vzorek
   focusPeakFrac: 0.85,      // navíc musí být ostrost aspoň takhle blízko vrcholu (ne rozmazané plató)
-  recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
+  recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup ZNÁMÝCH osob — 2. výskyt se ignoruje)
+  // ── Dedup napříč sedadly (stejný obličej nafocený víckrát) ──
+  // Sken jede odpředu → stejnou tvář z přední řady může kamera zachytit i u sedadla za ní.
+  // Porovnáváme embedding každé nové tváře proti už nafoceným v tomto skenu (i bez DB osob).
+  dedupFaces: true,          // ignoruj stejný obličej nafocený na dřívějším sedadle
+  dedupDistance: 0.5,        // práh Euklidovy vzdálenosti pro „stejný obličej" (nižší = přísnější)
+  capturedDescriptors: [],   // [{seatNum, descriptor}] už přijatých tváří v tomto skenu
 };
 
 // ── Scan log ──
@@ -6249,7 +6265,8 @@ async function startScan(targetSlotIdx = null) {
 
   _scan.active = true; _scan.aborting = false;
   _scan.seatsDone = 0; _scan.extraDone = 0; _scan.skipDone = 0;
-  _scan.recognizedIds = new Set(); // reset dedup — každý sken začíná načisto
+  _scan.recognizedIds = new Set(); // reset dedup známých osob — každý sken začíná načisto
+  _scan.capturedDescriptors = [];  // reset dedup napříč sedadly (embeddingy tváří)
   _sUpdateStats();
 
   const startBtn = document.getElementById('scanStartBtn');
@@ -6262,12 +6279,14 @@ async function startScan(targetSlotIdx = null) {
   const model = await _loadModel();
   if (!model) { _finishScan(); return; }
 
-  // Pokud máme osoby, načti i face-api modely
-  if (_persons.length > 0) {
-    _sLog(`Načítám modely rozpoznávání tváří pro ${_persons.length} osob…`);
+  // Načti face-api modely, když máme osoby (rozpoznání) NEBO je zapnutý dedup napříč
+  // sedadly (ten taky potřebuje embeddingy tváří, i bez databáze osob).
+  if (_persons.length > 0 || _scan.dedupFaces) {
+    const why = _persons.length > 0 ? `pro ${_persons.length} osob` : 'pro dedup stejných obličejů';
+    _sLog(`Načítám modely rozpoznávání tváří ${why}…`);
     await _loadFaceApi();
     if (_faceApiLoaded) _sLog('Face recognition připravený', 'ok');
-    else _sLog('Face recognition nedostupný — použijí se screenshoty', 'warn');
+    else _sLog('Face recognition nedostupný — bez dedup/rozpoznání, použijí se screenshoty', 'warn');
   }
 
   const cv = document.getElementById('scanCanvas');
@@ -6377,13 +6396,37 @@ async function startScan(targetSlotIdx = null) {
       break;
     }
 
-    // Rozpoznávání tváře
+    // Embedding tváře — spočítá se JEDNOU a použije pro dedup napříč sedadly i pro
+    // rozpoznání osoby z DB. Jen když je něco z toho potřeba a modely jsou načtené.
     let finalPhoto = facePhoto;
     let finalName  = `Sedadlo ${seatNum}`;
+    let faceDesc = null;
+    if (_faceApiLoaded && (_scan.dedupFaces || _persons.length > 0)) {
+      faceDesc = await _faceDescriptorForFace(bestFace);
+      if (_scan.aborting) break;
+    }
+
+    // ── Dedup napříč sedadly: stejný obličej už nafocený na dřívějším sedadle? ──
+    // (Sken jede odpředu → tvář z přední řady se může objevit i u sedadla za ní.)
+    // Zabírá i bez databáze osob — porovnává embeddingy tváří nafocených v tomto skenu.
+    if (_scan.dedupFaces && faceDesc) {
+      let dupSeat = null, dupDist = Infinity;
+      for (const c of _scan.capturedDescriptors) {
+        const d = _faceDistance(faceDesc, c.descriptor);
+        if (d < dupDist) { dupDist = d; dupSeat = c.seatNum; }
+      }
+      if (dupSeat !== null && dupDist <= _scan.dedupDistance) {
+        _sLog(`  Sedadlo ${seatNum}: stejný obličej jako sedadlo ${dupSeat} (dist: ${dupDist.toFixed(3)} ≤ ${_scan.dedupDistance}) → duplikát, ignoruji`, 'warn');
+        _scan.skipDone++;
+        _sUpdateStats();
+        continue;
+      }
+    }
+
+    // ── Rozpoznání osoby z databáze (jméno + oficiální fotka) + dedup známých osob ──
     if (_persons.length > 0 && _faceApiLoaded) {
-      const res = await _recognizeFace(bestFace);
+      const res = faceDesc ? _findBestMatch(faceDesc) : null;
       if (res && res.matched) {
-        // Dedup: pokud jsme tuto osobu už v tomto skenu rozpoznali, druhý výskyt ignoruj
         if (_scan.recognizedIds.has(res.person.id)) {
           _sLog(`  Sedadlo ${seatNum}: ${res.person.name} už rozpoznán dříve (dist: ${res.distance.toFixed(3)}) → ignoruji`, 'warn');
           _scan.skipDone++;
@@ -6394,11 +6437,16 @@ async function startScan(targetSlotIdx = null) {
         finalPhoto = res.person.photoDataUrl;
         finalName  = res.person.name;
         _sLog(`  Rozpoznána: ${res.person.name} (dist: ${res.distance.toFixed(3)})`, 'ok');
-      } else if (res && res.noFace) {
+      } else if (!faceDesc) {
         _sLog(`  Sedadlo ${seatNum}: v ořezu nenalezena tvář pro embedding → screenshot`, 'warn');
       } else if (res && res.person) {
         _sLog(`  Sedadlo ${seatNum}: nejblíže ${res.person.name} (dist: ${res.distance.toFixed(3)}) > práh ${res.threshold} → screenshot`, 'warn');
       }
+    }
+
+    // Zapamatuj embedding tohoto přijatého sedadla pro dedup dalších sedadel
+    if (_scan.dedupFaces && faceDesc) {
+      _scan.capturedDescriptors.push({ seatNum, descriptor: faceDesc });
     }
 
     // Ulož preset na kameru
@@ -6618,29 +6666,32 @@ function _findBestMatch(descriptor) {
   return { person: bestPerson, distance: bestDist, matched: bestDist <= threshold, threshold };
 }
 
-// ── Rozpoznej tvář z canvasu (výřez oblasti tváře) ──
-async function _recognizeFace(face) {
-  if (_persons.length === 0 || !_faceApiLoaded) return null;
+// ── Spočítej face descriptor (embedding) pro detekovanou tvář ──
+// Výřez oblasti tváře z scanCanvas + _computeDescriptor. Vrací Float32Array nebo null.
+// Používá se jak pro rozpoznání z DB, tak pro dedup napříč sedadly (ať se počítá jen jednou).
+async function _faceDescriptorForFace(face) {
+  if (!_faceApiLoaded) return null;
   const cv = document.getElementById('scanCanvas');
   if (!cv) return null;
-
-  // Vystřihni výřez tváře do dočasného canvasu
   const [x1, y1] = face.topLeft;
   const [x2, y2] = face.bottomRight;
   const pw = Math.max(1, x2 - x1);
   const ph = Math.max(1, y2 - y1);
-  // Přidej padding okolo tváře pro lepší detekci
-  const pad = Math.round(pw * 0.3);
+  const pad = Math.round(pw * 0.3); // padding okolo tváře pro lepší detekci
   const sx = Math.max(0, x1 - pad);
   const sy = Math.max(0, y1 - pad);
   const sw = Math.min(cv.width - sx, pw + 2 * pad);
   const sh = Math.min(cv.height - sy, ph + 2 * pad);
-
   const tmp = document.createElement('canvas');
   tmp.width = sw; tmp.height = sh;
   tmp.getContext('2d').drawImage(cv, sx, sy, sw, sh, 0, 0, sw, sh);
+  return _computeDescriptor(tmp);
+}
 
-  const descriptor = await _computeDescriptor(tmp);
+// ── Rozpoznej tvář z canvasu (výřez oblasti tváře) ──
+async function _recognizeFace(face) {
+  if (_persons.length === 0 || !_faceApiLoaded) return null;
+  const descriptor = await _faceDescriptorForFace(face);
   if (!descriptor) return { noFace: true }; // v ořezu se nepodařilo detekovat tvář
   return _findBestMatch(descriptor); // { person, distance, matched, threshold } nebo null
 }

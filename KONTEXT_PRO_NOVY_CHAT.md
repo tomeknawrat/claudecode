@@ -139,6 +139,7 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 - Rozpoznávání tváří přes face-api.js (ssdMobilenetv1 + faceLandmark68Net + faceRecognitionNet)
 - Modely se stáhnou z CDN při prvním použití (~12MB)
 - Rozpoznané osoby = presety (fotka + jméno), uložené v IndexedDB
+- **Dedup obličejů (dva druhy):** (1) **známé osoby** — rozpoznaná osoba z DB už viděná v tomto skenu (`_scan.recognizedIds` dle `person.id`) → 2. výskyt skip; (2) **napříč sedadly i bez DB** (`_scan.dedupFaces`, default on) — embedding každé přijaté tváře se ukládá do `_scan.capturedDescriptors` a nová tvář se porovná (Euklid, práh `dedupDistance` default 0.5) proti dřív nafoceným v tomto skenu → shoda = duplikát, skip. Řeší „sken jede odpředu, stejná tvář zachycená i u sedadla za ní". Embedding počítá `_faceDescriptorForFace` (jednou, sdílí dedup i `_findBestMatch`); face-api modely se načtou i při prázdné DB, když je dedup zapnutý.
 
 ### Osoby — modal „Databáze osob" (layout předělán 20. 11. 2026)
 - **Samostatný modal** (`#personsDbOverlay`, otevírá tlačítko `personsDbBtn` v hlavičce přes `openPersonsDb()`); **přesunuto z bočního panelu Nastavení** (10. 11. 2026).

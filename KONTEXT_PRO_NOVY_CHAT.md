@@ -188,6 +188,12 @@ jen jako lokální cache naplněná ze serveru.
 
 > Migrace file:// → server: Export (stará verze) → Import (přes IP). Import pushne všechny kbelíky na server.
 
+**⚠️ Pořadí při startu (`_boot`) je důležité:** v `SERVER_MODE` je hydratace async, takže se musí
+dodržet pořadí `await _hydrateFromServer()` → `loadSettings()` (naplní pole IP kamer) → **teprve pak**
+`autoConnect()` (WS). Kdyby se `autoConnect()` volal dřív (jako samostatné top-level volání), `onopen`
+by přes `_sendCamConfigs()` poslal serveru **prázdnou IP** a PTZ by hlásilo „IP adresa není nastavena".
+Proto `autoConnect()` žije uvnitř `_boot()` za `loadSettings()`, ne na top-level. (Fix 22. 11. 2026.)
+
 ---
 
 ## ptz_server.py — klíčové detaily

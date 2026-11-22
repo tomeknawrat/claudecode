@@ -2,7 +2,7 @@
 
 > Přehled hotového, rozpracovaného a dalšího směru. Doplňuje
 > `KONTEXT_PRO_NOVY_CHAT.md` (popis projektu) a `SESSION_HANDOFF.md` (stav práce).
-> Aktualizováno: **20. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
+> Aktualizováno: **22. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
 > Hlavní soubor appky: **`SL Meeting_Ovládání PTZ kamer.html`**.
 
 ---
@@ -28,6 +28,12 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
 - **Otestováno v cloudu:** Python API (GET/PUT/hydrate, 400/404) + Playwright end-to-end proti
   `http://localhost:8080/` (write-through nastavení i osoby → soubor na serveru → reload → hydrate vrátí).
   Kamery/video netestováno (nejsou v dosahu) → **nedělní živý test**.
+- **🐞 Fix 22. 11. — „IP adresa není nastavena" (race condition):** v `SERVER_MODE` se `autoConnect()`
+  spouštěl dřív, než async `_hydrateFromServer()` + `loadSettings()` stihly vyplnit pole IP kamer →
+  `_sendCamConfigs()` v `onopen` poslal serveru **prázdnou IP** a každý PTZ/preset povel vracel
+  „CAM1: IP adresa není nastavena". Opraveno: `autoConnect()` se volá **až v `_boot()` po `loadSettings()`**
+  (ne na top-level), takže `onopen` čte už vyplněný DOM. Ve `file://` se chyba neprojevila (bez hydratace).
+  Ověřeno Playwrightem (simulace pomalé hydratace 600 ms → na WS dorazí config se správnými IP).
 - **Bez autentizace** (LAN-only, důvěryhodná síť v sále). `ptz_data/` je v `.gitignore` (osobní údaje nikdy do repa).
 
 ---

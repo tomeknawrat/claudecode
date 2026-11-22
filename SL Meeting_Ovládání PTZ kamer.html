@@ -6670,6 +6670,11 @@ async function deletePerson(id) {
   try { await _hydrateFromServer(); }
   catch (e) { try { logMsg('err', 'Hydratace ze serveru selhala: ' + e.message); } catch(_){} }
   loadSettings();
+  // DŮLEŽITÉ: k PTZ serveru se připoj až TEĎ, po loadSettings — jinak by onopen
+  // poslal konfiguraci kamer s ještě prázdnými poli IP (hydratace ze serveru je
+  // async a stihne doplnit IP až po připojení) → server by měl prázdnou IP a
+  // hlásil „IP adresa není nastavena". Připojení po loadSettings čte už vyplněný DOM.
+  autoConnect();
   await _loadPersonsDB();
   loadSlotPresetsStorage();
   loadPresets();
@@ -6690,7 +6695,8 @@ function autoConnect() {
   logMsg('info', 'Připojuji k PTZ serveru (' + WS_URL + ')...');
   _wsConnect();
 }
-autoConnect();
+// Pozn.: autoConnect() se volá z _boot() až PO loadSettings (viz komentář tam),
+// aby se na server poslaly správné IP kamer a ne prázdná pole.
 logMsg('info','Klávesnice: W/A/S/D nebo šipky = Pan/Tilt CAM1, +/- = Zoom');
 
 // ── ŠKÁLOVÁNÍ ──

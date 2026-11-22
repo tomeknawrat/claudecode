@@ -9,13 +9,13 @@ Webová aplikace pro ovládání dvou PTZ kamer v konferenční/jednací sále. 
 ## Architektura
 
 ```
-Prohlížeč (jakékoli zařízení v LAN)  →  http://<IP-sálového-PC>:8080/
+Prohlížeč (jakékoli zařízení v LAN)  →  http://<IP-sálového-PC>/   (port 80, default)
         │                                   (ptz_server.py servíruje HTML + datové API)
         │  HTTP  GET/PUT /api/data/<bucket>  →  úložiště na serveru (ptz_data/*.json)
         │  WS    ws://<host>:8765            →  PTZ příkazy
         │  WHEP  http://<host>:8890 (video)  →  CORS proxy → MediaMTX :8889
         ▼
-ptz_server.py   (Python, systray app; HTTP appky :8080, WS :8765, WHEP proxy :8890 — bind 0.0.0.0)
+ptz_server.py   (Python, systray app; HTTP appky :80 (APP_PORT), WS :8765, WHEP proxy :8890 — bind 0.0.0.0)
         │
         │ HTTP CGI
         ├──▶ Kamera 1 – Pódium    (IP např. 192.168.1.51)
@@ -25,7 +25,7 @@ ptz_server.py   (Python, systray app; HTTP appky :8080, WS :8765, WHEP proxy :88
                 └──▶ Live náhled ve scan modalu
 ```
 
-> **Dva režimy běhu:** přes `http://…:8080/` (SERVER_MODE — data na serveru, sdílená
+> **Dva režimy běhu:** přes `http://…/` (SERVER_MODE — data na serveru, sdílená
 > mezi zařízeními) nebo přes `file://` (fallback — data per-browser v localStorage/IndexedDB).
 > Host pro WS/video je dynamický podle `location.hostname` (file:// → `localhost`).
 
@@ -172,7 +172,7 @@ Původní pevný layout z jednacího hlediště (obnovený na žádost):
 
 ## Úložiště dat
 
-**SERVER_MODE (http://…:8080):** zdroj pravdy je server — složka `ptz_data/`, 4 JSON kbelíky.
+**SERVER_MODE (http://…/, port 80):** zdroj pravdy je server — složka `ptz_data/`, 4 JSON kbelíky.
 Appka si je při startu natáhne (`_hydrateFromServer`) do localStorage/IndexedDB a při každém
 uložení pošle zpět (`_srvPut` → `PUT /api/data/<bucket>`). localStorage/IndexedDB tak slouží
 jen jako lokální cache naplněná ze serveru.
@@ -199,12 +199,12 @@ Proto `autoConnect()` žije uvnitř `_boot()` za `loadSettings()`, ne na top-lev
 
 ## ptz_server.py — klíčové detaily
 
-- **HTTP server appky** (`_AppHandler`, `run_app_server`, port **8080**, bind `0.0.0.0`): servíruje
+- **HTTP server appky** (`_AppHandler`, `run_app_server`, port **80** = `APP_PORT`, konfigurovatelné, bind `0.0.0.0`): servíruje
   HTML na `/` a datové API `GET /api/data` (vše najednou), `GET/PUT /api/data/<bucket>`
   (buckety `settings|slots|presets|persons`, atomický zápis temp+rename do `ptz_data/`,
   strop 128 MB, validace JSON). `_lan_ip()` po startu vypíše adresu pro ostatní zařízení.
 - WS server bind `0.0.0.0:8765` (dřív `localhost`), WHEP proxy bind `0.0.0.0:8890` (dřív `127.0.0.1`) — kvůli LAN přístupu
-- `_open_app` otevírá `http://localhost:8080/` (dřív `file://`)
+- `_open_app` otevírá `http://localhost/` (port `APP_PORT`, default 80; dřív `file://`)
 - Každý PTZ příkaz běží jako samostatný `asyncio.ensure_future` task (aby stop nečekal za pomalým HTTP requestem)
 - Příkazy pro danou kameru se serializují přes `cam_locks` (per-camera `asyncio.Lock`), aby stop nepředběhl move na síti
 - `build_cgi_path`: pan/tilt stop → **`ptzstop`** (ne `stop`), bez parametru rychlosti

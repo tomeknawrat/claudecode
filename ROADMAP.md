@@ -12,7 +12,7 @@
 Appka už nemusí běžet z `file://`. `ptz_server.py` ji servíruje přes HTTP a drží
 data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sálového PC.
 
-- **Adresa:** `http://<IP-sálového-PC>:8080/` (server ji po startu sám vypíše a otevře).
+- **Adresa:** `http://<IP-sálového-PC>/` (server ji po startu sám vypíše a otevře). Port je `APP_PORT` v `ptz_server.py` — **default 80** (standardní HTTP, v adrese se nepíše); když je 80 obsazený, lze změnit (pak `http://IP:<port>/`).
 - **Úložiště na serveru:** složka `ptz_data/`, 4 JSON „kbelíky" — `settings`, `slots`
   (přiřazení/presety/souřadnice/layout), `presets` (cam1/cam2 vč. fotek),
   `persons` (osoby vč. fotek). API: `GET /api/data` (vše), `GET/PUT /api/data/<bucket>`
@@ -26,7 +26,7 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
   ve staré verzi **Export** → přes IP **Import** → tím se naplní server (Import pushuje všechny kbelíky).
 - **`file://` zůstává jako fallback** (beze změny chování; Playwright testy dál běží z file://).
 - **Otestováno v cloudu:** Python API (GET/PUT/hydrate, 400/404) + Playwright end-to-end proti
-  `http://localhost:8080/` (write-through nastavení i osoby → soubor na serveru → reload → hydrate vrátí).
+  `http://localhost/` (write-through nastavení i osoby → soubor na serveru → reload → hydrate vrátí).
   Kamery/video netestováno (nejsou v dosahu) → **nedělní živý test**.
 - **🐞 Fix 22. 11. — „IP adresa není nastavena" (race condition):** v `SERVER_MODE` se `autoConnect()`
   spouštěl dřív, než async `_hydrateFromServer()` + `loadSettings()` stihly vyplnit pole IP kamer →

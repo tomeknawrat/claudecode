@@ -29,10 +29,14 @@ MEDIAMTX_WEBRTC_HOST  = '127.0.0.1'
 MEDIAMTX_WEBRTC_PORT  = 8889
 
 # HTTP server appky — servíruje samotné HTML a datové API (úložiště na serveru).
-# Díky tomu lze appku otevřít přes http://<IP-sálového-PC>:8080/ z jakéhokoli
+# Díky tomu lze appku otevřít přes http://<IP-sálového-PC>/ z jakéhokoli
 # zařízení v LAN a data (presety, fotky, osoby, nastavení) jsou sdílená na serveru,
 # ne per-browser jako při otevření přes file://.
-APP_PORT  = 8080
+# Port 80 = standardní HTTP → v adrese se nepíše (http://IP/). Když je 80 obsazený,
+# změň tady na jiný (např. 8080) a adresa pak bude http://IP:<port>/.
+APP_PORT  = 80
+# Sufix portu do adres: u standardního :80 se vynechává (http://IP/), jinak http://IP:port/
+APP_PORT_SUFFIX = '' if APP_PORT == 80 else f':{APP_PORT}'
 
 # Složka kde se hledá HTML soubor — stejná jako ptz_server.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -449,7 +453,7 @@ def run_app_server():
     except Exception as e:
         print(f'[APP] Nepodařilo se spustit HTTP server na :{APP_PORT} — {e}')
         return
-    print(f'[APP] Appka běží na http://0.0.0.0:{APP_PORT}/  (otevři přes IP sálového PC)')
+    print(f'[APP] Appka běží na http://0.0.0.0{APP_PORT_SUFFIX}/  (otevři přes IP sálového PC)')
     srv.serve_forever()
 
 
@@ -620,7 +624,7 @@ def _lan_ip():
 def _open_app():
     """Otevře appku v prohlížeči přes HTTP server (http://localhost:APP_PORT/),
     aby data šla na server a sdílela se. Vrací True vždy (server servíruje HTML)."""
-    webbrowser.open(f'http://localhost:{APP_PORT}/')
+    webbrowser.open(f'http://localhost{APP_PORT_SUFFIX}/')
     return True
 
 if __name__ == '__main__':
@@ -647,8 +651,8 @@ if __name__ == '__main__':
     _ip = _lan_ip()
     print('')
     print('  ┌─────────────────────────────────────────────────────────┐')
-    print(f'  │  Appka v prohlížeči:  http://localhost:{APP_PORT}/              │')
-    print(f'  │  Z jiného zařízení:   http://{_ip}:{APP_PORT}/'.ljust(60) + '│')
+    print(f'  │  Appka v prohlížeči:  http://localhost{APP_PORT_SUFFIX}/'.ljust(60) + '│')
+    print(f'  │  Z jiného zařízení:   http://{_ip}{APP_PORT_SUFFIX}/'.ljust(60) + '│')
     print('  └─────────────────────────────────────────────────────────┘')
     print('')
 

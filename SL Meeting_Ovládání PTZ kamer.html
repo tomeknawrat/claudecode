@@ -4316,6 +4316,7 @@ function _makeViewSlotOld(seatNum) {
         sendCmd(2, 'gotopreset', presetNum);
         logMsg('info', `Sedadlo ${seatNum}: preset #${presetNum}`);
       }
+      resetPose(2);  // nové sedadlo = nový start → odznač pózu, ať jde rovnou kliknout Stojící/Sedící
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
       _lastRecalledSeat = { si, seatNum };
@@ -4393,6 +4394,7 @@ function makeSlotEditSlot(seatNum) {
     if (Date.now() - holdStart < 500) {
       if (slotCoords && slotCoords[si]) _wsAbsMove(2, slotCoords[si]);
       else sendCmd(2, 'gotopreset', slotPresets[si] ?? presetNum);
+      resetPose(2);  // nové sedadlo = nový start → odznač pózu
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
     }
@@ -4526,6 +4528,7 @@ function _makeViewSlot(seat) {
     if (Date.now() - t < 600) {
       const presetNum = (slotPresets && slotPresets[si] !== null) ? slotPresets[si] : seat.id;
       sendCmd(2, 'gotopreset', presetNum);
+      resetPose(2);  // nové sedadlo = nový start → odznač pózu
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
       logMsg('info', `Sedadlo ${seat.id}: preset #${presetNum}`);
@@ -4664,6 +4667,7 @@ function _sedMakeSlotEl(seat, sec, si, canvas, canvasW, canvasH) {
     if (Date.now() - holdStart < 500) {
       if (slotCoords && slotCoords[slotIdx]) _wsAbsMove(2, slotCoords[slotIdx]);
       else sendCmd(2, 'gotopreset', slotPresets[slotIdx] ?? presetNum);
+      resetPose(2);  // nové sedadlo = nový start → odznač pózu
       slot.classList.add('recalled');
       setTimeout(() => slot.classList.remove('recalled'), 600);
     }
@@ -5331,6 +5335,7 @@ function makePresetCardForSlot(presetIdx, slotIdx, seatNum) {
       } else {
         recallPreset(cam, presetIdx);
       }
+      resetPose(2);  // nové sedadlo = nový start → odznač pózu, ať jde rovnou kliknout Stojící/Sedící
       _lastRecalledSeat = { si: slotIdx, seatNum };
       card.classList.add('recalled');
       setTimeout(() => card.classList.remove('recalled'), 600);

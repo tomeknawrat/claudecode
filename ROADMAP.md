@@ -52,6 +52,7 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
 | „Smazat všechny fotky" | Hromadné smazání karet CAM2 (jen fotky, ne presety v kameře) | `56145e8`, `a24dbfc` |
 | Soubory | Přejmenování HTML → `SL Meeting_Ovládání PTZ kamer.html` | `ea9657a` |
 | **Přidání sedadla** | Vkládá se v číselné posloupnosti řady (17 vlevo k 16, 149 vpravo k 148), ne na kraj — `_insertSeatOrdered` | `22. 11.` |
+| **Póza Sedící/Stojící** | Recall sedadla odznačí pózu (`resetPose(2)`) → po přesunu jde rovnou kliknout Stojící bez mezikroku Sedící | `22. 11.` |
 
 ## ✅ Hotovo v kódu — čeká na živý test (čtvrtek, lidé v sále)
 

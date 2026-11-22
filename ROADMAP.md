@@ -93,6 +93,7 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
 ## ✅ Spuštění jedním krokem (hotovo)
 
 - **`start_ptz.bat`** (+ `start_ptz_bez_okna.vbs` pro běh bez okna) spustí `ptz_server.py`; server při startu **sám otevře appku v prohlížeči** (`_open_app`).
+- **`start_ptz.bat` si sám doinstaluje chybějící knihovny** (22. 11.): najde funkční Python (`python` → fallback `py`) a když chybí `websockets`/`pystray`/`pillow`, doinstaluje je přes `pip` (jinak instalaci přeskočí = rychlý start). Selhání pip nezablokuje běh — server má fallback bez ikonky. `start_ptz_bez_okna.vbs` předpokládá už nainstalované balíčky (nejdřív jednou `start_ptz.bat`).
 - Prohlížeč (sandbox) server spustit neumí → startuje se server, ten otevře stránku; tlačítko „Připojit server" slouží na (re)connect.
 
 ## 🚧 Výchozí pozice sedadel (větev `vychozi-pozice-sedadel`)

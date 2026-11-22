@@ -56,7 +56,7 @@ ptz_server.py   (Python, systray app; HTTP appky :80 (APP_PORT), WS :8765, WHEP 
 | `ptz_server.py` | Python WebSocket server + MediaMTX manager |
 | `mediamtx.exe` + `mediamtx.yml` | RTSP→WebRTC konvertor (vedle ptz_server.py) |
 
-**Instalace:** `pip install websockets pillow pystray`.
+**Instalace:** `pip install websockets pillow pystray` — **nebo nic**: `start_ptz.bat` si chybějící balíčky doinstaluje sám při spuštění (jen `websockets` je nutný, `pystray`+`pillow` volitelné pro systray ikonku; server běží i bez nich). `pillow` se importuje jako `PIL`.
 
 **Spuštění (jeden krok):** dvojklik na **`start_ptz.bat`** (nebo `start_ptz_bez_okna.vbs` pro běh bez černého okna). Server naběhne, zobrazí se v systray a **sám otevře appku v prohlížeči** (po ~1 s, ať stihne naběhnout WS). Prohlížeč nedokáže server spustit sám (sandbox), proto se startuje server a ten otevře stránku; tlačítko „Připojit server" v appce slouží na (re)connect.
 
@@ -215,7 +215,7 @@ Proto `autoConnect()` žije uvnitř `_boot()` za `loadSettings()`, ne na top-lev
 - `mediamtx.yml` obsahuje `webrtcAllowOrigin: '*'` (CORS pro file://)
 - Při startu **sám otevře appku v prohlížeči** (`_open_app`, `threading.Timer(1.0,…)`) — stačí spustit server
 - Systray menu: „Otevřít v prohlížeči", „Ukončit"
-- Launchery: `start_ptz.bat` (s konzolí/logy), `start_ptz_bez_okna.vbs` (skrytě přes `pythonw`)
+- Launchery: `start_ptz.bat` (s konzolí/logy; **detekuje Python + doinstaluje chybějící knihovny** websockets/pystray/pillow, pak spustí server), `start_ptz_bez_okna.vbs` (skrytě přes `pythonw`; předpokládá už nainstalované balíčky)
 
 ---
 

@@ -4110,9 +4110,24 @@ function _remapSeatStorageByNumber(oldNums) {
 }
 
 // Přidá sedadlo `seatNum` do bloku ('left'/'right'), na konec řady `rowIdx`.
+// Vloží číslo sedadla do řady tak, aby řada zůstala v číselné posloupnosti podle
+// svého směru (levý sektor je sestupný: 16→11, pravý vzestupný: 141→148). Díky tomu
+// přistane 17 vedle 16 (vlevo), 149 vedle 148 (vpravo) — ne na konec/začátek řady.
+function _insertSeatOrdered(row, seatNum, block) {
+  if (!Array.isArray(row)) { return; }
+  // Směr: podle obsahu řady (první vs. poslední), u krátké řady podle sektoru.
+  let ascending;
+  if (row.length >= 2) ascending = row[row.length - 1] > row[0];
+  else ascending = (block === 'right');
+  let pos = row.length;
+  for (let i = 0; i < row.length; i++) {
+    if (ascending ? (row[i] > seatNum) : (row[i] < seatNum)) { pos = i; break; }
+  }
+  row.splice(pos, 0, seatNum);
+}
 function _addSeatToLayout(seatNum, block, rowIdx) {
   const oldNums = [...SEAT_NUMBERS];
-  SEAT_LAYOUT[block][rowIdx].push(seatNum);
+  _insertSeatOrdered(SEAT_LAYOUT[block][rowIdx], seatNum, block);
   _rebuildSeatMaps();
   _remapSeatStorageByNumber(oldNums);
   _saveSeatLayout();

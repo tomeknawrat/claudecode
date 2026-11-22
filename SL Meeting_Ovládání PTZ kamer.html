@@ -1909,7 +1909,17 @@ console.warn = (...args) => {
             <label>🤏 Přijmout bez zoomu od velikosti (%)</label>
             <input type="number" id="baseAcceptFracInput" value="30" min="10" max="60" step="5" style="width:80px" onchange="_scan.baseAcceptFrac = (parseInt(this.value)||0)/100">
           </div>
-          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 2px;">Tvář u středu aspoň takhle velká na širokém záběru → fotka bez zoomu.</div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">Tvář u středu aspoň takhle velká na širokém záběru → fotka bez zoomu.</div>
+          <div class="drawer-row">
+            <label>🎯 Čekat na doostření (autofokus)</label>
+            <input type="checkbox" id="focusWaitInput" checked onchange="_scan.focusWait = this.checked">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 9px;">Po přejezdu počká, až se obraz doostří (hlavně mezi řadami), teprve pak detekuje a fotí. Vypnuto = jen pevná prodleva.</div>
+          <div class="drawer-row">
+            <label>⏱️ Max. čekání na ostrost (ms)</label>
+            <input type="number" id="focusMaxMsInput" value="1500" min="300" max="4000" step="100" style="width:80px" onchange="_scan.focusMaxMs = parseInt(this.value)||1500">
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5;margin:2px 0 2px;">Horní strop — když se ostrost neustálí (málo kontrastu), scan jde dál po tomto čase.</div>
         </div>
       </div>
     </div>
@@ -5747,6 +5757,16 @@ const _scan = {
   fastSkipEmpty: true,      // žádná tvář na base presetu → přeskočit celý zoom (hlavní úspora času)
   baseGateConfidence: 0.50, // volnější práh pro base pre-gate (0–1), nižší než minFaceConfidence — ať nepřeskočí reálného člověka (malá tvář na širokém záběru)
   baseAcceptFrac: 0.30,     // tvář na base presetu už aspoň takhle velká + u středu + dost jistá → přijmout fotku bez zoomu
+  // ── Čekání na doostření (varianta A: ostrost z obrazu) ──
+  // Po pohybu kamery autofokus chvíli doostřuje (nejvíc při přejezdu mezi řadami).
+  // Místo slepé prodlevy měříme ostrost snímku a počkáme, až se ustálí u vrcholu.
+  focusWait: true,          // zap/vyp čekání na doostření
+  focusMaxMs: 1500,         // horní strop čekání (ms) — pojistka proti zaseknutí
+  focusMinMs: 220,          // min. doba pozorování, ať autofokus vůbec stihne začít hledat
+  focusPollMs: 100,         // interval vzorkování ostrosti (ms)
+  focusStableN: 2,          // kolik po sobě jdoucích „plochých" vzorků = ustáleno
+  focusStableDelta: 0.04,   // rel. změna ostrosti pod tímto prahem = plochý vzorek
+  focusPeakFrac: 0.85,      // navíc musí být ostrost aspoň takhle blízko vrcholu (ne rozmazané plató)
   recognizedIds: null,   // Set id osob rozpoznaných v tomto skenu (dedup — 2. výskyt se ignoruje)
 };
 
@@ -6058,6 +6078,12 @@ async function _zoomFindOccupant(seatNum, W, H) {
     await _zoomStep(2, 'zoomin', _scan.zoomStepMs);
   }
   await _sleep(_scan.zoomSettleMs);
+  // Zoom mění ohnisko → po přiblížení taky počkej na doostření (varianta A).
+  if (_scan.focusWait) {
+    const _fwz = await _waitForFocus(_scan.focusMaxMs);
+    _sLog(`  ostření (zoom): ${_fwz.settled ? 'ustáleno' : 'strop'} za ${_fwz.ms} ms`);
+    if (_scan.aborting) return null;
+  }
   // Od nejtěsnějšího postupně oddaluj a hledej centrální VELKOU tvář (= přizoomovaný
   // obsazený záběr). Malé/oddálené tváře (pozadí, sousedé) se zahodí → prázdné sedadlo.
   for (let lvl = _scan.zoomSteps; lvl >= 0; lvl--) {
@@ -6119,6 +6145,75 @@ function _faceCropPhoto(face) {
 }
 
 function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── Ostrost obrazu (varianta A) ──────────────────────────────────────────────
+// Metrika ostrosti aktuálního snímku = gradientová energie (Tenengrad-lite) na
+// centrálním výřezu. Vyšší číslo = ostřejší obraz. Rozmazaný záběr (autofokus ještě
+// nedoostřil) má málo ostrých hran → nízkou hodnotu. Počítá se z downscalovaného
+// snímku (rychlé; stejný zdroj jako detekce tváří — MJPEG img nebo video).
+let _focusCv = null, _focusCtx = null;
+function _frameSharpness() {
+  const src = _scan._mjpegImg || document.getElementById('scanVideo');
+  if (!src) return null;
+  const sw = src.naturalWidth || src.videoWidth || 0;
+  const sh = src.naturalHeight || src.videoHeight || 0;
+  if (!sw || !sh) return null;
+  const TW = 200, TH = Math.max(2, Math.round(TW * sh / sw));
+  if (!_focusCv) { _focusCv = document.createElement('canvas'); _focusCtx = _focusCv.getContext('2d', { willReadFrequently: true }); }
+  if (_focusCv.width !== TW || _focusCv.height !== TH) { _focusCv.width = TW; _focusCv.height = TH; }
+  try { _focusCtx.drawImage(src, 0, 0, TW, TH); } catch (e) { return null; }
+  // Centrální ROI (prostřední ~60 % plochy, kde bývá obličej) — okraje ignorujeme.
+  const rx = Math.floor(TW * 0.2), ry = Math.floor(TH * 0.2);
+  const rw = TW - 2 * rx, rh = TH - 2 * ry;
+  if (rw < 3 || rh < 3) return null;
+  let data;
+  try { data = _focusCtx.getImageData(rx, ry, rw, rh).data; } catch (e) { return null; }
+  const gray = (i) => data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+  let sum = 0, n = 0;
+  for (let y = 1; y < rh - 1; y++) {
+    for (let x = 1; x < rw - 1; x++) {
+      const i = (y * rw + x) * 4;
+      const gx = gray(i + 4) - gray(i - 4);          // horizontální gradient
+      const gy = gray(i + rw * 4) - gray(i - rw * 4); // vertikální gradient
+      sum += gx * gx + gy * gy;
+      n++;
+    }
+  }
+  return n ? sum / n : null; // normalizováno na počet pixelů (nezávislé na velikosti ROI)
+}
+
+// Počká, až se ostrost obrazu ustálí u svého vrcholu (= autofokus doostřil), nebo do
+// maxMs (pojistka). Vrací { settled, ms, samples }. Když obraz není k dispozici nebo je
+// čekání vypnuté, vrátí se hned (scan se nikdy nezasekne).
+async function _waitForFocus(maxMs) {
+  if (!_scan.focusWait) return { settled: true, ms: 0, samples: 0 };
+  const cap = maxMs || _scan.focusMaxMs || 1500;
+  const poll = _scan.focusPollMs || 100;
+  const minMs = _scan.focusMinMs || 220;
+  const needN = _scan.focusStableN || 2;
+  const delta = _scan.focusStableDelta || 0.04;
+  const peakFrac = _scan.focusPeakFrac || 0.85;
+  const start = performance.now();
+  let prev = _frameSharpness();
+  if (prev === null) return { settled: false, ms: 0, samples: 0 }; // bez obrazu nečekáme
+  // Ustáleno = ostrost přestala RŮST (žádný nový vrchol nad práh delta) po needN vzorků
+  // a jsme blízko vrcholu. Odolné vůči šumu: drobné kolísání pod vrcholem stable neresetuje,
+  // resetuje ho jen reálné zlepšení (autofokus ještě doostřuje).
+  let maxS = prev, stable = 0, samples = 1;
+  while (true) {
+    if (_scan.aborting) return { settled: false, ms: Math.round(performance.now() - start), samples };
+    await _sleep(poll);
+    const s = _frameSharpness();
+    const elapsed = performance.now() - start;
+    if (s === null) { if (elapsed >= cap) return { settled: false, ms: Math.round(elapsed), samples }; continue; }
+    samples++;
+    if (s > maxS * (1 + delta)) { maxS = s; stable = 0; }  // reálné zlepšení → pořád ostří
+    else { if (s > maxS) maxS = s; stable++; }             // žádný nový vrchol
+    const nearPeak = maxS > 0 ? (s >= maxS * peakFrac) : true;
+    if (elapsed >= minMs && stable >= needN && nearPeak) return { settled: true, ms: Math.round(elapsed), samples };
+    if (elapsed >= cap) return { settled: false, ms: Math.round(elapsed), samples };
+  }
+}
 
 // Další volné číslo presetu pro CAM2 (rozsah 175–239)
 function _nextPresetNum() {
@@ -6223,6 +6318,14 @@ async function startScan(targetSlotIdx = null) {
     }
     await _sleep(_scan.settleMs);
     if (_scan.aborting) break;
+
+    // Počkej, až autofokus doostří po přejezdu (nejvíc při přejezdu mezi řadami) —
+    // ať detekce tváří i uložená fotka nejsou rozmazané (varianta A: ostrost z obrazu).
+    if (_scan.focusWait) {
+      const _fw = await _waitForFocus(_scan.focusMaxMs);
+      _sLog(`  ostření: ${_fw.settled ? 'ustáleno' : 'strop'} za ${_fw.ms} ms`);
+      if (_scan.aborting) break;
+    }
 
     // Volitelný tilt nudge — posune obličej do top-center (laditelné; 0 = vypnuto)
     if (_scan.scanTiltMs > 0) {

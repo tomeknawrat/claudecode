@@ -7,6 +7,11 @@ Webová aplikace pro ovládání dvou PTZ kamer v konferenční/jednací sále. 
 > 📄 **Uživatelský průvodce pro obsluhu:** `docs/Ovladani_kamer_pruvodce.docx` — jednostránkový
 > A4 návod (Kamera 1 Pódium / Kamera 2 Hlediště, presety, skenování, práce s fotkami sedadel,
 > nástroje nad hledištěm). Finální verze z OneDrive, do repa vložená beze změny.
+>
+> 💡 **Nápověda přímo v appce:** tlačítko „Nápověda" v hlavičce (mezi „Databáze osob" a „Nastavení",
+> `#helpBtn` → `openHelp()`/`closeHelp()`) otevře modál `#helpOverlay` s obsahem a vzhledem shodným
+> s tím docx — ikony jsou vytažené přímo z dokumentu (base64 v HTML). Když se upraví docx průvodce,
+> měl by se podle něj srovnat i tenhle modál.
 
 ---
 

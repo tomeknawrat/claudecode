@@ -54,6 +54,7 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
 | **Přidání sedadla** | Vkládá se v číselné posloupnosti řady (17 vlevo k 16, 149 vpravo k 148), ne na kraj — `_insertSeatOrdered` | `22. 11.` |
 | **Póza Sedící/Stojící** | Recall sedadla odznačí pózu (`resetPose(2)`) → po přesunu jde rovnou kliknout Stojící bez mezikroku Sedící | `22. 11.` |
 | **Uživatelský průvodce** | Jednostránkový A4 docx pro obsluhu (Kamera 1/2, presety, skenování, práce s fotkami, nástroje) → `docs/Ovladani_kamer_pruvodce.docx` | `79c942c` |
+| **Tlačítko Nápověda** | V liště mezi „Databáze osob" a „Nastavení"; otevře modál `#helpOverlay` (`openHelp`/`closeHelp`) s průvodcem vizuálně shodným s docx — ikony vytažené přímo z dokumentu (base64) | `23. 11.` |
 
 ## ✅ Hotovo v kódu — čeká na živý test (čtvrtek, lidé v sále)
 

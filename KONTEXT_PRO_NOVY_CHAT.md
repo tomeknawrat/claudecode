@@ -4,6 +4,10 @@
 
 Webová aplikace pro ovládání dvou PTZ kamer v konferenční/jednací sále. Běží jako **lokální HTML soubor** (`file://`) na Windows PC v sále. Komunikuje s Python WebSocket serverem (`ptz_server.py`), který posílá HTTP CGI příkazy na kamery přes LAN.
 
+> 📄 **Uživatelský průvodce pro obsluhu:** `docs/Ovladani_kamer_pruvodce.docx` — jednostránkový
+> A4 návod (Kamera 1 Pódium / Kamera 2 Hlediště, presety, skenování, práce s fotkami sedadel,
+> nástroje nad hledištěm). Finální verze z OneDrive, do repa vložená beze změny.
+
 ---
 
 ## Architektura

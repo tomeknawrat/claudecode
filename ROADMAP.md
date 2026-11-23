@@ -2,7 +2,7 @@
 
 > Přehled hotového, rozpracovaného a dalšího směru. Doplňuje
 > `KONTEXT_PRO_NOVY_CHAT.md` (popis projektu) a `SESSION_HANDOFF.md` (stav práce).
-> Aktualizováno: **22. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
+> Aktualizováno: **23. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
 > Hlavní soubor appky: **`SL Meeting_Ovládání PTZ kamer.html`**.
 
 ---
@@ -53,6 +53,7 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
 | Soubory | Přejmenování HTML → `SL Meeting_Ovládání PTZ kamer.html` | `ea9657a` |
 | **Přidání sedadla** | Vkládá se v číselné posloupnosti řady (17 vlevo k 16, 149 vpravo k 148), ne na kraj — `_insertSeatOrdered` | `22. 11.` |
 | **Póza Sedící/Stojící** | Recall sedadla odznačí pózu (`resetPose(2)`) → po přesunu jde rovnou kliknout Stojící bez mezikroku Sedící | `22. 11.` |
+| **Uživatelský průvodce** | Jednostránkový A4 docx pro obsluhu (Kamera 1/2, presety, skenování, práce s fotkami, nástroje) → `docs/Ovladani_kamer_pruvodce.docx` | `79c942c` |
 
 ## ✅ Hotovo v kódu — čeká na živý test (čtvrtek, lidé v sále)
 

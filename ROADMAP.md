@@ -2,7 +2,7 @@
 
 > Přehled hotového, rozpracovaného a dalšího směru. Doplňuje
 > `KONTEXT_PRO_NOVY_CHAT.md` (popis projektu) a `SESSION_HANDOFF.md` (stav práce).
-> Aktualizováno: **25. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
+> Aktualizováno: **27. 11. 2026**. Hlavní větev: `ptzcameracontroller`.
 > Hlavní soubor appky: **`SL Meeting_Ovládání PTZ kamer.html`**.
 
 ---
@@ -54,7 +54,7 @@ data na serveru → dostupná z **jakéhokoli zařízení v síti** přes IP sá
 | **Přidání sedadla** | Vkládá se v číselné posloupnosti řady (17 vlevo k 16, 149 vpravo k 148), ne na kraj — `_insertSeatOrdered` | `22. 11.` |
 | **Póza Sedící/Stojící** | Recall sedadla odznačí pózu (`resetPose(2)`) → po přesunu jde rovnou kliknout Stojící bez mezikroku Sedící | `22. 11.` |
 | **Uživatelský průvodce** | Jednostránkový A4 docx pro obsluhu (Kamera 1/2, presety, skenování, práce s fotkami, nástroje) → `docs/Ovladani_kamer_pruvodce.docx` | `79c942c` |
-| **Tlačítko Nápověda** | V liště mezi „Databáze osob" a „Nastavení"; otevře modál `#helpOverlay` (`openHelp`/`closeHelp`) s průvodcem vizuálně shodným s docx — ikony vytažené přímo z dokumentu (base64) | `23. 11.` |
+| **Tlačítko Nápověda** | V liště mezi „Databáze osob" a „Nastavení"; otevře modál `#helpOverlay` (`openHelp`/`closeHelp`) s průvodcem vizuálně shodným s docx — ikony vytažené přímo z dokumentu (base64). 25. 11.: srovnáno s novou verzí docx (pořadí nástrojů), fialový titulek „Začni skenováním", červený box „Upravit sedadla" + „Výchozí pozice" s varováním | `23. 11.`, `335c37d` |
 
 ## ✅ Hotovo v kódu — čeká na živý test (čtvrtek, lidé v sále)
 
